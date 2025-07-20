@@ -1,6 +1,6 @@
 # Important notes
 
-In the repository, you will find an .env example. Please copy it and rename the copy to .env; this will load environmental values for Docker.
+In the repository, you will find an .env.example Please copy it and rename the copy to .env; this will load environmental values for Docker.
 
 From there, you can run:
 

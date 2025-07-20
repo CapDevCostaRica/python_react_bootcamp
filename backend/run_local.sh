@@ -5,6 +5,7 @@ DB_SCRIPT=${1:-populate_database}
 
 if [ "$DB_SCRIPT" = "reset_db" ]; then
   python /app/framework/scripts/reset_db.py
+  exit 0
 else
   python /app/framework/scripts/populate_database.py
 fi
