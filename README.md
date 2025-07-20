@@ -42,5 +42,3 @@ If you need to access bash to run any commands, just use:
 ```
 docker-compose exec flask_app bash
 ```
-
-docker-compose exec flask_app bash
