@@ -8,26 +8,26 @@ docker-compose up
 
 If you added a new module or a new dependency remember to run
 
-´´´
+```
 docker-compose up --build
-´´´
+```
 
 On the first run, and if you haven't changed anything in the .env file, you can visit http://localhost:4000 and receive a random motivational phrase; your setup is working. 
 
 If you need to reset your DB maybe you switching apps, then run
 
-´´´
+```
 docker-compose run flask_app bash /app/run_local.sh reset_db
-´´´
+```
 
 ## Doing exercises 
 
 Please create a folder under contributors with your username. In there, you can make a new folder to create a new module, and inside that folder, create two files.
 
-´´´
+```
 main.py
 requirements.txt
-´´´
+```
 
 Then, go to .env and change APPLICATION_FOLDER to your module, e.g., "capdevcr/health". Now, restart your Docker and your application should be running. 
 
@@ -38,5 +38,9 @@ You should use a centralized database.py config file as we do on the framework f
 ## Accesing bash
 
 If you need to access bash to run any commands, just use:
+
+```
+docker-compose exec flask_app bash
+```
 
 docker-compose exec flask_app bash
