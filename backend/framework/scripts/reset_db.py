@@ -2,6 +2,7 @@
 import os
 import subprocess
 from sqlalchemy import create_engine, text
+from sqlalchemy.exc import ProgrammingError
 
 user = os.environ.get("POSTGRES_USER", "postgres")
 password = os.environ.get("POSTGRES_PASSWORD", "postgres")
@@ -12,11 +13,14 @@ db = os.environ.get("POSTGRES_DB", "postgres")
 DATABASE_URL = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
 
 def reset_database():
-    engine = create_engine(DATABASE_URL)
-    with engine.connect() as conn:
-        conn.execute(text("DROP SCHEMA public CASCADE;"))
-        conn.execute(text("CREATE SCHEMA public;"))
+    engine = create_engine(DATABASE_URL, isolation_level="AUTOCOMMIT")
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE;"))
+            conn.execute(text("CREATE SCHEMA IF NOT EXISTS public;"))
         print("Database schema reset.")
+    except ProgrammingError as pe:
+        print(f"Error while resetting DB: {pe}")
 
 def run_alembic_upgrade(path):
     print(f"Running alembic upgrade head in {path}")

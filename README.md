@@ -4,7 +4,9 @@ In the repository, you will find an .env.example Please copy it and rename the c
 
 From there, you can run:
 
+```
 docker-compose up
+```
 
 If you added a new module or a new dependency remember to run
 
@@ -18,6 +20,11 @@ If you need to reset your DB maybe you switching apps, then run
 
 ```
 docker-compose run flask_app bash /app/run_local.sh reset_db
+```
+
+If you created a local environment and installed the requirements, you can reset the DB from your host as well
+```
+python backend/framework/scripts/reset_db.py 
 ```
 
 ## Doing exercises 
