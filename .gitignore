@@ -2,3 +2,5 @@ pycache
 .env
 .qodo
 *.pyc
+**/venv/
+**/.venv/
