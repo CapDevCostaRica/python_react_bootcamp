@@ -9,7 +9,7 @@ host = os.environ.get("POSTGRES_HOST", "localhost")
 port = os.environ.get("POSTGRES_PORT", "5432")
 db = os.environ.get("POSTGRES_DB", "postgres")
 
-DATABASE_URL = f"postgresql://{user}:{password}@{host}:{port}/{db}"
+DATABASE_URL = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
 
 def reset_database():
     engine = create_engine(DATABASE_URL)
