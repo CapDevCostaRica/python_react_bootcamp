@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, jsonify, request
 
-from backend.contributors.castroulloaaaron.dnd.service import Service
+from dnd.service import Service
 
 app = Flask(__name__)
 service = Service()
@@ -8,15 +8,15 @@ service = Service()
 
 @app.route('/monsters', methods=['POST'])
 def get():
-    service.get({})
-    return {'status': 'ok'}
+    data, code = service.get(request.get_json(silent=True) or {})
+    return jsonify(data), code
 
 
 @app.route('/', methods=['POST'])
 def get_monsters():
-    service.list({})
-    return {'status': 'ok'}
+    data, code = service.list(request.get_json(silent=True) or {})
+    return jsonify(data), code
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4000)
+    app.run(host='0.0.0.0', port=4000, debug=True)
