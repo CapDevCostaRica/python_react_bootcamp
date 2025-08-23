@@ -32,6 +32,22 @@ def list_cached_monsters():
         "results": results
     }
 
+def fetch_monster_from_upstream(index):
+    upstream_url = f"https://www.dnd5eapi.co/api/monsters/{index}"
+    print(f"[UPSTREAM] Requesting monster '{index}' from external API: {upstream_url}.")
+    response = requests.get(upstream_url)
+
+    if response.status_code != 200:
+        print(f"[UPSTREAM] Failed to retrieve monster '{index}' — Status code: {response.status_code}")
+        return None
+
+    try:
+        upstream_data = response.json()
+        print(f"[UPSTREAM] Received data for monster '{index}': {upstream_data.get('name')}")
+        return upstream_data
+    except ValueError as e:
+        print(f"[UPSTREAM] Failed to parse JSON for monster '{index}': {str(e)}")
+        return None
 
 def get_or_cache_monster(index):
     session = get_session()
@@ -42,18 +58,11 @@ def get_or_cache_monster(index):
         session.close()
         return MonsterSchema_majocr().dump(monster)
     # Fetch from upstream API
-    upstream_url = f"https://www.dnd5eapi.co/api/monsters/{index}"
-    print(f"[UPSTREAM] Requesting monster '{index}' from external API: {upstream_url}.")
-    response = requests.get(upstream_url)
-
-    if response.status_code != 200:
-        print(f"[UPSTREAM] Failed to retrieve monster '{index}' — Status code: {response.status_code}")
-        session.close()
-        return {"error": f"Monster '{index}' not found in upstream API."}
-
     try:
-        upstream_data = response.json()
-        print(f"[UPSTREAM] Received data for monster '{index}': {upstream_data.get('name')}")
+        upstream_data = fetch_monster_from_upstream(index)
+        if not upstream_data:
+            session.close()
+            return {"error": f"Monster '{index}' not found in upstream API."}
         # Validate and save to local cache
         payload = {
             "index": upstream_data.get("index"),
