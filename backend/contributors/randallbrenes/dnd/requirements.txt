@@ -1,4 +1,2 @@
 Flask
 requests
-marshmallow
-marshmallow-sqlalchemy

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy import Column, Float, Integer, String, DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -13,8 +13,10 @@ class RandallBrenesDnD(Base):
     __tablename__ = 'randallbrenes_dnd_monsters'
     index = Column(String, primary_key=True)
     name = Column(String)
+    desc = Column(String)
     size = Column(String)
     type = Column(String)
+    subtype = Column(String)
     alignment = Column(String)
     armor_class = Column(JSONB)
     hit_points = Column(Integer)
@@ -22,11 +24,11 @@ class RandallBrenesDnD(Base):
     hit_points_roll = Column(String)
     speed = Column(JSONB)
     strength = Column(Integer)
-    dexterity = Column(String)
-    constitution = Column(String)
-    intelligence = Column(String)
-    wisdom = Column(String)
-    charisma = Column(String)
+    dexterity = Column(Integer)
+    constitution = Column(Integer)
+    intelligence = Column(Integer)
+    wisdom = Column(Integer)
+    charisma = Column(Integer)
     proficiencies = Column(JSONB)
     damage_vulnerabilities = Column(JSONB)
     damage_resistances = Column(JSONB)
@@ -34,7 +36,7 @@ class RandallBrenesDnD(Base):
     condition_immunities = Column(JSONB)
     senses = Column(JSONB)
     languages = Column(String)
-    challenge_rating = Column(Integer)
+    challenge_rating = Column(Float)
     proficiency_bonus = Column(Integer)
     xp = Column(Integer)
     special_abilities = Column(JSONB)
