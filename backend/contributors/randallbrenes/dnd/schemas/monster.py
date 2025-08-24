@@ -30,7 +30,7 @@ class ActionDetailSchema(Schema):
         allow_none=True,
         validate=validate.OneOf(["melee", "ranged", "ability", "magic"])
     )
-    count = fields.Integer(required=False, allow_none=True)
+    count = fields.String(required=False, allow_none=True)
     desc = fields.String(required=False, allow_none=True)
     type = fields.String(required=False, allow_none=True)
     choose = fields.Integer(required=False, allow_none=True)
@@ -82,6 +82,7 @@ class SpeedSchema(Schema):
     climb = fields.Str(required=False, allow_none=True)
     fly = fields.Str(required=False, allow_none=True)
     swim = fields.Str(required=False, allow_none=True)
+    hover = fields.Bool(required=False, allow_none=True)
 
 class SensesSchema(Schema):
     passive_perception = fields.Int(required=False, allow_none=True)
@@ -90,10 +91,12 @@ class SensesSchema(Schema):
     tremorsense = fields.Str(required=False, allow_none=True)
     truesight = fields.Str(required=False, allow_none=True)
 class SpellSchema(Schema):
+    index = fields.Str(required=False, allow_none=True)
     name = fields.Str(required=False, allow_none=True)
     level = fields.Int(required=False, allow_none=True)
     url = fields.Str(required=False, allow_none=True)
     usage = fields.Nested(UsageSchema, required=False, allow_none=True)
+    notes = fields.String(required=False, allow_none=True)
 
 class SpellcastingSchema(Schema):
     level = fields.Int(required=False, allow_none=True)
@@ -104,6 +107,7 @@ class SpellcastingSchema(Schema):
     school = fields.Str(required=False, allow_none=True)
     slots = fields.Dict(required=False, allow_none=True)
     spells = fields.List(fields.Nested(SpellSchema), required=False, allow_none=True)
+    notes = fields.String(required=False, allow_none=True)
 
 class SpecialAbilitySchema(Schema):
     name = fields.Str(required=False, allow_none=True)
@@ -115,9 +119,12 @@ class SpecialAbilitySchema(Schema):
     usage = fields.Nested(UsageSchema, required=False, allow_none=True)
 
 class ArmorClassSchema(Schema):
+    desc = fields.String(required=False, allow_none=True)
     type = fields.String(required=False, allow_none=True)
     value = fields.Integer(required=False, allow_none=True)
     armor = fields.List(fields.Nested(APIReferenceSchema), required=False, allow_none=True)
+    condition = fields.Nested(APIReferenceSchema, required=False, allow_none=True)
+    spell = fields.Nested(SpellSchema, required=False, allow_none=True)
 
 class MonsterSchema(Schema):
     index = fields.String(required=False, allow_none=True)
@@ -146,11 +153,7 @@ class MonsterSchema(Schema):
     hit_points_roll = fields.String(required=False, allow_none=True)
     actions = fields.List(fields.Nested(ActionsSchema), required=False, allow_none=True)
     legendary_actions = fields.List(fields.Nested(ActionsSchema), required=False, allow_none=True)
-    challenge_rating = fields.Float(
-        required=False,
-        allow_none=True,
-        validate=validate.Range(max=21)
-    )
+    challenge_rating = fields.Float(required=False, allow_none=True)
     proficiency_bonus = fields.Int(
         required=False,
         allow_none=True,
