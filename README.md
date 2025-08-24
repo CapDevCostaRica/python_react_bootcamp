@@ -61,11 +61,8 @@ After updating the `backend/framework/models.py` adding or updating the table(s)
 5. Run `alembic upgrade head` to execute the changes on the DB.
 6. Optional: if you need to downgrade for some reason your change (instead of just recreate the image/container 🤯), run `alembic downgrade <hash-from-upgrade-cmd>`
 
-
 ## License
 
 This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.  
 See the [LICENSE.txt](./LICENSE.txt) file for details or visit:  
 https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt
-
-
