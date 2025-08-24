@@ -49,3 +49,14 @@ If you need to access bash to run any commands, just use:
 ```
 docker-compose exec flask_app bash
 ```
+
+## Creating database migrations
+
+After updating the `backend/framework/models.py` adding or updating the table(s), follow the next steps:
+
+1. Ensure docker is running with the containers from this project.
+2. Go to `backend/framework`.
+3. Execute `alembic revision --autogenerate -m "some-meaningful message"`
+4. Optional: review the file created under `backend/framework/alembic/versions`
+5. Run `alembic upgrade head` to execute the changes on the DB.
+6. Optional: if you need to downgrade for some reason your change (instead of just recreate the image/container 🤯), run `alembic downgrade <hash-from-upgrade-cmd>`
