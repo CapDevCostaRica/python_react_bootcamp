@@ -1,6 +1,10 @@
 pycache
+__pycache__
 .env
 .qodo
 *.pyc
 **/venv/
 **/.venv/
+.vscode
+.idea
+.DS_Store
