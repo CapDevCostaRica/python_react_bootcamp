@@ -17,6 +17,8 @@ class API:
 
     def get(self, idx: str):
         res = requests.get(f'{self._base_url}/{idx}')
+        if res.status_code == requests.codes.not_found:
+            return None
         if res.status_code != requests.codes.ok:
             self._logger.error(f'Error fetching data from {self._base_url}/{idx}: {res.status_code} {res.text}')
             raise Exception(f'Error fetching data from {self._base_url}/{idx}')

@@ -60,7 +60,8 @@ class Service:
         except ValidationError as e:
             return {'error': e.messages}, codes.bad_request
         try:
-            return self._fetch_get(payload['monster_index']), codes.ok
+            data = self._fetch_get(payload['monster_index'])
+            return ({'error': f'Monster not found: {payload['monster_index']}'}, codes.not_found) if data is None else (data, codes.ok)
         except:
             self._logger.error(f'Error on fetching the {payload['monster_index']} data from the database and API')
             return {'error': f'Error fetching the data {payload['monster_index']}'}, codes.internal_server_error
@@ -76,10 +77,13 @@ class Service:
             self._logger.warning(f'Error fetching the data for index {index} from the database')
 
         data = self._api.get(index)
+        if data is None:
+            session.close()
+            return data
         try:
             output_get_schema.load(data)
         except ValidationError as e:
-            self._logger.error(f'Error validating the data from the API for the monster {index}: {e.messages}')
+            self._logger.error(f'Error validating the data from the API for monster {index}: {e.messages}')
             session.close()
             raise e
         try:
