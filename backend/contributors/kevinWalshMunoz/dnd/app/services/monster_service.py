@@ -1,4 +1,4 @@
-# Monster service functions
+"""Monster service functions"""
 import requests
 import os
 import sys
@@ -17,7 +17,7 @@ def get_all_monsters():
         session.close()
 
 def get_monster_by_index(index):
-    """Get a monster's details by its id"""
+    """Get a monster's details by its index"""
     session = get_session()
     try:
         monster = session.query(kevinWalshMunozMonsterList).filter_by(id=index).first()
@@ -36,8 +36,8 @@ def fetch_monsters_from_api():
     
 def bulk_insert_monsters(data: dict):
     """
-    Inserta múltiples monstruos en la tabla kevinWalshMunozMonsters.
-    :param data: Diccionario con la clave 'results' que contiene la lista de monstruos.
+    Bulk insert monsters into the kevinWalshMunozMonsters table.
+    :param data: Dictionary with the 'results' key containing the list of monsters.
     """
     session = get_session()
     try:
