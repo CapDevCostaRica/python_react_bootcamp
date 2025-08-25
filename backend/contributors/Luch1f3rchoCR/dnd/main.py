@@ -4,9 +4,9 @@ import requests
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
 
-from contributors.Luch1f3rchoCR.dnd.db import Base, engine, SessionLocal
-from contributors.Luch1f3rchoCR.dnd.models import MonsterCache
-from contributors.Luch1f3rchoCR.dnd.validations import (
+from .db import Base, engine, SessionLocal
+from .models import MonsterCache
+from .validations import (
     HandlerRequestSchema,
     MonstersListSchema,
     MonsterDetailSchema,
@@ -14,21 +14,30 @@ from contributors.Luch1f3rchoCR.dnd.validations import (
 
 CACHE_TTL = timedelta(hours=6)
 UPSTREAM = "https://www.dnd5eapi.co/api"
+
 app = Flask(__name__)
 Base.metadata.create_all(bind=engine)
 
 req_schema = HandlerRequestSchema()
 
+
 @app.get("/")
 def root():
     return jsonify({"ok": True, "msg": "Hello there, from Luch1f3rchoCR/dnd!"})
+
+
+def _respond(payload, source: str):
+    resp = jsonify(payload)
+    resp.headers["X-Source"] = source
+    return resp
+
 
 @app.post("/handler")
 def handler():
     """
     OK:
-      - {"resource": "monsters"}      -> get list
-      - {"monster_index": <string>}   -> get monster by index
+      - {"resource": "monsters"}      -> list
+      - {"monster_index": "<slug>"}   -> detail
     """
     raw = request.get_json(force=True, silent=True) or {}
     try:
@@ -42,6 +51,7 @@ def handler():
         return get_monster(str(data["monster_index"]))
     return jsonify({"error": "Invalid request"}), 400
 
+
 def cache_get(db, key):
     row = db.query(MonsterCache).filter(MonsterCache.key == key).first()
     if not row:
@@ -49,6 +59,7 @@ def cache_get(db, key):
     if datetime.utcnow() - row.cached_at > CACHE_TTL:
         return None
     return row.payload
+
 
 def cache_set(db, key, payload):
     rec = db.query(MonsterCache).filter(MonsterCache.key == key).first()
@@ -62,6 +73,7 @@ def cache_set(db, key, payload):
         db.commit()
     except IntegrityError:
         db.rollback()
+
 
 def list_monsters():
     db = SessionLocal()
@@ -80,9 +92,10 @@ def list_monsters():
         except ValidationError as err:
             return jsonify({"error": "invalid upstream payload", "details": err.messages}), 502
 
-        return jsonify({"source": source, "data": payload})
+        return _respond(payload, source)
     finally:
         db.close()
+
 
 def get_monster(index: str):
     db = SessionLocal()
@@ -103,6 +116,6 @@ def get_monster(index: str):
         except ValidationError as err:
             return jsonify({"error": "invalid upstream payload", "details": err.messages}), 502
 
-        return jsonify({"source": source, "data": payload})
+        return _respond(payload, source)
     finally:
         db.close()
