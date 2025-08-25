@@ -18,6 +18,17 @@ class MonsterWordValidation(fields.Field):
 
 class MonsterRequestSchema(Schema):
     monster_index = MonsterIndexValidation(required=True)
+
+#Response Schema
     
 class MonsterListRequestSchema(Schema):
     resource = MonsterWordValidation(required=True)
+
+class MonsterSchema(Schema):
+    index = fields.String(dump_only=True)
+    name = fields.String()
+    url = fields.String()
+
+class MonsterListResponseModelSchema(Schema):
+    count = fields.Integer()
+    results = fields.List(fields.Nested(MonsterSchema))

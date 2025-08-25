@@ -6,4 +6,4 @@ Este módulo inicializa el paquete de esquemas de Marshmallow
 from app.schemas.marshmallow.monster_schema import MonsterRequestSchema
 
 # Exportamos los esquemas explícitamente
-__all__ = ['MonsterRequestSchema']
+__all__ = ['MonsterRequestSchema', 'MonsterListRequestSchema', 'MonsterListResponseModelSchema']

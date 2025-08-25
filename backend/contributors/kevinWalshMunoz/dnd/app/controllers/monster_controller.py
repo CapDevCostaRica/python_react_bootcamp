@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from app.services.monster_service import get_all_monsters, get_monster_by_index
-from app.schemas.index import MonsterRequestSchema, MonsterListRequestSchema
+from app.services.monster_service import get_all_monsters, get_monster_by_index, fetch_monsters_from_api, bulk_insert_monsters
+from app.schemas.index import MonsterRequestSchema, MonsterListRequestSchema, MonsterListResponseModelSchema
 from marshmallow import ValidationError
 
 bp = Blueprint('monsters', __name__, url_prefix='/monsters')
@@ -11,7 +11,15 @@ def list_monsters():
         schema = MonsterListRequestSchema()
         schema.load(request.get_json() or {})
         
-        return jsonify({'Monsters': get_all_monsters()})
+        monsters = get_all_monsters()
+        model_schema = MonsterListResponseModelSchema()
+        result = model_schema.dump(monsters)
+
+        if result['count'] == 0:
+            result = fetch_monsters_from_api()
+            bulk_insert_monsters(result)
+
+        return jsonify(result)
     except ValidationError as err:
         return jsonify({'error': 'Validation error', 'details': err.messages}), 400
 
@@ -27,6 +35,9 @@ def get_monster():
         if not monster:
             return jsonify({'error': 'Monster not found'}), 404
         
-        return jsonify({'Monster': monster})
+        model_schema = MonsterModelSchema()
+        result = model_schema.dump(monster)
+        
+        return jsonify({'Monster': result})
     except ValidationError as err:
         return jsonify({'error': 'Validation error', 'details': err.messages}), 400
