@@ -56,6 +56,23 @@ class UsageSchema(Schema):
     min_value = fields.Integer(allow_none=True)
     rest_types = fields.List(fields.String(), allow_none=True)
 
+class SpellSchema(Schema):
+    name = fields.String()
+    level = fields.Integer()
+    url = fields.String()
+    notes = fields.String(allow_none=True)
+    usage = fields.Nested(UsageSchema, allow_none=True)
+
+class SpellcastingSchema(Schema):
+    level = fields.Integer()
+    ability = fields.Dict(keys=fields.String(), values=fields.Field())
+    dc = fields.Integer()
+    modifier = fields.Integer()
+    components_required = fields.List(fields.String())
+    school = fields.String()
+    slots = fields.Dict(keys=fields.String(), values=fields.Integer())
+    spells = fields.List(fields.Nested(SpellSchema))
+
 class AbilitySchema(Schema):
     name = fields.String()
     desc = fields.String()
@@ -66,10 +83,12 @@ class AbilitySchema(Schema):
     options = fields.Dict(keys=fields.String(), values=fields.Field(), allow_none=True)
     attack_bonus = fields.Integer(allow_none=True)
     multiattack_type = fields.String(allow_none=True)
+    spellcasting = fields.Nested(SpellcastingSchema, allow_none=True)
 
 class ArmorClassSchema(Schema):
     type = fields.String()
     value = fields.Integer()
+    spell = fields.Dict(keys=fields.String(), values=fields.Field(), allow_none=True)
 
 class SpeedSchema(Schema):
     walk = fields.String(allow_none=True)
@@ -91,8 +110,10 @@ class DetailedMonsterSchema(Schema):
     id = fields.Integer(dump_only=True)
     index = fields.String()
     name = fields.String()
+    desc = fields.String(allow_none=True)
     size = fields.String()
     type = fields.String()
+    subtype = fields.String(allow_none=True)
     alignment = fields.String()
     
     armor_class = fields.List(fields.Nested(ArmorClassSchema))
