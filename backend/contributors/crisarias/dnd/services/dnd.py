@@ -14,7 +14,7 @@ def getMonsters():
         results = data.get('results')
         if not results:
             return None, response.status_code
-        return results, response.status_code
+        return {"count": len(results), "results": results}, response.status_code
      except Exception as e:
         logger.error(f"Error fetching monsters: {e}")
         return None, 500
