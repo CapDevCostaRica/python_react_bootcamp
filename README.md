@@ -49,3 +49,11 @@ If you need to access bash to run any commands, just use:
 ```
 docker-compose exec flask_app bash
 ```
+
+## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.  
+See the [LICENSE.txt](./LICENSE.txt) file for details or visit:  
+https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt
+
+
