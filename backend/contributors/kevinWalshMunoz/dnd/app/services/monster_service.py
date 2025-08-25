@@ -24,7 +24,7 @@ def get_monster_by_index(index):
         if monster:
             monster_dict = {c.name: getattr(monster, c.name) for c in monster.__table__.columns}
             return {"monster": monster_dict}
-        return
+        return None
     finally:
         session.close()
 
