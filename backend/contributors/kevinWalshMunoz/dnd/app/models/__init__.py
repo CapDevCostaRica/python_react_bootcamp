@@ -1,15 +1,2 @@
-# Placeholder for Monster model
-class Monster:
-    def __init__(self, id, name, description="", stats=None):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.stats = stats or {}
-    
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "stats": self.stats
-        }
+# Models are defined in the framework/models.py file
+# This file is kept as a package marker

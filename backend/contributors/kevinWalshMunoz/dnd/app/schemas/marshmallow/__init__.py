@@ -1,9 +1,9 @@
 """
-Este módulo inicializa el paquete de esquemas de Marshmallow
+This module initializes the Marshmallow schemas package
 """
 
-# Importamos los esquemas para facilitar su acceso desde fuera
+# Import schemas to facilitate access from outside
 from app.schemas.marshmallow.monster_schema import MonsterRequestSchema
 
-# Exportamos los esquemas explícitamente
+# Explicitly export the schemas
 __all__ = ['MonsterRequestSchema', 'MonsterListRequestSchema', 'MonsterListResponseModelSchema', 'DetailedMonsterSchema', 'MonsterDetailResponseSchema']

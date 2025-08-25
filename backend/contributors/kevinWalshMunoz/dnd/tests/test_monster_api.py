@@ -24,7 +24,7 @@ class TestMonsterAPI(unittest.TestCase):
     @patch('app.controllers.monster_controller.bulk_insert_monsters')
     def test_list_monsters_with_existing_data(self, mock_bulk_insert, mock_fetch_api, mock_get_all):
         """Test the /list endpoint when monsters already exist in the database"""
-        # Configurar mock data
+        # Configure mock data
         mock_monsters_response = {
             'count': 2,
             'results': [
@@ -35,18 +35,18 @@ class TestMonsterAPI(unittest.TestCase):
         
         mock_get_all.return_value = mock_monsters_response
         
-        # Realizar petición POST
+        # Send POST request
         response = self.client.post('/monsters/list', 
                                   json={"resource": "monsters"},
                                   content_type='application/json')
         
-        # Verificar respuesta
+        # Verify response
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['count'], 2)
         self.assertEqual(len(data['results']), 2)
         
-        # Verificar que no se llamó a la API externa ni al bulk insert
+        # Verify that external API and bulk insert were not called
         mock_fetch_api.assert_not_called()
         mock_bulk_insert.assert_not_called()
 
@@ -55,7 +55,7 @@ class TestMonsterAPI(unittest.TestCase):
     @patch('app.controllers.monster_controller.bulk_insert_monsters')
     def test_list_monsters_empty_database(self, mock_bulk_insert, mock_fetch_api, mock_get_all):
         """Test the /list endpoint when the database is empty"""
-        # Configurar mocks - base de datos vacía
+        # Configure mocks - empty database
         mock_get_all.return_value = {'count': 0, 'results': []}
         
         # Mock data de la API externa
@@ -69,18 +69,18 @@ class TestMonsterAPI(unittest.TestCase):
         }
         mock_fetch_api.return_value = api_response
         
-        # Realizar petición POST
+        # Send POST request
         response = self.client.post('/monsters/list',
                                   json={"resource": "monsters"},
                                   content_type='application/json')
         
-        # Verificar respuesta
+        # Verify response
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['count'], 3)
         self.assertEqual(len(data['results']), 3)
         
-        # Verificar que se llamó a la API externa y al bulk insert
+        # Verify that external API and bulk insert were called
         mock_fetch_api.assert_called_once()
         mock_bulk_insert.assert_called_once_with(api_response)
 
@@ -96,7 +96,7 @@ class TestMonsterAPI(unittest.TestCase):
     @patch('app.controllers.monster_controller.get_monster_by_index')
     def test_get_monster_existing_in_database(self, mock_get_monster):
         """Test the /get endpoint when the monster already exists in the database"""
-        # Configurar mock data - monstruo existente
+        # Configure mock data - monster exists
         mock_monster_data = {
             'index': 'bat',
             'name': 'Bat',
@@ -108,18 +108,18 @@ class TestMonsterAPI(unittest.TestCase):
         }
         mock_get_monster.return_value = mock_monster_data
         
-        # Realizar petición POST
+        # Send POST request
         response = self.client.post('/monsters/get',
                                   json={"monster_index": "bat"},
                                   content_type='application/json')
         
-        # Verificar respuesta
+        # Verify response
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['index'], 'bat')
         self.assertEqual(data['name'], 'Bat')
         
-        # Verificar que se llamó get_monster_by_index
+        # Verify that get_monster_by_index was called
         mock_get_monster.assert_called_once_with('bat')
 
     @patch('app.controllers.monster_controller.get_monster_by_index')
@@ -127,10 +127,10 @@ class TestMonsterAPI(unittest.TestCase):
     @patch('app.controllers.monster_controller.insert_monster_details')
     def test_get_monster_not_in_database(self, mock_insert, mock_fetch_api, mock_get_monster):
         """Test the /get endpoint when the monster does not exist in the database"""
-        # Configurar mocks - monstruo no existe en BD
+        # Configure mocks - monster does not exist in DB
         mock_get_monster.return_value = None
         
-        # Mock data de la API externa
+        # Mock data from external API
         api_monster_data = {
             'index': 'dragon',
             'name': 'Dragon',
@@ -142,18 +142,18 @@ class TestMonsterAPI(unittest.TestCase):
         }
         mock_fetch_api.return_value = api_monster_data
         
-        # Realizar petición POST
+        # Send POST request
         response = self.client.post('/monsters/get',
                                   json={"monster_index": "dragon"},
                                   content_type='application/json')
         
-        # Verificar respuesta
+        # Verify response
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['index'], 'dragon')
         self.assertEqual(data['name'], 'Dragon')
         
-        # Verificar que se llamaron todas las funciones necesarias
+        # Verify that all necessary functions were called
         mock_get_monster.assert_called_once_with('dragon')
         mock_fetch_api.assert_called_once_with('dragon')
         mock_insert.assert_called_once()
@@ -164,7 +164,7 @@ class TestMonsterAPI(unittest.TestCase):
                                   json={},
                                   content_type='application/json')
         
-        # Debería retornar error de validación
+        # Should return validation error
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Validation error')
@@ -176,7 +176,7 @@ class TestMonsterAPI(unittest.TestCase):
                                   json={"monster_index": ""},
                                   content_type='application/json')
         
-        # Debería retornar error de validación
+        # Should return validation error
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Validation error')
@@ -187,7 +187,7 @@ class TestMonsterAPI(unittest.TestCase):
                                   json={"monster_index": 123},
                                   content_type='application/json')
         
-        # Debería retornar error de validación
+        # Should return validation error
         self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
         self.assertEqual(data['error'], 'Validation error')
