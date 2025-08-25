@@ -2,14 +2,17 @@ from flask import Flask, request, jsonify
 from datetime import datetime, timedelta
 import requests
 from sqlalchemy.exc import IntegrityError
+from marshmallow import ValidationError
 from contributors.Luch1f3rchoCR.dnd.db import Base, engine, SessionLocal
 from contributors.Luch1f3rchoCR.dnd.models import MonsterCache
+from contributors.Luch1f3rchoCR.dnd.validations import HandlerRequestSchema
 
 CACHE_TTL = timedelta(hours=6)
 UPSTREAM = "https://www.dnd5eapi.co/api"
-
 app = Flask(__name__)
 Base.metadata.create_all(bind=engine)
+
+req_schema = HandlerRequestSchema()
 
 @app.get("/")
 def root():
@@ -22,7 +25,12 @@ def handler():
       - {"resource": "monsters"}      -> get list
       - {"monster_index": <string>}   -> get monster by index
     """
-    data = request.get_json(force=True, silent=True) or {}
+    raw = request.get_json(force=True, silent=True) or {}
+    try:
+        data = req_schema.load(raw)
+    except ValidationError as err:
+        return jsonify({"error": "invalid payload", "details": err.messages}), 400
+
     if data.get("resource") == "monsters":
         return list_monsters()
     if "monster_index" in data:
@@ -51,7 +59,6 @@ def cache_set(db, key, payload):
         db.rollback()
 
 def list_monsters():
-    # get full list of monsters
     db = SessionLocal()
     try:
         key = "list"
@@ -67,7 +74,6 @@ def list_monsters():
         db.close()
 
 def get_monster(index: str):
-    # get monster by index
     db = SessionLocal()
     try:
         key = f"monster:{index}"
