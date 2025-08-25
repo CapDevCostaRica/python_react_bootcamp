@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from services.telemetry import setupLogger
-from backend.contributors.crisarias.dnd.api.monsters.api import getMonster, listMonsters
+from api.monsters.api import getMonster, listMonsters
 
 app = Flask(__name__)
 app.config['DND_API_BASE_URL'] = 'https://www.dnd5eapi.co'

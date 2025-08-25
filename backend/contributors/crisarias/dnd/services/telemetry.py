@@ -1,3 +1,5 @@
+import logging
+
 def setupLogger():
     logger = logging.getLogger("dnd_telemetry")
     logger.setLevel(logging.INFO)  # Or DEBUG for more verbosity

@@ -1,6 +1,9 @@
 from services.telemetry import setupLogger
 from marshmallow import ValidationError
-from schemas import GetMonsterSchema, ListMonstersSchema
+from .schemas import GetMonsterSchema, ListMonstersSchema
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../framework')))
 from models import MonstersCrisarias
 from services.caching import getCachedResources, getCachedResourceById
 from services.dnd import getMonsterById, getMonsters
@@ -10,6 +13,7 @@ logger = setupLogger()
 def getMonster(request):
     try:
         data = request.get_json()
+        logger.info(f"Received getMonster request data: {data}")
         validated = GetMonsterSchema().load(data)
         monster_id = validated["monster_index"]
         cachingResponse = getCachedResourceById(MonstersCrisarias, monster_id)

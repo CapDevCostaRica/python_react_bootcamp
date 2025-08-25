@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields, ValidationError, validates
 
 class MonstersCrisariasSchema(Schema):
     id = fields.Str(required=True)
