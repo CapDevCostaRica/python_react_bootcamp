@@ -3,9 +3,14 @@ from datetime import datetime, timedelta
 import requests
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
+
 from contributors.Luch1f3rchoCR.dnd.db import Base, engine, SessionLocal
 from contributors.Luch1f3rchoCR.dnd.models import MonsterCache
-from contributors.Luch1f3rchoCR.dnd.validations import HandlerRequestSchema
+from contributors.Luch1f3rchoCR.dnd.validations import (
+    HandlerRequestSchema,
+    MonstersListSchema,
+    MonsterDetailSchema,
+)
 
 CACHE_TTL = timedelta(hours=6)
 UPSTREAM = "https://www.dnd5eapi.co/api"
@@ -62,14 +67,20 @@ def list_monsters():
     db = SessionLocal()
     try:
         key = "list"
-        cached = cache_get(db, key)
-        if cached:
-            return jsonify({"source": "cache", "data": cached})
-        r = requests.get(f"{UPSTREAM}/monsters", timeout=10)
-        r.raise_for_status()
-        payload = r.json()
-        cache_set(db, key, payload)
-        return jsonify({"source": "upstream", "data": payload})
+        payload = cache_get(db, key)
+        source = "cache" if payload else "upstream"
+        if not payload:
+            r = requests.get(f"{UPSTREAM}/monsters", timeout=10)
+            r.raise_for_status()
+            payload = r.json()
+            cache_set(db, key, payload)
+
+        try:
+            MonstersListSchema().load(payload)
+        except ValidationError as err:
+            return jsonify({"error": "invalid upstream payload", "details": err.messages}), 502
+
+        return jsonify({"source": source, "data": payload})
     finally:
         db.close()
 
@@ -77,15 +88,21 @@ def get_monster(index: str):
     db = SessionLocal()
     try:
         key = f"monster:{index}"
-        cached = cache_get(db, key)
-        if cached:
-            return jsonify({"source": "cache", "data": cached})
-        r = requests.get(f"{UPSTREAM}/monsters/{index}", timeout=10)
-        if r.status_code == 404:
-            return jsonify({"error": "monster not found"}), 404
-        r.raise_for_status()
-        payload = r.json()
-        cache_set(db, key, payload)
-        return jsonify({"source": "upstream", "data": payload})
+        payload = cache_get(db, key)
+        source = "cache" if payload else "upstream"
+        if not payload:
+            r = requests.get(f"{UPSTREAM}/monsters/{index}", timeout=10)
+            if r.status_code == 404:
+                return jsonify({"error": "monster not found"}), 404
+            r.raise_for_status()
+            payload = r.json()
+            cache_set(db, key, payload)
+
+        try:
+            MonsterDetailSchema().load(payload)
+        except ValidationError as err:
+            return jsonify({"error": "invalid upstream payload", "details": err.messages}), 502
+
+        return jsonify({"source": source, "data": payload})
     finally:
         db.close()
