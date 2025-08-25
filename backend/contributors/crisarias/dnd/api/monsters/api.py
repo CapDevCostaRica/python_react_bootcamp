@@ -1,6 +1,6 @@
 from services.telemetry import setupLogger
 from marshmallow import ValidationError
-from .schemas import GetMonsterSchema, ListMonstersSchema
+from .schemas import GetMonsterSchema, ListMonstersSchema, MonstersCrisariasSchema
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../framework')))
@@ -17,7 +17,7 @@ def getMonster(request):
         validated = GetMonsterSchema().load(data)
         monster_id = validated["monster_index"]
         cachingResponse = getCachedResourceById(MonstersCrisarias, monster_id)
-        if cachingResponse is None or getattr(cachingResponse, "body", {}) == {}:
+        if cachingResponse is None or cachingResponse == {}:
             logger.info(f"Cache miss for monster_id {monster_id}")
             data, code = getMonsterById(monster_id)
             if code != 200:
@@ -38,10 +38,11 @@ def getMonster(request):
 def listMonsters(request):
     try:
         data = request.get_json()
+        logger.info(f"Received listMonsters request data: {data}")
         ListMonstersSchema().load(data)
         cachingResponse = getCachedResources(MonstersCrisarias)
-        if cachingResponse is None or getattr(cachingResponse, "body", {}) == {}:
-            logger.info(f"Cache miss for monster_id {monster_id}")
+        if cachingResponse is None or len(cachingResponse) == 0:
+            logger.info(f"Cache miss for monsters list")
             data, code = getMonsters()
             if code != 200:
                 raise ConnectionError(f"Cannot fetch monsters upstream service unavailable")

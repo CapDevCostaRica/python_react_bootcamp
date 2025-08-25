@@ -11,7 +11,9 @@ class MotivationalPhrase(Base):
 
 class MonstersCrisarias(Base):
     __tablename__= 'monsters_crisarias'
-    id = Column(String, primary_key=True)
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
     body = Column(JSON)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
