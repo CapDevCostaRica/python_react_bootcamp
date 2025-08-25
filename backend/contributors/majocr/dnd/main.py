@@ -6,9 +6,9 @@ from handlers import get_monster_handler, list_monsters_handler
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['POST'])
 def health():
-    return {'status': 'ok'}
+    return jsonify({'status': 'ok'})
 
 @app.route('/monsters/list', methods=['POST'])
 def list_monsters():
