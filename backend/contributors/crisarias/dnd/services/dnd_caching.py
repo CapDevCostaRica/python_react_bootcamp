@@ -40,7 +40,7 @@ def upsertCachedResource(model, index, body):
             resource.body = body
             logger.info(f"Updated cached resource for model {model.__name__} with index {index}")
         else:            
-            resource = model(index=resource.index, name=resource.name, url=resource.url, body=body)
+            resource = model(index=body.index, name=body.name, url=body.url, body=body)
             session.add(resource)
             logger.info(f"Inserted cached resource for model {model.__name__} with index {index}")
         session.commit()
@@ -51,10 +51,11 @@ def getCachedResourceByIndex(model, index):
     try:
         session = get_session()
         resource = session.query(model.body).filter(model.index == index).first()
-        if resource[0]:
+        if resource is not None and resource[0]:
             logger.info(f"Retrieved cached resource for model {model.__name__} with index {index}")
         else:
             logger.warning(f"Cache miss for model {model.__name__} with index {index}")
+            return None
         return resource[0]
     except Exception as e:
         logger.error(f"Error retrieving cached resource for model {model.__name__} with index {index}: {e}")
