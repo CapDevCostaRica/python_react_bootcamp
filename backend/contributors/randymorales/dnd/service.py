@@ -23,9 +23,9 @@ class RandymoralesMonsterProxyService:
             cache = session.query(randymorales_MonsterListCache).filter_by(resource='monsters').first()
             if cache:
                 return json.loads(cache.list_data)
-            resp = requests.get(self.upstream_base)
+            resp = requests.get(self.upstream_base, timeout=10)
             if resp.status_code != 200:
-                raise RuntimeError('Upstream error')
+                raise RuntimeError(f'Upstream API error: {resp.status_code} - {resp.text}')
             result = resp.json()
             session.add(randymorales_MonsterListCache(resource='monsters', list_data=json.dumps(result)))
             session.commit()
@@ -37,9 +37,9 @@ class RandymoralesMonsterProxyService:
             cache = session.query(randymorales_MonsterCache).filter_by(monster_index=monster_index).first()
             if cache:
                 return json.loads(cache.monster_data)
-            resp = requests.get(f"{self.upstream_base}/{monster_index}")
+            resp = requests.get(f"{self.upstream_base}/{monster_index}", timeout=10)
             if resp.status_code != 200:
-                raise RuntimeError('Upstream error')
+                raise RuntimeError(f'Upstream API error: {resp.status_code} - {resp.text}')
             result = resp.json()
             session.add(randymorales_MonsterCache(monster_index=monster_index, monster_data=json.dumps(result)))
             session.commit()

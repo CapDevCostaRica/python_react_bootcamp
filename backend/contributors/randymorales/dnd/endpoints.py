@@ -7,11 +7,13 @@ from schemas import (
     RandymoralesMonsterListOutputSchema,
     RandymoralesMonsterGetOutputSchema,
 )
-from service import RandymoralesMonsterProxyService
-service = RandymoralesMonsterProxyService()
 
 class MonsterListAPI(MethodView):
     """POST /list: List all monsters."""
+
+    def __init__(self, service=None):
+        self.service = service
+
     def post(self):
         try:
             data = request.get_json()
@@ -21,7 +23,7 @@ class MonsterListAPI(MethodView):
         if input_data['resource'] != 'monsters':
             return jsonify({'error': 'Invalid resource'}), 400
         try:
-            result = service.get_monster_list()
+            result = self.service.get_monster_list()
         except RuntimeError:
             return jsonify({'error': 'Upstream error'}), 502
         try:
@@ -32,6 +34,10 @@ class MonsterListAPI(MethodView):
 
 class MonsterGetAPI(MethodView):
     """POST /get: Get a monster by index."""
+    
+    def __init__(self, service=None):
+        self.service = service
+    
     def post(self):
         try:
             data = request.get_json()
@@ -40,7 +46,7 @@ class MonsterGetAPI(MethodView):
             return jsonify({'error': err.messages}), 400
         monster_index = input_data['monster_index']
         try:
-            result = service.get_monster(monster_index)
+            result = self.service.get_monster(monster_index)
         except RuntimeError:
             return jsonify({'error': 'Upstream error'}), 502
         try:
