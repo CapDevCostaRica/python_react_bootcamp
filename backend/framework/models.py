@@ -7,3 +7,8 @@ class MotivationalPhrase(Base):
     __tablename__ = 'motivational_phrases'
     id = Column(Integer, primary_key=True)
     phrase = Column(String)
+
+class AndresnbozaMonster(Base):
+    __tablename__ = 'andresnboza_monster'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
