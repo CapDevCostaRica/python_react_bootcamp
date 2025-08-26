@@ -5,12 +5,12 @@ import requests
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
 
-# DB Engine
+# --- DB Engine ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../framework")))
 from database import Base, engine, SessionLocal
 from models import MonsterCache
 
-
+# --- Validations ---
 from contributors.Luch1f3rchoCR.dnd.validations import (
     HandlerRequestSchema,
     MonstersListSchema,
@@ -25,11 +25,9 @@ Base.metadata.create_all(bind=engine)
 
 req_schema = HandlerRequestSchema()
 
-
 @app.get("/")
 def root():
     return jsonify({"ok": True, "msg": "Hello there, from Luch1f3rchoCR/dnd!"})
-
 
 @app.post("/handler")
 def handler():
@@ -50,7 +48,6 @@ def handler():
         return get_monster(str(data["monster_index"]))
     return jsonify({"error": "Invalid request"}), 400
 
-
 # ------------- cache -------------
 
 def cache_get(db, key: str):
@@ -60,7 +57,6 @@ def cache_get(db, key: str):
     if datetime.utcnow() - row.cached_at > CACHE_TTL:
         return None
     return row.payload
-
 
 def cache_set(db, key: str, payload):
     rec = db.query(MonsterCache).filter(MonsterCache.key == key).first()
@@ -75,7 +71,6 @@ def cache_set(db, key: str, payload):
     except IntegrityError:
         db.rollback()
 
-
 # ------------- endpoints -------------
 
 def list_monsters():
@@ -89,14 +84,12 @@ def list_monsters():
             payload = r.json()
             cache_set(db, key, payload)
 
-
         MonstersListSchema().load(payload)
         return jsonify(payload)
     except ValidationError as err:
         return jsonify({"error": "invalid upstream payload", "details": err.messages}), 502
     finally:
         db.close()
-
 
 def get_monster(index: str):
     db = SessionLocal()
@@ -110,7 +103,6 @@ def get_monster(index: str):
             r.raise_for_status()
             payload = r.json()
             cache_set(db, key, payload)
-
 
         MonsterDetailSchema().load(payload)
         return jsonify(payload)
