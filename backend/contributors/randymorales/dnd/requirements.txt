@@ -1,0 +1,6 @@
+Flask
+requests
+marshmallow
+SQLAlchemy
+psycopg2-binary
+pytest
