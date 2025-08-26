@@ -56,27 +56,42 @@ def get_or_cache_monster(index):
     if monster:
         print(f"[DOWNSTREAM] Monster '{index}' found in local cache.")
         session.close()
-        return MonsterSchema_majocr().dump(monster)
+        return unpack_monster_data(monster)
+    
     # Fetch from upstream API
     try:
         upstream_data = fetch_monster_from_upstream(index)
         if not upstream_data:
             session.close()
             return {"error": f"Monster '{index}' not found in upstream API."}
+        clean_data = {}
+        for key in upstream_data:
+            if key not in ["index", "name"]:
+                clean_data[key] = upstream_data[key]
         # Validate and save to local cache
         payload = {
             "index": upstream_data.get("index"),
             "name": upstream_data.get("name"),
-            "data": upstream_data
+            "data": clean_data
         }
         validated = MonsterSchema_majocr().load(payload)
         new_monster = Monster_majocr(**validated)
         session.add(new_monster)
         session.commit()
         print(f"[DOWNSTREAM] Monster '{index}' cached successfully.")
+        monster_output = unpack_monster_data(new_monster)
         session.close()
-        return validated
+        return monster_output
     except ValidationError as error:
         print(f"[VALIDATION ERROR] Failed to validate monster '{index}': {error.messages}")
         session.close()
         return {"error": f"Validation failed for monster '{index}'", "details": str(error.messages)}
+    
+def unpack_monster_data(monster):
+    if not monster or not monster.data:
+        raise ValueError(f"Monster '{monster.name}' has no data to unpack.")
+    return {
+        "index": monster.index, 
+        "name": monster.name, 
+        **monster.data
+    }
