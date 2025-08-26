@@ -15,6 +15,8 @@ from utils.logger import log_message
 from handler.fetch_monster_handler import FetchMonsterHandler
 from handler.fetch_monster_list_handler import FetchMonsterListHandler
 
+from schemas.monster_response_schema import MonsterResponseSchema
+
 app = Flask(__name__)
 
 @app.route('/random')
@@ -34,7 +36,9 @@ def get_all_monster():
     session.close()
     if not monsters:
         return jsonify({'error': 'No andresnboza dnd monsters found.'}), 404
-    return jsonify({'count': len(monsters), 'monsters': [monster.to_dict() for monster in monsters]})
+    schema = MonsterResponseSchema(many=True)
+    result = schema.dump([monster.to_dict() for monster in monsters])
+    return jsonify({'count': len(result), 'monsters': result})
 
 # POST endpoint for monster list
 @app.route('/monsters', methods=['POST'])
@@ -45,7 +49,13 @@ def monsters_list():
         if req_data.get("resource") == "monsters":
             handler = FetchMonsterListHandler()
             result = handler.handle(req_data)
-            return jsonify(result)
+            # Use MonsterSummarySchema for validating summary list from external API
+            from schemas.monster_summary_schema import MonsterSummarySchema
+            monsters = result.get('results', []) if isinstance(result, dict) and 'results' in result else result
+            schema = MonsterSummarySchema(many=True)
+            validated = schema.dump(monsters)
+            count = result.get('count', len(validated)) if isinstance(result, dict) else len(validated)
+            return jsonify({'count': count, 'monsters': validated})
         return jsonify({"error": "Invalid payload"}), 400
     except Exception as e:
         log_message(f"Exception in /monsters: {e}")
@@ -59,8 +69,14 @@ def monster_get():
     if "monster_index" in req_data:
         handler = FetchMonsterHandler()
         result = handler.handle(req_data)
+        from schemas.monster_response_schema import MonsterResponseSchema
+        schema = MonsterResponseSchema()
+        # If result is a dict with monster data, validate and serialize
         if 'status_code' in result:
             return jsonify(result), result['status_code']
+        if 'monster' in result and isinstance(result['monster'], dict):
+            validated = schema.dump(result['monster'])
+            return jsonify({'monster': validated, 'source': result.get('source')})
         return jsonify(result)
     return jsonify({"error": "Invalid payload"}), 400
 
