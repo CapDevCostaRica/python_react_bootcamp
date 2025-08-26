@@ -34,7 +34,7 @@ def get_all_monster():
     session.close()
     if not monsters:
         return jsonify({'error': 'No andresnboza dnd monsters found.'}), 404
-    return jsonify({'count': len(monsters), 'monsters': [monster.name for monster in monsters]})
+    return jsonify({'count': len(monsters), 'monsters': [monster.to_dict() for monster in monsters]})
 
 # POST endpoint for monster list
 @app.route('/monsters', methods=['POST'])

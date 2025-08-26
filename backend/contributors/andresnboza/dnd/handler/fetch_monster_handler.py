@@ -54,7 +54,7 @@ class FetchMonsterHandler(Handler):
             if response.status_code == 200:
                 monster_data = response.json()
                 # Insert into DB
-                new_monster = AndresnbozaMonster(name=self.normalize_monster_name(monster_data['name']))
+                new_monster = AndresnbozaMonster.from_api_data(monster_data, self.normalize_monster_name)
                 session.add(new_monster)
                 session.commit()
                 result = {"monster": monster_data['name'], "source": "external_api"}
