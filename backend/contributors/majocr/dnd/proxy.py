@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 from models import Monster_majocr, MonsterList_majocr
 from database import get_session
 
-from .schema import MonsterListSchema_majocr, MonsterSchema_majocr
+from .schema import MonsterListOutputSchema_majocr, MonsterListSchema_majocr, MonsterSchema_majocr
 from marshmallow import ValidationError
 
 
@@ -26,10 +26,14 @@ def list_monsters():
                 "url": f"/api/2014/monsters/{monster.index}"
             })
         session.close()
-        return {
+
+        response_payload = {
             "count": len(results),
-            "results": results
+            "results": MonsterListSchema_majocr(many=True).dump(results)
         }
+        validated_response = MonsterListOutputSchema_majocr().dump(response_payload)
+
+        return validated_response
     
     # Fetch from upstream API
     upstream_url = "https://www.dnd5eapi.co/api/monsters"
@@ -50,10 +54,22 @@ def list_monsters():
         session.commit()
         print(f"[DOWNSTREAM] Cached {len(validated_monsters)} monsters locally.")
         session.close()
-        return {
-            "count": len(validated_monsters),
-            "results": upstream_data.get("results", [])
+        
+        #Output validation
+        results = []
+        for monster in validated_monsters:
+            results.append({
+                "index": monster['index'],
+                "name": monster['name'],
+                "url": f"/api/2014/monsters/{monster['index']}"
+            })
+        response_payload = {
+            "count": len(results),
+            "results": MonsterListSchema_majocr(many=True).dump(results)
         }
+        validated_response = MonsterListOutputSchema_majocr().dump(response_payload)
+
+        return validated_response
     except ValidationError as error:
         print(f"[VALIDATION ERROR] Failed to validate monster list: {error.messages}")
         session.close()
