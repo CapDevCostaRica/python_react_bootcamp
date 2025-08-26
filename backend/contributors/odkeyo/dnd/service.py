@@ -8,7 +8,7 @@ class odkeyo_MonsterProxyService:
     def __init__(self, client: odkeyo_DnDClient):
         self.client = client
 
-    def list_monsters(self, session, filters: dict | None = None):
+    def list_monsters(self, session):
         existing = session.scalars(select(odkeyo_Monster)).all()
         if existing:
             return [{"index": m.index, "name": m.name} for m in existing]
@@ -24,11 +24,14 @@ class odkeyo_MonsterProxyService:
         session.flush()
         return [{"index": i.get("index"), "name": i.get("name")}
                 for i in results if i.get("index") and i.get("name")]
-
+    
     def get_monster(self, session, index: str):
         m = session.get(odkeyo_Monster, index)
         if m and m.detail:
-            return {"index": m.index, "name": m.name, "data": m.detail.data}
+            payload = dict(m.detail.data)
+            payload["index"] = m.index
+            payload["name"]  = m.name 
+            return payload
 
         data = self.client.get_monster_by_index(index)
         name = data.get("name") or index
@@ -46,4 +49,4 @@ class odkeyo_MonsterProxyService:
 
         m.name = name
         session.flush()
-        return {"index": index, "name": name, "data": data}
+        return data

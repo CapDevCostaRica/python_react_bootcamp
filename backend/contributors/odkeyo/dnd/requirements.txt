@@ -1,0 +1,6 @@
+Flask
+marshmallow
+SQLAlchemy
+alembic
+psycopg[binary]
+requests

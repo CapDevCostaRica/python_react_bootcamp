@@ -6,7 +6,7 @@ POST /list
 Body:
 { "resource": "monsters" }
 
-Respuesta:
+Response:
 {
   "count": 325,
   "results": [
@@ -20,7 +20,7 @@ POST /get
 Body:
 { "monster_index": "adult-black-dragon" }
 
-Respuesta:
+Response:
 {
   "index": "adult-black-dragon",
   "name": "Adult Black Dragon",
@@ -35,35 +35,35 @@ Respuesta:
   }
 }
 
-Tecnologías
+Technologies
 
-Flask: framework web para los endpoints.
-SQLAlchemy: ORM para cacheo de datos en PostgreSQL.
-Alembic: migraciones de DB.
-Marshmallow: validación de entrada y salida.
-Requests: cliente HTTP para la API de D&D.
-Docker Compose: orquestación de contenedores (Flask + Postgres).
+Flask: Web framework for the endpoints.
+SQLAlchemy: ORM for caching data in PostgreSQL.
+Alembic: Database migrations.
+Marshmallow: Input and output validation.
+Requests: HTTP client for the D&D API.
+Docker Compose: Orchestration of containers (Flask + Postgres).
 
-Estructura de archivos
+File Structure
 contributors/odkeyo/dnd/
-  ├── clients.py   # Cliente HTTP para el API de D&D
-  ├── main.py      # Handlers Flask
-  ├── schemas.py   # Validación con Marshmallow
-  ├── service.py   # Lógica de cacheo en DB
-  └── README.md    # (este archivo)
+  ├── clients.py   # HTTP client for the D&D API
+  ├── main.py      # Flask handlers
+  ├── schemas.py   # Marshmallow validation
+  ├── service.py   # DB caching logic
+  └── README.md    # (this file)
 framework/
-  ├── database.py  # Configuración de DB
-  └── models.py    # Modelos SQLAlchemy (incluye odkeyo_monsters y odkeyo_monster_details)
+  ├── database.py  # DB configuration
+  └── models.py  
 
-Cómo correrlo
-Construir e iniciar los servicios con Docker Compose:
+How to Run
+Build and start the services with Docker Compose:
 docker compose up --build
 
 
-Usar Postman para probar los endpoints.
-Validaciones
+Use Postman (or curl) to test the endpoints.
+Validations
 
-Entrada:
+Input:
 
 http://localhost:4000/list 
 requiere { "resource": "monsters" }.
@@ -71,34 +71,36 @@ requiere { "resource": "monsters" }.
 http://localhost:4000/get 
 requiere { "monster_index": "<index>" }.
 
-Salida:
+Output:
 
-List devuelve siempre { "count", "results" }.
-Get devuelve { "index", "name", "data" }.
+List always returns { "count", "results" }.
+Get returns { "index", "name", "data" }.
 
-Nota para usuarios de Windows
+Note for Windows Users
 
-Si al levantar los contenedores aparece el error:
+If you see this error when starting containers:
 
 $'\r': command not found
 
 
-significa que el archivo run_local.sh tiene saltos de línea de Windows (CRLF) en lugar de Unix (LF).
-Bash en Linux no reconoce los \r y falla al ejecutar el script.
+It means the file run_local.sh has Windows line endings (CRLF) instead of Unix (LF).
+Bash on Linux does not recognize \r and fails to execute the script.
 
-🔧 Soluciones
+Solutions
 
-Conversión rápida en PowerShell (ejecutar una vez):
+Quick fix in PowerShell (run once):
 
 (Get-Content -Raw .\backend\run_local.sh).Replace("`r`n","`n") |
   Set-Content -NoNewline -Encoding ascii .\backend\run_local.sh
 
 
-Configurar Git para que siempre guarde .sh con saltos LF
-Agregar un archivo .gitattributes en la raíz del proyecto con:
+Configure Git to always save .sh files with LF line endings
+Add a .gitattributes file at the root of the project:
 
 *.sh text eol=lf
 
 
-En VS Code
-Abrir backend/run_local.sh, cambiar CRLF → LF (abajo a la derecha en la barra de estado) y guardar.
+In VS Code
+Open backend/run_local.sh, switch CRLF → LF (bottom-right corner), and save.
+
+Evidence images:
