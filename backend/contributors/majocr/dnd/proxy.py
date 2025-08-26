@@ -8,8 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 from models import Monster_majocr, MonsterList_majocr
 from database import get_session
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../majocr/dnd')))
-from schema import MonsterListSchema_majocr, MonsterSchema_majocr
+from .schema import MonsterListSchema_majocr, MonsterSchema_majocr
 from marshmallow import ValidationError
 
 

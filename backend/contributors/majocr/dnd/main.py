@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../majocr/dnd')))
-from handlers import get_monster_handler, list_monsters_handler
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../majocr/dnd')))
+from .handlers import get_monster_handler, list_monsters_handler
 
 app = Flask(__name__)
 
@@ -17,8 +17,9 @@ def list_monsters():
         result = list_monsters_handler(payload)
         return jsonify(result)
     except Exception as error:
-        return jsonify({'error': str(error)}), 400
-
+        response = jsonify({'error': str(error)})
+        response.status_code = 400
+        return response
 
 @app.route('/monsters/get', methods=['POST'])
 def get_monster():
@@ -27,7 +28,9 @@ def get_monster():
         result = get_monster_handler(payload)
         return jsonify(result), 200
     except Exception as error:
-        return jsonify({'error': str(error)}), 400
+        response = jsonify({'error': str(error)})
+        response.status_code = 400
+        return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
