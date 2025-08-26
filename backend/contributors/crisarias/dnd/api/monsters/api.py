@@ -1,6 +1,6 @@
 from services.telemetry import setupLogger
 from marshmallow import ValidationError
-from .schemas import GetMonsterSchema, ListMonstersSchema, MonstersCrisariasSchema
+from .schemas import GetMonsterSchema, ListMonstersSchema, MonstersCrisariasSchema, MonstersCrisariasSimplifiedSchema
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../framework')))
@@ -47,11 +47,11 @@ def listMonsters(request):
             data, code = getMonsters()
             if code != 200:
                 raise ConnectionError(f"Cannot fetch monsters upstream service unavailable")            
-            validatedData = [MonstersCrisariasSchema().load(item) for item in data]
+            validatedData = [MonstersCrisariasSimplifiedSchema().load(item) for item in data]
             return validatedData, 200
         else:
             logger.info(f"Cache hit for monsters")
-            validatedCached = [MonstersCrisariasSchema().load(item) for item in cachingResponse]
+            validatedCached = [MonstersCrisariasSimplifiedSchema().load(item) for item in cachingResponse]
             return validatedCached, 200
     except ValidationError as e:
         logger.error(f"Bad request from {request.remote_addr}: {e.messages}")
