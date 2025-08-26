@@ -1,23 +1,28 @@
 # D&D 5e Forward Proxy Caching Service
 
-This service provides a forward proxy with caching for the D&D 5e API, implementing GET endpoints with query parameters.
+This service provides a forward proxy with caching for the D&D 5e API, implementing a handler pattern with two separate POST endpoints.
 
 ## Features
 
 - **Forward Proxy Caching**: Caches D&D monsters data locally to reduce API calls
-- **GET Endpoints**: Simple GET requests with query parameters
+- **Handler Pattern**: Two separate POST endpoints following the handler pattern
 - **Input/Output Validation**: Marshmallow schemas for request and response validation
 - **Database Integration**: PostgreSQL for local data storage
 
 ## Endpoints
 
-### 1. List Monsters (`GET /list`)
+### 1. List Endpoint (`POST /list`)
 
 Lists all available monsters with caching.
 
 **Request:**
 ```
-GET /list
+POST /list
+Content-Type: application/json
+
+{
+  "resource": "monsters"
+}
 ```
 
 **Response:**
@@ -37,16 +42,23 @@ GET /list
 
 **cURL Example:**
 ```bash
-curl "http://localhost:4000/list"
+curl -X POST "http://localhost:4000/list" \
+  -H "Content-Type: application/json" \
+  -d '{"resource": "monsters"}'
 ```
 
-### 2. Get Monster (`GET /get/<index>`)
+### 2. Get Endpoint (`POST /get`)
 
 Retrieves a specific monster by index with caching.
 
 **Request:**
 ```
-GET /get/aboleth
+POST /get
+Content-Type: application/json
+
+{
+  "monster_index": "aboleth"
+}
 ```
 
 **Response:**
@@ -74,7 +86,9 @@ GET /get/aboleth
 
 **cURL Example:**
 ```bash
-curl "http://localhost:4000/get/aboleth"
+curl -X POST "http://localhost:4000/get" \
+  -H "Content-Type: application/json" \
+  -d '{"monster_index": "aboleth"}'
 ```
 
 ### 3. Health Check (`GET /health`)

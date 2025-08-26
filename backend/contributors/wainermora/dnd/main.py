@@ -58,7 +58,7 @@ def save_monster_to_db(monster_data):
     session = get_session()
     try:
         # Check if monster already exists
-        existing_monster = session.query(WainerMora_WainerMora_Monsterss).filter_by(index=monster_data['index']).first()
+        existing_monster = session.query(WainerMora_Monsters).filter_by(index=monster_data['index']).first()
         if existing_monster:
             return existing_monster
         
@@ -113,137 +113,153 @@ def save_monster_to_db(monster_data):
         session.close()
 
 
-@app.route('/list', methods=['GET'])
-def list_monsters():
-    """List monsters endpoint with caching."""
-    # No need to validate resource parameter since we always return monsters
-    
-    session = get_session()
+@app.route('/list', methods=['POST'])
+def list_endpoint():
+    """List endpoint that follows the handler pattern."""
     try:
-        # Check if we have monsters in local DB
-        monsters = session.query(WainerMora_Monsters).all()
+        # Get the request payload
+        payload = request.get_json()
         
-        if monsters:
-            # Return from cache
-            app.logger.info("Returning monsters from cache")
-            results = []
-            for monster in monsters:
-                results.append({
-                    'index': monster.index,
-                    'name': monster.name,
-                    'url': f"/api/monsters/{monster.index}"
-                })
-            
-            response_data = {
-                'count': len(results),
-                'results': results
-            }
-            return jsonify(monster_list_schema.dump(response_data))
+        if not payload:
+            return jsonify(error_schema.dump({'error': 'Validation Error', 'message': 'Request body is required'})), 400
         
-        else:
-            # Fetch from API and cache
-            app.logger.info("Fetching monsters from D&D API")
-            api_data = fetch_monsters_from_api()
+        # Validate the list request
+        try:
+            data = list_request_schema.load(payload)
+        except ValidationError as e:
+            return jsonify(error_schema.dump({'error': 'Validation Error', 'message': str(e.messages)})), 400
+        
+        session = get_session()
+        try:
+            # Check if we have monsters in local DB
+            monsters = session.query(WainerMora_Monsters).all()
             
-            if not api_data:
-                return jsonify(error_schema.dump({'error': 'API Error', 'message': 'Unable to fetch monsters from upstream API'})), 502
-            
-            # For the list endpoint, we only need to store basic info
-            # The detailed info will be fetched and cached when individual monsters are requested
-            results = []
-            for item in api_data.get('results', []):
-                # Save basic monster info to enable caching
-                basic_monster_data = {
-                    'index': item['index'],
-                    'name': item['name'],
-                    'url': item['url']
+            if monsters:
+                # Return from cache
+                app.logger.info("Returning monsters from cache")
+                results = []
+                for monster in monsters:
+                    results.append({
+                        'index': monster.index,
+                        'name': monster.name,
+                        'url': f"/api/monsters/{monster.index}"
+                    })
+                
+                response_data = {
+                    'count': len(results),
+                    'results': results
                 }
-                
-                # Create minimal monster record for list caching
-                existing_monster = session.query(WainerMora_Monsters).filter_by(index=item['index']).first()
-                if not existing_monster:
-                    monster = WainerMora_Monsters(
-                        index=item['index'],
-                        name=item['name'],
-                        url=item['url']
-                    )
-                    session.add(monster)
-                
-                results.append({
-                    'index': item['index'],
-                    'name': item['name'],
-                    'url': f"/api/monsters/{item['index']}"
-                })
+                return jsonify(monster_list_schema.dump(response_data))
             
-            session.commit()
-            
-            response_data = {
-                'count': len(results),
-                'results': results
-            }
-            return jsonify(monster_list_schema.dump(response_data))
-            
-    except Exception as e:
-        session.rollback()
-        app.logger.error(f"Error in list_monsters: {e}")
-        return jsonify(error_schema.dump({'error': 'Internal Server Error', 'message': 'An error occurred while processing the request'})), 500
-    finally:
-        session.close()
-
-
-@app.route('/get/<monster_index>', methods=['GET'])
-def get_monster(monster_index):
-    """Get specific monster endpoint with caching."""
-    try:
-        # Validate request - monster_index comes from the URL path
-        if not monster_index:
-            return jsonify(error_schema.dump({'error': 'Validation Error', 'message': 'monster_index is required in the URL path'})), 400
-        
-        data = get_request_schema.load({'monster_index': monster_index})
-        monster_index = data['monster_index']
-    except ValidationError as e:
-        return jsonify(error_schema.dump({'error': 'Validation Error', 'message': str(e.messages)})), 400
-    
-    session = get_session()
-    try:
-        # Check if monster exists in local DB with full data
-        monster = session.query(WainerMora_Monsters).filter_by(index=monster_index).first()
-        
-        if monster and monster.type:  # Check if we have full data (type is required for complete monster)
-            # Return from cache
-            app.logger.info(f"Returning monster {monster_index} from cache")
-            return jsonify(monster_schema.dump(monster))
-        
-        else:
-            # Fetch from API and cache
-            app.logger.info(f"Fetching monster {monster_index} from D&D API")
-            api_data = fetch_monster_by_index_from_api(monster_index)
-            
-            if not api_data:
-                return jsonify(error_schema.dump({'error': 'Not Found', 'message': f'WainerMora_Monsters with index "{monster_index}" not found'})), 404
-            
-            # Save or update monster in database
-            if monster:
-                # Update existing record with full data
-                for key, value in api_data.items():
-                    if hasattr(monster, key):
-                        setattr(monster, key, value)
             else:
-                # Create new monster record
-                monster = save_monster_to_db(api_data)
+                # Fetch from API and cache
+                app.logger.info("Fetching monsters from D&D API")
+                api_data = fetch_monsters_from_api()
                 
-            if not monster:
-                return jsonify(error_schema.dump({'error': 'Database Error', 'message': 'Unable to save monster data'})), 500
-            
-            session.commit()
-            return jsonify(monster_schema.dump(monster))
+                if not api_data:
+                    return jsonify(error_schema.dump({'error': 'API Error', 'message': 'Unable to fetch monsters from upstream API'})), 502
+                
+                # For the list endpoint, we only need to store basic info
+                # The detailed info will be fetched and cached when individual monsters are requested
+                results = []
+                for item in api_data.get('results', []):
+                    # Create minimal monster record for list caching
+                    existing_monster = session.query(WainerMora_Monsters).filter_by(index=item['index']).first()
+                    if not existing_monster:
+                        monster = WainerMora_Monsters(
+                            index=item['index'],
+                            name=item['name'],
+                            url=item['url']
+                        )
+                        session.add(monster)
+                    
+                    results.append({
+                        'index': item['index'],
+                        'name': item['name'],
+                        'url': f"/api/monsters/{item['index']}"
+                    })
+                
+                session.commit()
+                
+                response_data = {
+                    'count': len(results),
+                    'results': results
+                }
+                return jsonify(monster_list_schema.dump(response_data))
+                
+        except Exception as e:
+            session.rollback()
+            app.logger.error(f"Error in list_endpoint: {e}")
+            return jsonify(error_schema.dump({'error': 'Internal Server Error', 'message': 'An error occurred while processing the request'})), 500
+        finally:
+            session.close()
             
     except Exception as e:
-        session.rollback()
-        app.logger.error(f"Error in get_monster: {e}")
+        app.logger.error(f"Error in list_endpoint: {e}")
         return jsonify(error_schema.dump({'error': 'Internal Server Error', 'message': 'An error occurred while processing the request'})), 500
-    finally:
-        session.close()
+
+
+@app.route('/get', methods=['POST'])
+def get_endpoint():
+    """Get endpoint that follows the handler pattern."""
+    try:
+        # Get the request payload
+        payload = request.get_json()
+        
+        if not payload:
+            return jsonify(error_schema.dump({'error': 'Validation Error', 'message': 'Request body is required'})), 400
+        
+        # Validate the get request
+        try:
+            data = get_request_schema.load(payload)
+            monster_index = data['monster_index']
+        except ValidationError as e:
+            return jsonify(error_schema.dump({'error': 'Validation Error', 'message': str(e.messages)})), 400
+        
+        session = get_session()
+        try:
+            # Check if monster exists in local DB with full data
+            monster = session.query(WainerMora_Monsters).filter_by(index=monster_index).first()
+            
+            if monster and monster.type:  # Check if we have full data (type is required for complete monster)
+                # Return from cache
+                app.logger.info(f"Returning monster {monster_index} from cache")
+                return jsonify(monster_schema.dump(monster))
+            
+            else:
+                # Fetch from API and cache
+                app.logger.info(f"Fetching monster {monster_index} from D&D API")
+                api_data = fetch_monster_by_index_from_api(monster_index)
+                
+                if not api_data:
+                    return jsonify(error_schema.dump({'error': 'Not Found', 'message': f'WainerMora_Monsters with index "{monster_index}" not found'})), 404
+                
+                # Save or update monster in database
+                if monster:
+                    # Update existing record with full data
+                    for key, value in api_data.items():
+                        if hasattr(monster, key):
+                            setattr(monster, key, value)
+                else:
+                    # Create new monster record
+                    monster = save_monster_to_db(api_data)
+                    
+                if not monster:
+                    return jsonify(error_schema.dump({'error': 'Database Error', 'message': 'Unable to save monster data'})), 500
+                
+                session.commit()
+                return jsonify(monster_schema.dump(monster))
+                
+        except Exception as e:
+            session.rollback()
+            app.logger.error(f"Error in get_endpoint: {e}")
+            return jsonify(error_schema.dump({'error': 'Internal Server Error', 'message': 'An error occurred while processing the request'})), 500
+        finally:
+            session.close()
+            
+    except Exception as e:
+        app.logger.error(f"Error in get_endpoint: {e}")
+        return jsonify(error_schema.dump({'error': 'Internal Server Error', 'message': 'An error occurred while processing the request'})), 500
 
 
 @app.route('/health', methods=['GET'])
