@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, abort
 from services.telemetry import setupLogger
-from api.monsters.api import getMonster, listMonsters
+from api.monsters.api import getMonster, listMonsters, warmCache
 
 app = Flask(__name__)
 app.config['DND_API_BASE_URL'] = 'https://www.dnd5eapi.co'
@@ -11,10 +11,9 @@ def get():
     logger.info(f"Received request from {request.remote_addr}")
     try:
         data, code = getMonster(request)
-        if code == 404:
-            logger.info(f"Monster not found")
-            abort(404, description="Monster not found")
         logger.info(f"Sending response to {request.remote_addr}")
+        if code == 404:
+            return jsonify({"error": "Monster not found"}), 404        
         return jsonify(data)
     except ValueError as e:
         logger.error(f"Bad request: {e}")
@@ -27,7 +26,21 @@ def get():
 def list():
     logger.info(f"Received request from {request.remote_addr}")
     try:
-        data = listMonsters(request)
+        data, _ = listMonsters(request)
+        logger.info(f"Sending response to {request.remote_addr}")
+        return jsonify({"count": len(data), "results": data})
+    except ValueError as e:
+        logger.error(f"Bad request: {e}")
+        abort(400, description=str(e))
+    except Exception as e:
+        logger.error(f"Internal error: {e}")
+        abort(500, description="Internal Server Error")
+
+@app.route('/warmcache', methods=['POST'])
+def warmcache():
+    logger.info(f"Received request from {request.remote_addr}")
+    try:
+        data, _ = warmCache(request)
         logger.info(f"Sending response to {request.remote_addr}")
         return jsonify(data)
     except ValueError as e:
