@@ -6,7 +6,7 @@ from models import AndresnbozaMonster
 from database import get_session
 
 monsters = [
-    "adult-black-dragon"
+    "adult black dragon"
 ]
 
 def seed_dnd_monsters():
