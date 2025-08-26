@@ -36,6 +36,8 @@ def get_monster():
 
         if not monster:
             monster_data = fetch_monster_details_from_api(monster_index)
+            if monster_data is None:
+                return jsonify({'error': 'Monster not found'}), 404
             schema = MonsterDetailResponseSchema()
             monster = schema.load(monster_data)
             insert_monster_details(monster)

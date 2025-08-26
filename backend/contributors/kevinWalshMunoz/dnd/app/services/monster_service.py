@@ -39,6 +39,8 @@ def fetch_monster_details_from_api(index: str):
         'Accept': 'application/json'
     }
     response = requests.get(url, headers=headers)
+    if response.status_code == 404:
+        return None
     return response.json()
 
 # ...existing code...
