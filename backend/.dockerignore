@@ -1,0 +1,25 @@
+august25th/
+*.log
+*.tmp
+
+# Exclude git files
+.git/
+.gitignore
+
+# Exclude Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
