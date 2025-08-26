@@ -6,7 +6,6 @@ from database import get_session
 from .base_handler import Handler
 from schemas.monster_request_schema import MonsterRequestSchema
 
-from database import get_session
 from models import AndresnbozaMonster
 
 from marshmallow import ValidationError
@@ -44,7 +43,7 @@ class FetchMonsterHandler(Handler):
         log_message(f"Local DB lookup for monster '{normalized_name}': {'Found' if monster else 'Not Found'}")
 
         if monster:
-            result = {"monster": monster.name, "source": "local_db"}
+            result = {"monster": monster.to_dict(), "source": "local_db"}
         else:
             # Fetch from external API
             newUrl = self.url + f"/{monster_index}"
@@ -57,7 +56,7 @@ class FetchMonsterHandler(Handler):
                 new_monster = AndresnbozaMonster.from_api_data(monster_data, self.normalize_monster_name)
                 session.add(new_monster)
                 session.commit()
-                result = {"monster": monster_data['name'], "source": "external_api"}
+                result = {"monster": new_monster.to_dict(), "source": "external_api"}
             else:
                 result = {"error": "Monster not found in external API"}
                 result['status_code'] = 404

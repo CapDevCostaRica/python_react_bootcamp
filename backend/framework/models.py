@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+import json
 
 Base = declarative_base()
 
@@ -10,7 +11,6 @@ class MotivationalPhrase(Base):
 
 class AndresnbozaMonster(Base):
     def to_dict(self):
-        import json
         return {
             'id': self.id,
             'index': self.index,
@@ -87,7 +87,6 @@ class AndresnbozaMonster(Base):
 
     @staticmethod
     def from_api_data(data, normalize_name_func=None):
-        import json
         return AndresnbozaMonster(
             index=data.get('index'),
             name=normalize_name_func(data.get('name')) if normalize_name_func else data.get('name'),
