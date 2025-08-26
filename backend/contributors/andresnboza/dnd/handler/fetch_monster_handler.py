@@ -1,0 +1,56 @@
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
+
+from database import get_session
+from .base_handler import Handler
+from schemas.monster_request_schema import MonsterRequestSchema
+
+from database import get_session
+from models import AndresnbozaMonster
+
+from marshmallow import ValidationError
+import requests
+
+from utils.logger import log_message
+
+class FetchMonsterHandler(Handler):
+
+    url = "https://www.dnd5eapi.co/api/2014/monsters"
+    headers = {
+        'Accept': 'application/json'
+    }
+    payload = {}
+
+    def handle(self, request):
+        schema = MonsterRequestSchema()
+        try:
+            validated = schema.load(request)
+        except ValidationError as err:
+            return {"error": err.messages}
+
+        monster_index = validated['monster_index']
+        session = get_session()
+        log_message(f"monster_index: {monster_index}")
+        monster = session.query(AndresnbozaMonster).filter_by(name=monster_index).first()
+        log_message(f"Local DB lookup for monster '{monster_index}': {'Found' if monster else 'Not Found'}")
+        if monster:
+            result = {"monster": monster.name, "source": "local_db"}
+        else:
+            # Fetch from external API
+            newUrl = self.url + f"/{monster_index}"
+            response = requests.request("GET", newUrl, headers=self.headers, data=validated)
+            log_message(f"Fetched monster data: {response.text}")
+
+            if response.status_code == 200:
+                monster_data = response.json()
+                # Insert into DB
+                new_monster = AndresnbozaMonster(name=monster_data['name'])
+                session.add(new_monster)
+                session.commit()
+                result = {"monster": monster_data['name'], "source": "external_api"}
+            else:
+                result = {"error": "Monster not found in external API"}
+                result['status_code'] = 404
+        session.close()
+        return result

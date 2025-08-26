@@ -16,3 +16,8 @@ Andres Navarrete Boza
 
 - This api will validate if the information is on the database, if it's not available in the database it will fetch, save in the database and return the result.
 
+## Resources Used
+
+```bash
+https://5e-bits.github.io/docs/api/get-list-of-all-available-resources-for-an-endpoint
+```

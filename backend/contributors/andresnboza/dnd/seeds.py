@@ -6,14 +6,14 @@ from models import AndresnbozaMonster
 from database import get_session
 
 monsters = [
-    "Beholder",
-    "Mind Flayer",
-    "Dragon",
-    "Gelatinous Cube",
-    "Mimic"
+    "adult-black-dragon"
 ]
 
 def seed_dnd_monsters():
+    session = get_session()
+    session.query(AndresnbozaMonster).delete()
+    session.commit()
+
     session = get_session()
     for name in monsters:
         session.add(AndresnbozaMonster(name=name))
