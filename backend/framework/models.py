@@ -13,3 +13,9 @@ class Monster_majocr(Base):
     index = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     data = Column(JSON, nullable=False)
+
+class MonsterList_majocr(Base):
+    __tablename__ = 'monster_list_majocr'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)

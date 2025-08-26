@@ -5,32 +5,63 @@ import os
 import requests
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
-from models import Monster_majocr
+from models import Monster_majocr, MonsterList_majocr
 from database import get_session
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../majocr/dnd')))
-from schema import MonsterSchema_majocr
+from schema import MonsterListSchema_majocr, MonsterSchema_majocr
 from marshmallow import ValidationError
 
 
-def list_cached_monsters():
+def list_monsters():
     session = get_session()
-    monsters = session.query(Monster_majocr).all()
-    print(f"[DOWNSTREAM] Retrieved {len(monsters)} monsters from local cache.")
-    session.close()
+    monsters = session.query(MonsterList_majocr).all()
 
-    results = []
-    for monster in monsters:
-        results.append({
-            "index": monster.index,
-            "name": monster.name,
-            "url": f"/api/2014/monsters/{monster.index}"
-        })
+    if monsters:
+        print(f"[DOWNSTREAM] Retrieved {len(monsters)} monsters from local cache.")
+        results = []
+        for monster in monsters:
+            results.append({
+                "index": monster.index,
+                "name": monster.name,
+                "url": f"/api/2014/monsters/{monster.index}"
+            })
+        session.close()
+        return {
+            "count": len(results),
+            "results": results
+        }
+    
+    # Fetch from upstream API
+    upstream_url = "https://www.dnd5eapi.co/api/monsters"
+    print(f"[UPSTREAM] Requesting monster list from external API: {upstream_url}.")
+    response = requests.get(upstream_url)
 
-    return {
-        "count": len(results),
-        "results": results
-    }
+    if response.status_code != 200:
+        print(f"[UPSTREAM] Failed to retrieve monster list — Status code: {response.status_code}")
+        session.close()
+        return {"error": "Failed to retrieve monster list from upstream API."}
+    try:
+        upstream_data = response.json()
+        print(f"[UPSTREAM] Received monster list with {upstream_data.get('count', 0)} entries.")
+        validated_monsters = MonsterListSchema_majocr().load(upstream_data.get("results", []), many=True)
+        for monster_data in validated_monsters:
+            monster = MonsterList_majocr(**monster_data)
+            session.add(monster)
+        session.commit()
+        print(f"[DOWNSTREAM] Cached {len(validated_monsters)} monsters locally.")
+        session.close()
+        return {
+            "count": len(validated_monsters),
+            "results": upstream_data.get("results", [])
+        }
+    except ValidationError as error:
+        print(f"[VALIDATION ERROR] Failed to validate monster list: {error.messages}")
+        session.close()
+        return {"error": "Validation failed for monster list.", "details": str(error.messages)}
+
+
+    
 
 def fetch_monster_from_upstream(index):
     upstream_url = f"https://www.dnd5eapi.co/api/monsters/{index}"
@@ -88,10 +119,14 @@ def get_or_cache_monster(index):
         return {"error": f"Validation failed for monster '{index}'", "details": str(error.messages)}
     
 def unpack_monster_data(monster):
-    if not monster or not monster.data:
-        raise ValueError(f"Monster '{monster.name}' has no data to unpack.")
-    return {
-        "index": monster.index, 
-        "name": monster.name, 
-        **monster.data
-    }
+    try:
+        if not monster or not monster.data:
+            raise ValueError(f"Monster '{monster.name}' has no data to unpack.")
+        return {
+            "index": monster.index, 
+            "name": monster.name, 
+            **monster.data
+        }
+    except Exception as error:
+        print(f"[ERROR] Failed to unpack monster data for '{monster.name}': {str(error)}")
+        return {"error": f"Failed to unpack monster data for '{monster.name}'", "details": str(error)}

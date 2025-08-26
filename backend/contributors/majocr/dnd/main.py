@@ -15,7 +15,7 @@ def list_monsters():
     payload = request.get_json()
     try:
         result = list_monsters_handler(payload)
-        return jsonify(result), 200
+        return jsonify(result)
     except Exception as error:
         return jsonify({'error': str(error)}), 400
 
