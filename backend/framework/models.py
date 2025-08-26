@@ -1,7 +1,8 @@
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import Column, Integer, String, JSON, DateTime, func, JSON, Text, DateTime
+from sqlalchemy import Column, Integer, String, JSON, DateTime, func, JSON, Text, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
 class MotivationalPhrase(Base):
@@ -128,3 +129,14 @@ class MonstersListCrisarias(Base):
     url = Column(String, nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+class odkeyo_Monster(Base):
+    __tablename__ = "odkeyo_monsters"
+    index = Column(String, primary_key=True)
+    name  = Column(String, nullable=False)
+    detail = relationship("odkeyo_MonsterDetail", back_populates="monster", uselist=False, cascade="all, delete-orphan")
+
+class odkeyo_MonsterDetail(Base):
+    __tablename__ = "odkeyo_monster_details"
+    monster_index = Column(String, ForeignKey("odkeyo_monsters.index"), primary_key=True)
+    data = Column(JSON, nullable=False) 
+    monster = relationship("odkeyo_Monster", back_populates="detail")
