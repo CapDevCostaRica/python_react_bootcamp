@@ -11,8 +11,7 @@ import db_service as db
 
 app = Flask(__name__)
 
-last_call_list = None
-last_call_get = None
+last_call = None
 URL = "https://www.dnd5eapi.co/api/2014/monsters"
 payload = {}
 headers = { 'Accept': 'application/json' }
@@ -28,17 +27,17 @@ def list_of_monsters():
 
     ## Always the first call will get the list of monsters from the dnd API
     ## And it will be checking if 5 minutes have passed since last call (this is so that it behaves like a cache)
-    global last_call_list
+    global last_call
     now = datetime.now()
 
-    if last_call_list is None or now - last_call_list >= timedelta(minutes=5):
+    if last_call is None or now - last_call >= timedelta(minutes=5):
         try:
             dnd_api_response = requests.request("GET", URL, headers=headers, data=payload)
 
             schema = ListMonsterResponseSchema(many=True)
             schema.dump(dnd_api_response)
 
-            last_call_list = now
+            last_call = now
 
             response_data = dnd_api_response.json()
             response = make_response(jsonify(response_data))
