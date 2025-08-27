@@ -111,19 +111,19 @@ class MonsterController:
         
         return health_data
 
-def _extract_response(self, entity):
-    """Extract the actual data from domain entities."""
-    if hasattr(entity, 'properties'):
-        return entity.properties
-    
-    elif hasattr(entity, 'monsters'):
-        return {
-            'count': entity.count,
-            'results': [{
-                'index': monster.index,
-                'name': monster.name,
-                'url': monster.url
-            } for monster in entity.monsters]
-        }
-    else:
-        return entity
+    def _extract_response(self, entity):
+        """Extract the actual data from domain entities."""
+        if hasattr(entity, 'properties'):
+            return entity.properties
+        
+        elif hasattr(entity, 'monsters'):
+            return {
+                'count': entity.count,
+                'results': [{
+                    'index': monster.index,
+                    'name': monster.name,
+                    'url': monster.url
+                } for monster in entity.monsters]
+            }
+        else:
+            return entity
