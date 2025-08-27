@@ -30,11 +30,6 @@ class IMonsterRepository(ABC):
     def exists_monster(self, index: str) -> bool:
         """Check if a monster exists in persistent storage."""
         pass
-    
-    @abstractmethod
-    def exists_monster_list(self) -> bool:
-        """Check if monster list exists in persistent storage."""
-        pass
 
 
 class IMonsterApiClient(ABC):
