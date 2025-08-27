@@ -19,12 +19,12 @@ backend/contributors/danielmadriz/dnd/
 │   ├── application/              # Application Layer - Business logic
 │   ├── infrastructure/           # Infrastructure Layer - External concerns
 │   ├── presentation/             # Presentation Layer - Web API
-│   └── crosscutting/            # Crosscutting Concerns
+│   └── crosscutting/             # Crosscutting Concerns
 ├── tests/                        # Comprehensive test suite
-├── main.py                      # Application entry point
+├── main.py                       # Application entry point
 ├── requirements.txt              # Dependencies
-├── pytest.ini                   # Test configuration
-└── README.md                    # This file
+├── pytest.ini                    # Test configuration
+└── README.md
 ```
 
 ## **Entity Organization Strategy**
@@ -36,10 +36,20 @@ We follow the separate Files Approach for organizing domain entities, even thoug
 ```
 src/domain/entities/
 ├── __init__.py       # Package initialization & exports
-├── monster.py        # Monster entity
-├── monster_list.py   # MonsterList entity
-└── cache_result.py   # CacheResult entity
+├── monster.py
+├── monster_list.py
+└── cache_result.py
+
 ```
+
+#### **2. ABC Interface Definition Approach**
+
+For our interface definition we favored the Abstract Base Class (ABC) over Protocol since it provides the following benefits:
+
+- Contract Enforcesment
+- Runtime validation
+- Clear intent
+  With might be important for scalability pourposes
 
 ## 📝 **License**
 
