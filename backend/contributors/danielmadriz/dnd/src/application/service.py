@@ -36,9 +36,6 @@ class MonsterService(IMonsterService):
             # Step 2: Cache miss - fetch from external API
             self.logger.info(f"Cache miss for monster: {index}, fetching from API")
             
-            if not self.api_client.is_available():
-                raise ServiceError("External API is not available")
-            
             api_data = self.api_client.get_monster(index)
             if not api_data:
                 raise NotFoundError(f"Monster not found in external API: {index}")

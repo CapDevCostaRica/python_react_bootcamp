@@ -11,7 +11,6 @@ from ..helpers.exceptions import ExternalApiError
 
 DND5E_API_BASE_URL = "https://www.dnd5eapi.co"
 DEFAULT_TIMEOUT = 30
-HEALTH_CHECK_TIMEOUT = 10
 
 
 class DnD5eApiClient(IMonsterApiClient):
@@ -126,22 +125,7 @@ class DnD5eApiClient(IMonsterApiClient):
                 details=f"Error: {str(e)}"
             )
     
-    def is_available(self) -> bool:
-        try:
-            # Use monster list endpoint as health check (lightweight)
-            url = f"{self.base_url}/api/monsters"
-            response = self.session.get(url, timeout=HEALTH_CHECK_TIMEOUT)
-            
-            if response.status_code == 200:
-                self.logger.debug("External API health check passed")
-                return True
-            else:
-                self.logger.warning(f"External API health check failed: {response.status_code}")
-                return False
-                
-        except Exception as e:
-            self.logger.warning(f"External API health check error: {str(e)}")
-            return False
+
     
     def get_api_info(self) -> Dict[str, Any]:
 

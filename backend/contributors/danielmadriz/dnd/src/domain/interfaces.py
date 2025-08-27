@@ -48,10 +48,7 @@ class IMonsterApiClient(ABC):
         """Fetch complete monster list from external API."""
         pass
     
-    @abstractmethod
-    def is_available(self) -> bool:
-        """Check if external API is available. This is for sanity check"""
-        pass
+
 
 
 class IMonsterService(ABC):
