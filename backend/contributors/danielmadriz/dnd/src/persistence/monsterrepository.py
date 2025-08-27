@@ -37,7 +37,7 @@ class MonsterRepository(IMonsterRepository):
             else:
                 new_monster = Monstersdanielmadriz(
                     id=monster.index,
-                    json_data={
+                    data={
                         'index': monster.index,
                         'name': monster.name,
                         'url': monster.url,
@@ -69,13 +69,13 @@ class MonsterRepository(IMonsterRepository):
                 self.logger.info(f"Monster not found in cache: {index}")
                 return None
             
-            json_data = result.json_data
-            monster_data = json_data.get('data', {})
+            data = result.data
+            monster_data = data.get('data', {})
             
             monster = Monster(
-                index=json_data.get('index', index),
-                name=json_data.get('name', 'Unknown'),
-                url=json_data.get('url', ''),
+                index=data.get('index', index),
+                name=data.get('name', 'Unknown'),
+                url=data.get('url', ''),
                 properties=monster_data
             )
             
@@ -101,9 +101,9 @@ class MonsterRepository(IMonsterRepository):
                 return None
             
             # Extract monster list data from JSON
-            json_data = result.json_data
-            monsters_data = json_data.get('monsters', [])
-            count = json_data.get('count', 0)
+            data = result.data
+            monsters_data = data.get('monsters', [])
+            count = data.get('count', 0)
             
             monsters = []
             for monster_data in monsters_data:
