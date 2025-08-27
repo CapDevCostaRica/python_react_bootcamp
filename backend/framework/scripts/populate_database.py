@@ -5,7 +5,6 @@ def run_alembic_upgrade(path):
     print(f"Running alembic upgrade head in {path}")
     subprocess.run(["alembic", "upgrade", "head"], cwd=path, check=True)
 
-
 if __name__ == "__main__":
     framework_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     run_alembic_upgrade(framework_dir)
