@@ -4,7 +4,7 @@ Implements dependency injection and HTTP error handling.
 """
 import logging
 from flask import Flask, jsonify, request
-from ..domain.interfaces import IMonsterService, IValidator
+from ..domain.interfaces import IMonsterService
 from ..persistence import PostgreSQLMonsterRepository, DnD5eApiClient
 from ..application import MonsterService, MonsterValidator
 from .controllers import MonsterController

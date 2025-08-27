@@ -5,8 +5,7 @@ from .entities import Monster, MonsterList, CacheResult
 from .interfaces import (
     IMonsterRepository,
     IMonsterApiClient,
-    IMonsterService,
-    IValidator
+    IMonsterService
 )
 
 __all__ = [
@@ -17,6 +16,5 @@ __all__ = [
     # Interfaces
     'IMonsterRepository',
     'IMonsterApiClient', 
-    'IMonsterService',
-    'IValidator'
+    'IMonsterService'
 ] 

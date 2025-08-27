@@ -72,35 +72,4 @@ class IMonsterService(ABC):
         pass
 
 
-class IValidator(ABC):
-    """
-    Validation interface for input/output data.
-    Focused on data validation only
-    """
-    
-    @abstractmethod
-    def validate_monster_request(self, data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        """
-        Validate monster request payload.
-        Returns:
-            tuple: (is_valid, error_message)
-        """
-        pass
-    
-    @abstractmethod
-    def validate_monster_list_request(self, data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        """
-        Validate monster list request payload.
-        Returns:
-            tuple: (is_valid, error_message)
-        """
-        pass
-    
-    @abstractmethod
-    def validate_monster_data(self, data: Dict[str, Any]) -> tuple[bool, Optional[str]]:
-        """
-        Validate monster data structure from external API.
-        Returns:
-            tuple: (is_valid, error_message)
-        """
-        pass 
+ 

@@ -9,13 +9,13 @@ errors are wrapped into typed HTTP responses with trace correlation
 import logging
 from typing import Dict, Any
 from flask import request, jsonify
-from ..domain.interfaces import IMonsterService, IValidator
+from ..domain.interfaces import IMonsterService
 from ..helpers.exceptions import BaseError, ValidationError, ServiceError, NotFoundError
 
 
 class MonsterController:
 
-    def __init__(self, monster_service: IMonsterService, validator: IValidator):
+    def __init__(self, monster_service: IMonsterService, validator):
 
         self.monster_service = monster_service
         self.validator = validator
@@ -33,9 +33,8 @@ class MonsterController:
             if not request_data:
                 raise ValidationError("Request body must contain JSON data")
             
-            is_valid, error_message = self.validator.validate_monster_request(request_data)
-            if not is_valid:
-                raise ValidationError(error_message)
+            if not self.validator.validate_monster_request(request_data):
+                raise ValidationError("Invalid monster request format")
             
             monster_index = request_data.get('monster_index')
             self.logger.info(f"Get monster request validated successfully: {monster_index}")
@@ -96,7 +95,7 @@ class MonsterController:
                 'status_code': 500
             }
             return jsonify(error_response), 500
-
+    
     def _status_response(self):
         health_data = {
                 'status': 'healthy',
