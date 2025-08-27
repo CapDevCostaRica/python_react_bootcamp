@@ -44,3 +44,15 @@ class NotFoundError(BaseError):
     
     def __init__(self, message: str, details: str = None):
         super().__init__(message, details, status_code=404)
+
+
+class ExternalApiError(BaseError):
+    
+    def __init__(self, message: str, details: str = None):
+        super().__init__(message, details, status_code=502)
+
+
+class CacheError(BaseError):
+    
+    def __init__(self, message: str, details: str = None):
+        super().__init__(message, details, status_code=500) 
