@@ -4,7 +4,7 @@ from .schemas import GetMonsterSchema, ListMonstersSchema, MonstersCrisariasSche
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../../framework')))
-from models import MonstersCrisarias
+from models import MonstersCrisarias, MonstersListCrisarias
 from services.dnd_caching import getCachedResources, getCachedResourceByIndex, insertCachedResources, upsertCachedResource
 from services.dnd import getMonsterById, getMonsters
 
@@ -41,17 +41,18 @@ def listMonsters(request):
     try:
         data = request.get_json()
         ListMonstersSchema().load(data)
-        cachingResponse = getCachedResources(MonstersCrisarias)
+        cachingResponse = getCachedResources(MonstersListCrisarias)
         if cachingResponse is None or len(cachingResponse) == 0:
             logger.info(f"Cache miss for monsters list")
             data, code = getMonsters()
             if code != 200:
                 raise ConnectionError(f"Cannot fetch monsters upstream service unavailable")            
             validatedData = [MonstersCrisariasSimplifiedSchema().load(item) for item in data]
+            insertCachedResources(MonstersListCrisarias, validatedData)
             return validatedData, 200
         else:
             logger.info(f"Cache hit for monsters")
-            validatedCached = [MonstersCrisariasSimplifiedSchema().load(item) for item in cachingResponse]
+            validatedCached = [MonstersCrisariasSimplifiedSchema().load(item) for item in cachingResponse]            
             return validatedCached, 200
     except ValidationError as e:
         logger.error(f"Bad request from {request.remote_addr}: {e.messages}")

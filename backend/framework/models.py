@@ -107,3 +107,11 @@ class MonstersCrisarias(Base):
     body = Column(JSON)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class MonstersListCrisarias(Base):
+    __tablename__= 'monsters_list_crisarias'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
