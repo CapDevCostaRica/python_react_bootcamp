@@ -17,5 +17,6 @@ __all__ = [
     'ServiceError',
     'NotFoundError',
     'ExternalApiError',
-    'CacheError'
+    'CacheError',
+    'setup_logging'
 ] 
