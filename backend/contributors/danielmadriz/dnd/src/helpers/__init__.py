@@ -1,6 +1,5 @@
 """
-Crosscutting Concerns - Shared utilities and exceptions.
-
+Helpers - Shared utilities and exceptions.
 """
 from .exceptions import (
     BaseError,
@@ -10,6 +9,7 @@ from .exceptions import (
     ExternalApiError,
     CacheError
 )
+from .logging_config import setup_logging
 
 __all__ = [
     'BaseError',
