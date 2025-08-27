@@ -56,7 +56,7 @@ def create_app(
 
 def _register_routes(app: Flask, monster_controller: MonsterController):
     
-    @app.route('/', methods=['POST'])
+    @app.route('/list', methods=['POST'])
     def list_monsters():
        # TODO Activate when list is implemented
        return jsonify([])
@@ -65,7 +65,7 @@ def _register_routes(app: Flask, monster_controller: MonsterController):
     def get_monster():
         return monster_controller.get_monster()
     
-    @app.route('/health', methods=['GET'])
+    @app.route('/', methods=['GET'])
     def health_check():
         return monster_controller.health_check()    
 
