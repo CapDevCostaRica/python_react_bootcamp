@@ -7,7 +7,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
 
-from typing import Optional, Dict, Any
+from typing import Optional
 from ..domain.interfaces import IMonsterRepository
 from ..domain.entities import Monster, MonsterList
 from ..helpers.exceptions import CacheError
@@ -28,22 +28,14 @@ class MonsterRepository(IMonsterRepository):
     def save_monster(self, monster: Monster) -> bool:
         session = self._get_session()
         try:
-            # Check if monster already exists
             existing_monster = session.query(Monstersdanielmadriz).filter(
                 Monstersdanielmadriz.id == monster.index
             ).first()
             
             if existing_monster:
-                # Update existing monster
-                existing_monster.json_data = {
-                    'index': monster.index,
-                    'name': monster.name,
-                    'url': monster.url,
-                    'data': monster.data
-                }
-                self.logger.info(f"Monster updated: {monster.index}")
+                self.logger.info(f"Monster already exists in cache, skipping save: {monster.index}")
+                return True
             else:
-                # Create new monster
                 new_monster = Monstersdanielmadriz(
                     id=monster.index,
                     json_data={
@@ -55,8 +47,8 @@ class MonsterRepository(IMonsterRepository):
                 )
                 session.add(new_monster)
                 self.logger.info(f"Monster created: {monster.index}")
+                session.commit()
             
-            session.commit()
             return True
             
         except Exception as e:
