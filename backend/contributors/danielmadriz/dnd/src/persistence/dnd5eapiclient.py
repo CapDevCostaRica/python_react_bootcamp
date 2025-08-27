@@ -8,10 +8,8 @@ from typing import Optional, Dict, Any
 from ..domain.interfaces import IMonsterApiClient
 from ..helpers.exceptions import ExternalApiError
 
-
 DND5E_API_BASE_URL = "https://www.dnd5eapi.co"
 DEFAULT_TIMEOUT = 30
-
 
 class DnD5eApiClient(IMonsterApiClient):
     
