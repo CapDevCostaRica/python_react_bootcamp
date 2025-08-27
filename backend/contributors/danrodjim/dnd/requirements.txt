@@ -1,0 +1,4 @@
+Flask
+requests
+deepdiff
+marshmallow_sqlalchemy
