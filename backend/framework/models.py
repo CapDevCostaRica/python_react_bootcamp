@@ -91,6 +91,13 @@ class MonsterList_majocr(Base):
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
 
+class MonsterDanrodjim(Base):
+    __tablename__ = 'monsters_danrodjim'
+    id = Column(Integer, primary_key=True)
+    index = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    url = Column(String, unique=True, nullable=False)
+    data = Column(JSONB)
 
 class MonstersCrisarias(Base):
     __tablename__= 'monsters_crisarias'
