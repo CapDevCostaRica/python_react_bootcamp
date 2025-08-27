@@ -70,3 +70,11 @@ class MonsterService(IMonsterService):
             # Log unexpected errors and wrap in business exception
             self.logger.error(f"Unexpected error getting monster {index}: {str(e)}")
             raise ServiceError(f"Failed to get monster: {str(e)}")
+
+
+    def get_monster_list(self) -> CacheResult:
+                    return CacheResult(
+                data="[]",
+                is_cached=False,
+                source="api"
+            )
