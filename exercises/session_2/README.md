@@ -1,6 +1,7 @@
 # Stories
 
 As a user, I want a seeder script to read the different files in the exercise to seed my database at startup.
+
 As a user, I want an endpoint that allows me to provide different characteristics and retrieve the matching people.
 
 # Technical notes
