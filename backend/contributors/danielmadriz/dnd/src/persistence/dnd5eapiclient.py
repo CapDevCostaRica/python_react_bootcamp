@@ -125,39 +125,6 @@ class DnD5eApiClient(IMonsterApiClient):
                 details=f"Error: {str(e)}"
             )
     
-
-    
-    def get_api_info(self) -> Dict[str, Any]:
-
-        try:
-            # Try to get monster list to check API status
-            monster_list = self.get_monster_list()
-            
-            if monster_list:
-                return {
-                    "status": "available",
-                    "base_url": self.base_url,
-                    "monster_count": monster_list.get("count", 0),
-                    "api_version": "5e",
-                    "endpoints": {
-                        "monsters": f"{self.base_url}/api/monsters",
-                        "monster_detail": f"{self.base_url}/api/monsters/{{index}}"
-                    }
-                }
-            else:
-                return {
-                    "status": "unavailable",
-                    "base_url": self.base_url,
-                    "error": "Failed to fetch monster list"
-                }
-                
-        except Exception as e:
-            return {
-                "status": "error",
-                "base_url": self.base_url,
-                "error": str(e)
-            }
-    
     def close(self):
         try:
             self.session.close()
