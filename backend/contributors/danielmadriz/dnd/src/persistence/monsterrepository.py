@@ -125,7 +125,7 @@ class MonsterRepository(IMonsterRepository):
                 index=json_data.get('index', index),
                 name=json_data.get('name', 'Unknown'),
                 url=json_data.get('url', ''),
-                data=monster_data
+                properties=monster_data
             )
             
             self.logger.info(f"Monster retrieved from cache: {index}")
@@ -160,7 +160,7 @@ class MonsterRepository(IMonsterRepository):
                     index=monster_data.get('index', ''),
                     name=monster_data.get('name', 'Unknown'),
                     url=monster_data.get('url', ''),
-                    data=monster_data
+                    properties=monster_data
                 )
                 monsters.append(monster)
             

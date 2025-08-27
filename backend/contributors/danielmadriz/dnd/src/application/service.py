@@ -48,7 +48,7 @@ class MonsterService(IMonsterService):
                 index=index,
                 name=api_data.get("name", "Unknown"),
                 url=api_data.get("url", ""),
-                data=api_data
+                properties=api_data
             )
             
             # Step 4: Cache the result for future requests
@@ -116,7 +116,7 @@ class MonsterService(IMonsterService):
                     index=monster_data.get("index", ""),
                     name=monster_data.get("name", "Unknown"),
                     url=monster_data.get("url", ""),
-                    data=monster_data
+                    properties=monster_data
                 )
                 monsters.append(monster)
             
