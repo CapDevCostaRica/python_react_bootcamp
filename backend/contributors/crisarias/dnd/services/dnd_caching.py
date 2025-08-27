@@ -1,13 +1,17 @@
 import os
 import sys
-import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../framework')))
 from database import get_session
 from services.telemetry import setupLogger
 
 logger = setupLogger()
 
+def closeSession(session):
+    if session:
+        session.close()
+
 def insertCachedResources(model, resources):
+    session = None
     try:
         session = get_session()
         # Get all existing ids in one query for efficiency
@@ -20,8 +24,13 @@ def insertCachedResources(model, resources):
         logger.info(f"Inserted {len(new_resources)} cached resources for model {model.__name__}")
     except Exception as e:
         logger.error(f"Error inserting cached resources for model {model.__name__}: {e}")
+    finally:
+        closeSession(session)
+
+
 
 def getCachedResources(model):
+    session = None
     try:
         session = get_session()
         resources = session.query(model.index, model.name, model.url).all()
@@ -30,8 +39,11 @@ def getCachedResources(model):
         return [{"index": r[0], "name": r[1], "url": r[2]} for r in resources]
     except Exception as e:
         logger.error(f"Error retrieving cached resources for model {model.__name__}: {e}")
+    finally:
+        closeSession(session)
 
 def upsertCachedResource(model, index, body):
+    session = None
     try:
         session = get_session()
         resource = session.query(model).filter(model.index == index).first()
@@ -46,16 +58,22 @@ def upsertCachedResource(model, index, body):
         session.commit()
     except Exception as e:
         logger.error(f"Error inserting cached resource for model {model.__name__} with index {index}: {e}")
+    finally:
+        closeSession(session)
 
 def getCachedResourceByIndex(model, index):
+    session = None
     try:
         session = get_session()
         resource = session.query(model.body).filter(model.index == index).first()
         if resource is not None and resource[0]:
             logger.info(f"Retrieved cached resource for model {model.__name__} with index {index}")
+            return resource[0]
         else:
             logger.warning(f"Cache miss for model {model.__name__} with index {index}")
             return None
-        return resource[0]
     except Exception as e:
         logger.error(f"Error retrieving cached resource for model {model.__name__} with index {index}: {e}")
+        return None
+    finally:
+        closeSession(session)
