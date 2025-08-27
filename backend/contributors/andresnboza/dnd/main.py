@@ -41,7 +41,7 @@ def get_all_monster():
     return jsonify({'count': len(result), 'monsters': result})
 
 # POST endpoint for monster list
-@app.route('/monsters', methods=['POST'])
+@app.route('/list', methods=['POST'])
 def monsters_list():
     try:
         req_data = request.get_json()
@@ -62,7 +62,7 @@ def monsters_list():
         return jsonify({"error": "Internal server error"}), 500
 
 # POST endpoint for get monster by index
-@app.route('/monster', methods=['POST'])
+@app.route('/get', methods=['POST'])
 def monster_get():
     req_data = request.get_json()
     # Expecting: {"monster_index": "<index>"}
