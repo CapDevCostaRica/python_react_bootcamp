@@ -11,7 +11,6 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
 
-from typing import Dict, Any
 from flask import request, jsonify
 from ..domain.interfaces import IMonsterService
 from ..helpers.exceptions import BaseError, ValidationError, ServiceError, NotFoundError
