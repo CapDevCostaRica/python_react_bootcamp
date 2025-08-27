@@ -4,8 +4,7 @@ Implements dependency injection and HTTP error handling.
 """
 import logging
 from flask import Flask, jsonify, request
-from ..domain.interfaces import IMonsterService
-from ..persistence import PostgreSQLMonsterRepository, DnD5eApiClient
+from ..persistence import MonsterRepository, DnD5eApiClient
 from ..application import MonsterService, MonsterValidator
 from .controllers import MonsterController
 
@@ -45,7 +44,7 @@ def create_app(
     monster_controller = MonsterController(monster_service, validator)
     
     #Flask services configuration
-    #_register_routes(app, monster_controller)
+    _register_routes(app, monster_controller)
     
     _register_error_handlers(app)
     
@@ -57,18 +56,18 @@ def create_app(
 
 def _register_routes(app: Flask, monster_controller: MonsterController):
     
-    @app.route('/', methods=['GET'])
-    def health_check():
-        return monster_controller.health_check()
-    
-    @app.route('/list', methods=['POST'])
+    @app.route('/', methods=['POST'])
     def list_monsters():
-        return monster_controller.list_monsters()
+       # TODO Activate when list is implemented
+       return jsonify([])
     
     @app.route('/get', methods=['POST'])
     def get_monster():
         return monster_controller.get_monster()
-
+    
+    @app.route('/health', methods=['GET'])
+    def health_check():
+        return monster_controller.health_check()    
 
 def _register_error_handlers(app: Flask):
     """
