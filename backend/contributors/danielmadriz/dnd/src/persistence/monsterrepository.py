@@ -28,7 +28,7 @@ class MonsterRepository(IMonsterRepository):
         session = self._get_session()
         try:
             existing_monster = session.query(Monstersdanielmadriz).filter(
-                Monstersdanielmadriz.id == monster.index
+                Monstersdanielmadriz.index == monster.index
             ).first()
             
             if existing_monster:
@@ -62,7 +62,7 @@ class MonsterRepository(IMonsterRepository):
         session = self._get_session()
         try:
             result = session.query(Monstersdanielmadriz).filter(
-                Monstersdanielmadriz.id == index
+                Monstersdanielmadriz.index == index
             ).first()
             
             if not result:
@@ -93,7 +93,7 @@ class MonsterRepository(IMonsterRepository):
         try:
             # Query monster list from database
             result = session.query(AllMonstersdanielmadriz).order_by(
-                AllMonstersdanielmadriz.id.desc()
+                AllMonstersdanielmadriz.index.desc()
             ).first()
             
             if not result:
