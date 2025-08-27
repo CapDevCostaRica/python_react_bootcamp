@@ -46,14 +46,14 @@ def upsertCachedResource(model, index, body):
     session = None
     try:
         session = get_session()
-        resource = session.query(model).filter(model.index == index).first()
-        if resource:
-            # Update the body with the provided body dict            
+        resource = session.query(model).filter(model.index == index).first()                
+        if resource is not None:
+            # Update the body with the provided body dict                        
             resource.body = body
             logger.info(f"Updated cached resource for model {model.__name__} with index {index}")
-        else:            
-            resource = model(index=body.index, name=body.name, url=body.url, body=body)
-            session.add(resource)
+        else:
+            newRow = model(index=body["index"], name=body["name"], url=body["url"], body=body)
+            session.add(newRow)
             logger.info(f"Inserted cached resource for model {model.__name__} with index {index}")
         session.commit()
     except Exception as e:
