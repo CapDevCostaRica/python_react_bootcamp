@@ -2,8 +2,11 @@
 Infrastructure Layer - Data persistence implementation.
 Implements the repository interface for monster data storage.
 """
-import json
 import logging
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
+
 from typing import Optional, Dict, Any
 from ..domain.interfaces import IMonsterRepository
 from ..domain.entities import Monster, MonsterList

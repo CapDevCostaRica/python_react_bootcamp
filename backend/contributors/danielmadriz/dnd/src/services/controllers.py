@@ -7,6 +7,10 @@ errors are wrapped into typed HTTP responses with trace correlation
 """
 
 import logging
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
+
 from typing import Dict, Any
 from flask import request, jsonify
 from ..domain.interfaces import IMonsterService
