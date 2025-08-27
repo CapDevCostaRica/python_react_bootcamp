@@ -1,16 +1,21 @@
+import os
+import sys
+
+HERE = os.path.dirname(__file__)
+APP_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
+FRAMEWORK_DIR = os.path.join(APP_ROOT, "framework")
+for p in (APP_ROOT, FRAMEWORK_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
 from flask import Flask, request, jsonify
 from datetime import datetime, timedelta
-import os, sys
 import requests
 from sqlalchemy.exc import IntegrityError
 from marshmallow import ValidationError
 
-# --- DB Engine ---
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../framework")))
-from database import Base, engine, SessionLocal
-from models import MonsterCache
-
-# --- Validations ---
+from framework.database import Base, engine, SessionLocal
+from .models import MonsterCache
 from contributors.Luch1f3rchoCR.dnd.validations import (
     HandlerRequestSchema,
     MonstersListSchema,
@@ -31,11 +36,6 @@ def root():
 
 @app.post("/handler")
 def handler():
-    """
-    OK:
-      - {"resource": "monsters"}      -> get list
-      - {"monster_index": "<string>"} -> get detail
-    """
     raw = request.get_json(force=True, silent=True) or {}
     try:
         data = req_schema.load(raw)
@@ -47,8 +47,6 @@ def handler():
     if "monster_index" in data:
         return get_monster(str(data["monster_index"]))
     return jsonify({"error": "Invalid request"}), 400
-
-# ------------- cache -------------
 
 def cache_get(db, key: str):
     row = db.query(MonsterCache).filter(MonsterCache.key == key).first()
@@ -70,8 +68,6 @@ def cache_set(db, key: str, payload):
         db.commit()
     except IntegrityError:
         db.rollback()
-
-# ------------- endpoints -------------
 
 def list_monsters():
     db = SessionLocal()
