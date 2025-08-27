@@ -68,10 +68,49 @@ class MonsterService(IMonsterService):
             self.logger.error(f"Unexpected error getting monster {index}: {str(e)}")
             raise ServiceError(f"Failed to get monster: {str(e)}")
 
-
     def get_monster_list(self) -> CacheResult:
-                    return CacheResult(
-                data="[]",
+        try:
+            self.logger.info("Getting monster list")
+            
+            cached_list = self.repository.get_monster_list()
+            
+            if cached_list and cached_list.count > 0:
+                self.logger.info(f"Cache hit for monster list: {cached_list.count} monsters")
+                return CacheResult(
+                    data=cached_list,
+                    is_cached=True,
+                    source="cache"
+                )
+            
+            self.logger.info("Cache empty, fetching monster list from API")
+            
+            api_data = self.api_client.get_monster_list()
+            if not api_data:
+                raise ServiceError("Failed to fetch monster list from external API")
+            
+            monsters = []
+            for monster_data in api_data.get("results", []):
+                monster = Monster(
+                    index=monster_data.get("index", ""),
+                    name=monster_data.get("name", "Unknown"),
+                    url=monster_data.get("url", ""),
+                    data=monster_data
+                )
+                monsters.append(monster)
+            
+            if self.repository.save_monster_list(api_data):
+                self.logger.info(f"🚀Database Updated🚀 - Cached {api_data.count} monsters")
+            else:
+                self.logger.warning("Failed to cache monster list")
+            
+            return CacheResult(
+                data=monsters,
                 is_cached=False,
                 source="api"
             )
+            
+        except (ServiceError):
+            raise
+        except Exception as e:
+            self.logger.error(f"Unexpected error getting monster list: {str(e)}")
+            raise ServiceError(f"Failed to get monster list: {str(e)}")

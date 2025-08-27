@@ -27,8 +27,18 @@ class IMonsterRepository(ABC):
         pass
     
     @abstractmethod
+    def save_monster_list(self, monster_list: MonsterList) -> bool:
+        """Save the complete list of monsters to persistent storage."""
+        pass
+    
+    @abstractmethod
     def exists_monster(self, index: str) -> bool:
         """Check if a monster exists in persistent storage."""
+        pass
+    
+    @abstractmethod
+    def exists_monster_list(self) -> bool:
+        """Check if the monster list exists in persistent storage."""
         pass
 
 
