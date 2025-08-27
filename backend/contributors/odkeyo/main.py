@@ -1,15 +1,24 @@
 from flask import Flask, request as flask_request, jsonify
 import os, sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
+CURR_DIR = os.path.dirname(__file__) 
+ROOT_DIR = os.path.abspath(os.path.join(CURR_DIR, '..', '..'))
+FRAMEWORK_DIR = os.path.join(ROOT_DIR, 'framework')
+
+for p in (CURR_DIR, ROOT_DIR, FRAMEWORK_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from database import get_session
 from marshmallow import ValidationError
 from models import odkeyo_Monster, odkeyo_MonsterDetail 
 
-from .schemas import ListInputSchema, GetInputSchema, odkeyo_MonsterListSchema, odkeyo_MonsterDetailSchema
-from .clients import odkeyo_DnDClient, odkeyo_UpstreamError
-from .service import odkeyo_MonsterProxyService
+from schemas import (
+    ListInputSchema, GetInputSchema,
+    odkeyo_MonsterListSchema, odkeyo_MonsterDetailSchema,
+)
+from clients import odkeyo_DnDClient, odkeyo_UpstreamError
+from service import odkeyo_MonsterProxyService
 
 app = Flask(__name__)
 

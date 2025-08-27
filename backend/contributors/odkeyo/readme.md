@@ -104,3 +104,8 @@ In VS Code
 Open backend/run_local.sh, switch CRLF → LF (bottom-right corner), and save.
 
 Evidence images:
+![alt text](db1.PNG)
+![alt text](monsterdetail.PNG)
+![alt text](monsterdetail2.PNG)
+![alt text](monsterdetail3.PNG)
+![alt text](monsterdetail4.PNG)

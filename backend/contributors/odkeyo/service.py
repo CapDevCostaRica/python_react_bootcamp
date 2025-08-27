@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from models import odkeyo_Monster, odkeyo_MonsterDetail
-from .clients import odkeyo_DnDClient
+from clients import odkeyo_DnDClient
 
 
 class odkeyo_MonsterProxyService:
