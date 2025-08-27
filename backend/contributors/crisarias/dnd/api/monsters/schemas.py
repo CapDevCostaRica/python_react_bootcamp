@@ -40,7 +40,7 @@ class MonstersCrisariasSchema(Schema):
     speed = fields.Dict(allow_none=True)
     strength = fields.Int()
     type = fields.Str()
-    updated_at = fields.DateTime()
+    updated_at = fields.Str()
     xp = fields.Int()
     wisdom = fields.Int()
     
