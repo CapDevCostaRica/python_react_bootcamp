@@ -5,14 +5,13 @@ Implements the repository interface for monster data storage.
 import logging
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
-
 from typing import Optional
 from ..domain.interfaces import IMonsterRepository
 from ..domain.entities import Monster, MonsterList
 from ..helpers.exceptions import CacheError
-from framework.database import get_session
-from framework.models import Monstersdanielmadriz, AllMonstersdanielmadriz
+
+from database import get_session
+from models import Monstersdanielmadriz, AllMonstersdanielmadriz
 from sqlalchemy.orm import Session
 
 
