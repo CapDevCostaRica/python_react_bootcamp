@@ -9,15 +9,19 @@ from ..domain.interfaces import IMonsterApiClient
 from ..helpers.exceptions import ExternalApiError
 
 
+DND5E_API_BASE_URL = "https://www.dnd5eapi.co"
+DEFAULT_TIMEOUT = 30
+HEALTH_CHECK_TIMEOUT = 10
+
+
 class DnD5eApiClient(IMonsterApiClient):
     
-    def __init__(self, base_url: str = "https://www.dnd5eapi.co", timeout: int = 30):
+    def __init__(self, base_url: str = DND5E_API_BASE_URL, timeout: int = DEFAULT_TIMEOUT):
 
         self.base_url = base_url.rstrip('/')
         self.timeout = timeout
         self.logger = logging.getLogger(__name__)
         
-        # Configure session for connection pooling
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Forward-Proxy-Caching-Service/1.0',
@@ -27,51 +31,51 @@ class DnD5eApiClient(IMonsterApiClient):
     def get_monster(self, index: str) -> Optional[Dict[str, Any]]:
         try:
             url = f"{self.base_url}/api/monsters/{index}"
-            self.logger.info(f"Fetching monster from API: {url}")
+            self.logger.info(f"Fetching monster from external API: {url}")
             
             response = self.session.get(url, timeout=self.timeout)
             
             if response.status_code == 200:
                 monster_data = response.json()
-                self.logger.info(f"Monster fetched successfully: {index}")
+                self.logger.info(f"Monster fetched successfully from external API: {index}")
                 return monster_data
                 
             elif response.status_code == 404:
-                self.logger.warning(f"Monster not found in API: {index}")
+                self.logger.warning(f"Monster not found in external API: {index}")
                 return None
                 
             else:
-                self.logger.error(f"API error {response.status_code}: {response.text}")
+                self.logger.error(f"External API error {response.status_code}: {response.text}")
                 raise ExternalApiError(
-                    f"API returned status {response.status_code}",
+                    f"External API returned status {response.status_code}, for URL {url}",
                     details=f"Response: {response.text}"
                 )
                 
         except requests.exceptions.Timeout:
-            self.logger.error(f"API request timeout for monster: {index}")
+            self.logger.error(f"External API request timeout for monster: {index}, for URL {url}")
             raise ExternalApiError(
-                f"API request timeout for monster: {index}",
+                f"External API {url} request timeout for monster: {index}",
                 details="Request exceeded timeout limit"
             )
             
         except requests.exceptions.ConnectionError as e:
-            self.logger.error(f"API connection error for monster {index}: {str(e)}")
+            self.logger.error(f"External API {url} connection error for monster {index}: {str(e)}")
             raise ExternalApiError(
-                f"API connection failed for monster: {index}",
+                f"External API {url} connection failed for monster: {index}",
                 details=f"Connection error: {str(e)}"
             )
             
         except requests.exceptions.RequestException as e:
-            self.logger.error(f"API request error for monster {index}: {str(e)}")
+            self.logger.error(f"External API  {url} request error for monster {index}: {str(e)}")
             raise ExternalApiError(
-                f"API request failed for monster: {index}",
+                f"External API  {url} request failed for monster: {index}",
                 details=f"Request error: {str(e)}"
             )
             
         except Exception as e:
-            self.logger.error(f"Unexpected error fetching monster {index}: {str(e)}")
+            self.logger.error(f"External API  {url} unexpected error fetching monster {index}: {str(e)}")
             raise ExternalApiError(
-                f"Unexpected error fetching monster: {index}",
+                f"External API  {url} unexpected error fetching monster: {index}",
                 details=f"Error: {str(e)}"
             )
     
@@ -123,11 +127,10 @@ class DnD5eApiClient(IMonsterApiClient):
             )
     
     def is_available(self) -> bool:
-
         try:
             # Use monster list endpoint as health check (lightweight)
             url = f"{self.base_url}/api/monsters"
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=HEALTH_CHECK_TIMEOUT)
             
             if response.status_code == 200:
                 self.logger.debug("External API health check passed")
