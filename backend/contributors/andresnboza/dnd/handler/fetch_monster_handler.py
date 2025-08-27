@@ -21,9 +21,9 @@ class FetchMonsterHandler(Handler):
     }
     payload = {}
 
-    @staticmethod
-    def normalize_monster_name(name):
-        return name.lower().replace('-', ' ')
+    # @staticmethod
+    # def normalize_monster_name(name):
+    #     return name.lower().replace('-', ' ')
 
     def handle(self, request):
         schema = MonsterRequestSchema()
@@ -33,14 +33,14 @@ class FetchMonsterHandler(Handler):
             return {"error": err.messages}
 
         monster_index = validated['monster_index']
-        normalized_name = self.normalize_monster_name(monster_index)
+        # normalized_name = self.normalize_monster_name(monster_index)
 
-        log_message(f"Normalized monster name: {normalized_name}")
+        log_message(f"Normalized monster name: {monster_index}")
 
         session = get_session()
 
-        monster = session.query(AndresnbozaMonster).filter_by(name=normalized_name).first()
-        log_message(f"Local DB lookup for monster '{normalized_name}': {'Found' if monster else 'Not Found'}")
+        monster = session.query(AndresnbozaMonster).filter_by(index=monster_index).first()
+        log_message(f"Local DB lookup for monster '{monster_index}': {'Found' if monster else 'Not Found'}")
 
         if monster:
             result = {"monster": monster.to_dict(), "source": "local_db"}
@@ -53,7 +53,7 @@ class FetchMonsterHandler(Handler):
             if response.status_code == 200:
                 monster_data = response.json()
                 # Insert into DB
-                new_monster = AndresnbozaMonster.from_api_data(monster_data, self.normalize_monster_name)
+                new_monster = AndresnbozaMonster.from_api_data(monster_data)
                 session.add(new_monster)
                 session.commit()
                 result = {"monster": new_monster.to_dict(), "source": "external_api"}

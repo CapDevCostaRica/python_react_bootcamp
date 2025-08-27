@@ -12,7 +12,6 @@ class MotivationalPhrase(Base):
 class AndresnbozaMonster(Base):
     def to_dict(self):
         return {
-            'id': self.id,
             'index': self.index,
             'name': self.name,
             'size': self.size,
@@ -49,8 +48,7 @@ class AndresnbozaMonster(Base):
             'reactions': json.loads(self.reactions) if self.reactions else None
         }
     __tablename__ = 'andresnboza_monster'
-    id = Column(Integer, primary_key=True)
-    index = Column(String)
+    index = Column(String, primary_key=True)
     name = Column(String)
     size = Column(String)
     type = Column(String)
@@ -86,10 +84,10 @@ class AndresnbozaMonster(Base):
     reactions = Column(String) 
 
     @staticmethod
-    def from_api_data(data, normalize_name_func=None):
+    def from_api_data(data):
         return AndresnbozaMonster(
             index=data.get('index'),
-            name=normalize_name_func(data.get('name')) if normalize_name_func else data.get('name'),
+            name=data.get('name'),
             size=data.get('size'),
             type=data.get('type'),
             alignment=data.get('alignment'),

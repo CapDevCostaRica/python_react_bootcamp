@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields
 
 class MonsterResponseSchema(Schema):
-    id = fields.Int()
     index = fields.Str()
     name = fields.Str()
     size = fields.Str()
