@@ -1,18 +1,21 @@
 from flask import Flask, request as flask_request, jsonify
 import os, sys
 
-CURR_DIR = os.path.dirname(__file__) 
-ROOT_DIR = os.path.abspath(os.path.join(CURR_DIR, '..', '..'))
-FRAMEWORK_DIR = os.path.join(ROOT_DIR, 'framework')
+# --- Rutas para acceder al framework ---
+CURR_DIR = os.path.dirname(__file__)                 # .../contributors/odkeyo/dnd
+ROOT_DIR = os.path.abspath(os.path.join(CURR_DIR, '..', '..', '..'))   # .../backend
+FRAMEWORK_DIR = os.path.join(ROOT_DIR, 'framework')  # .../backend/framework
 
 for p in (CURR_DIR, ROOT_DIR, FRAMEWORK_DIR):
     if p not in sys.path:
         sys.path.insert(0, p)
 
+# --- Imports del framework (DB y modelos) ---
 from database import get_session
 from marshmallow import ValidationError
-from models import odkeyo_Monster, odkeyo_MonsterDetail 
+from models import odkeyo_Monster, odkeyo_MonsterDetail
 
+# --- Imports locales del módulo dnd ---
 from schemas import (
     ListInputSchema, GetInputSchema,
     odkeyo_MonsterListSchema, odkeyo_MonsterDetailSchema,
@@ -41,7 +44,6 @@ def list_handler():
             return jsonify(list_out.dump({"count": len(results), "results": results})), 200
         finally:
             session.close()
-
     except odkeyo_UpstreamError as e:
         return jsonify({"error": "upstream_failed", "detail": str(e)}), 502
     except ValidationError as ve:
@@ -51,7 +53,6 @@ def list_handler():
 def get_handler():
     try:
         payload = get_in.load(flask_request.get_json(force=True))
-
         session = get_session()
         try:
             data = service.get_monster(session, payload["monster_index"])
@@ -59,7 +60,6 @@ def get_handler():
             return jsonify(det_out.dump(data)), 200
         finally:
             session.close()
-
     except odkeyo_UpstreamError as e:
         return jsonify({"error": "upstream_failed", "detail": str(e)}), 502
     except ValidationError as ve:
