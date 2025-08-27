@@ -51,6 +51,23 @@ For our interface definition we favored the Abstract Base Class (ABC) over Proto
 - Clear intent
   With might be important for scalability pourposes
 
+### **3. Dependency Inversion Principle**
+
+As a design principle use Dependency Inversion to avoid direct coupling with external elements.
+To do this:
+always initialize components with dependencies.
+Make the constructor to depend on abstractions (interfaces described above), not on concrete implementations
+
+### **4. Proxy Chache Strategy**
+
+Business logic service for monster operations.
+Implements the Cache-Aside pattern:
+
+1. Check cache first (fast path)
+2. If cache miss, fetch from external API
+3. Store in cache for future requests
+4. Return result with caching metadata
+
 ## 📝 **License**
 
 This project is part of the Python React Bootcamp Exercise #1.
