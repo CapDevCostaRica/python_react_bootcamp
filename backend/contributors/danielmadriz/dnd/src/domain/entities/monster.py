@@ -11,4 +11,4 @@ class Monster:
     index: str
     name: str
     url: str
-    properties: Dict[str, Any]  # All monster properties from D&D 5e API 
+    data: Dict[str, Any]  # All monster properties from D&D 5e API 

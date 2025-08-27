@@ -5,6 +5,7 @@ Implements the repository interface for monster data storage.
 import logging
 import sys
 import os
+from datetime import datetime
 from typing import Optional
 from ..domain.interfaces import IMonsterRepository
 from ..domain.entities import Monster, MonsterList
@@ -36,13 +37,10 @@ class MonsterRepository(IMonsterRepository):
                 return True
             else:
                 new_monster = Monstersdanielmadriz(
-                    id=monster.index,
-                    data={
-                        'index': monster.index,
-                        'name': monster.name,
-                        'url': monster.url,
-                        'data': monster.data
-                    }
+                    index=monster.index,
+                    name=monster.name,
+                    url=monster.url,
+                    data= monster.data
                 )
                 session.add(new_monster)
                 self.logger.info(f"Monster created: {monster.index}")
@@ -76,7 +74,7 @@ class MonsterRepository(IMonsterRepository):
                 index=data.get('index', index),
                 name=data.get('name', 'Unknown'),
                 url=data.get('url', ''),
-                properties=monster_data
+                data=monster_data
             )
             
             self.logger.info(f"Monster retrieved from cache: {index}")
@@ -111,7 +109,7 @@ class MonsterRepository(IMonsterRepository):
                     index=monster_data.get('index', ''),
                     name=monster_data.get('name', 'Unknown'),
                     url=monster_data.get('url', ''),
-                    properties=monster_data
+                    data=monster_data
                 )
                 monsters.append(monster)
             

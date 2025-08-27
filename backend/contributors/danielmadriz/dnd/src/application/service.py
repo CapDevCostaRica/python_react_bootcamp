@@ -45,7 +45,7 @@ class MonsterService(IMonsterService):
                 index=index,
                 name=api_data.get("name", "Unknown"),
                 url=api_data.get("url", ""),
-                properties=api_data
+                data=api_data  # Store the complete API response
             )
             
             # Step 4: Cache the result for future requests
