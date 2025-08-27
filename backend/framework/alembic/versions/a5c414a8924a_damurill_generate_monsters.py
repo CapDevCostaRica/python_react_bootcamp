@@ -1,8 +1,8 @@
 """damurill_generate_monsters
 
-Revision ID: 7c9ef8e9c5b9
-Revises: aa75144a150e
-Create Date: 2025-08-27 10:24:42.407891
+Revision ID: a5c414a8924a
+Revises: 5838f470f73b
+Create Date: 2025-08-27 10:32:54.376510
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7c9ef8e9c5b9'
-down_revision: Union[str, Sequence[str], None] = 'aa75144a150e'
+revision: str = 'a5c414a8924a'
+down_revision: Union[str, Sequence[str], None] = '5838f470f73b'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
