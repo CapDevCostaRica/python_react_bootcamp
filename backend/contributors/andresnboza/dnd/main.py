@@ -38,7 +38,7 @@ def get_all_monster():
         return jsonify({'error': 'No andresnboza dnd monsters found.'}), 404
     schema = MonsterResponseSchema(many=True)
     result = schema.dump([monster.to_dict() for monster in monsters])
-    return jsonify({'count': len(result), 'monsters': result})
+    return jsonify({'count': len(result), 'results': result})
 
 # POST endpoint for monster list
 @app.route('/list', methods=['POST'])
@@ -55,7 +55,7 @@ def monsters_list():
             schema = MonsterSummarySchema(many=True)
             validated = schema.dump(monsters)
             count = result.get('count', len(validated)) if isinstance(result, dict) else len(validated)
-            return jsonify({'count': count, 'monsters': validated})
+            return jsonify({'count': count, 'results': validated})
         return jsonify({"error": "Invalid payload"}), 400
     except Exception as e:
         log_message(f"Exception in /monsters: {e}")
