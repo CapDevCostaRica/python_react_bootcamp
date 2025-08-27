@@ -4,8 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 Base = declarative_base()
-
-
 class MotivationalPhrase(Base):
     __tablename__ = 'motivational_phrases'
     id = Column(Integer, primary_key=True)
@@ -74,6 +72,12 @@ class Monsterscastroulloaaaron(Base):
     id = Column(String, primary_key=True)
     json_data = Column(JSON, nullable=False)
 
+class RandallBrenesDnD(Base):
+    __tablename__ = 'randallbrenes_dnd_monsters'
+    index = Column(String, primary_key=True)
+    name = Column(String)
+    url = Column(String)
+    json_data = Column(JSON, nullable=True)   
 
 class Monster_majocr(Base):
     __tablename__ = 'monster_majocr'
