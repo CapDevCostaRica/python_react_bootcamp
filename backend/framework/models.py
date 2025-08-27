@@ -20,3 +20,13 @@ class Monsterscastroulloaaaron(Base):
     __tablename__ = 'castroulloaaaron_monsters'
     id = Column(String, primary_key=True)
     json_data = Column(JSON, nullable=False)
+
+class AllMonstersdanielmadriz(Base):
+    __tablename__ = 'danielmadriz_allmonsters'
+    id = Column(Integer, primary_key=True)
+    json_data = Column(JSON, nullable=False)
+
+class Monstersdanielmadriz(Base):
+    __tablename__ = 'danielmadriz_monsters'
+    id = Column(String, primary_key=True)
+    json_data = Column(JSON, nullable=False)
