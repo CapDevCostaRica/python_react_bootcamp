@@ -5,18 +5,21 @@ Base = declarative_base()
 
 
 class MotivationalPhrase(Base):
-    __tablename__ = 'motivational_phrases'
+    __tablename__ = 'dmuri_motivational_phrases'
     id = Column(Integer, primary_key=True)
     phrase = Column(String)
 
 
-class AllMonsterscastroulloaaaron(Base):
-    __tablename__ = 'castroulloaaaron_allmonsters'
+class DMuriMonstersList(Base):
+    __tablename__ = 'dmrui_monsters_list'
     id = Column(Integer, primary_key=True)
-    json_data = Column(JSON, nullable=False)
+    data = Column(JSON, nullable=False)
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-
-class Monsterscastroulloaaaron(Base):
-    __tablename__ = 'castroulloaaaron_monsters'
-    id = Column(String, primary_key=True)
-    json_data = Column(JSON, nullable=False)
+class DMuriMonster(Base):
+    __tablename__ = 'monsters'
+    index = Column(String(100), primary_key=True)
+    data = Column(JSON, nullable=False)
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
