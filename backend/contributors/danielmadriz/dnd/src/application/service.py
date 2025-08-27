@@ -98,13 +98,18 @@ class MonsterService(IMonsterService):
                 )
                 monsters.append(monster)
             
-            if self.repository.save_monster_list(api_data):
-                self.logger.info(f"🚀Database Updated🚀 - Cached {api_data.count} monsters")
+            monster_list = MonsterList(
+                monsters=monsters,
+                count=api_data.get("count", len(monsters))
+            )
+            
+            if self.repository.save_monster_list(monster_list):
+                self.logger.info(f"🚀Database Updated🚀 - Cached {monster_list.count} monsters")
             else:
                 self.logger.warning("Failed to cache monster list")
             
             return CacheResult(
-                data=monsters,
+                data=monster_list,
                 is_cached=False,
                 source="api"
             )
@@ -112,5 +117,6 @@ class MonsterService(IMonsterService):
         except (ServiceError):
             raise
         except Exception as e:
+            # Log unexpected errors and wrap in business exception
             self.logger.error(f"Unexpected error getting monster list: {str(e)}")
             raise ServiceError(f"Failed to get monster list: {str(e)}")
