@@ -9,6 +9,7 @@ class MotivationalPhrase(Base):
     id = Column(Integer, primary_key=True)
     phrase = Column(String)
 
+
 class AllMonsterscastroulloaaaron(Base):
     __tablename__ = 'castroulloaaaron_allmonsters'
     id = Column(Integer, primary_key=True)
@@ -46,4 +47,3 @@ class MonsterList_majocr(Base):
     index = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)
-
