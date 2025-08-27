@@ -35,7 +35,7 @@ class WainerMora_Monsters(Base):
     condition_immunities = Column(JSON)
     senses = Column(JSON)
     languages = Column(String)
-    challenge_rating = Column(Float)
+    challenge_rating = Column(Integer)
     proficiency_bonus = Column(Integer)
     xp = Column(Integer)
     special_abilities = Column(JSON)

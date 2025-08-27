@@ -34,7 +34,7 @@ error_schema = ErrorSchema()
 def fetch_monsters_from_api():
     """Fetch all monsters from the D&D 5e API."""
     try:
-        response = requests.get(f"{DND_API_BASE_URL}/monsters")
+        response = requests.get(f"{DND_API_BASE_URL}/2014/monsters")
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -176,7 +176,7 @@ def list_endpoint():
                     results.append({
                         'index': item['index'],
                         'name': item['name'],
-                        'url': f"/api/monsters/{item['index']}"
+                        'url': f"/v1/api/monsters/{item['index']}"
                     })
                 
                 session.commit()

@@ -52,7 +52,7 @@ class MonsterSchema(Schema):
     condition_immunities = fields.Raw(allow_none=True)
     senses = fields.Raw(allow_none=True)
     languages = fields.String(allow_none=True)
-    challenge_rating = fields.Float(allow_none=True)
+    challenge_rating = fields.Integer(allow_none=True)
     proficiency_bonus = fields.Integer(allow_none=True)
     xp = fields.Integer(allow_none=True)
     special_abilities = fields.Raw(allow_none=True)
