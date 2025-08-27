@@ -1,5 +1,6 @@
 from marshmallow import ValidationError
-from schemas.response import ResponseGetSchema, ResponseListSchema
+from schemas.response import ResponseListSchema
+from schemas.monster import MonsterSchema
 from models import RandallBrenesDnD
 from DnDApi import DnDApi
 class Monsters:
@@ -8,7 +9,7 @@ class Monsters:
         self._api = DnDApi()
         self._model = RandallBrenesDnD
         self._schema_all = ResponseListSchema()
-        self._schema_single = ResponseGetSchema()
+        self._schema_single = MonsterSchema()
 
     def get_all(self):
         monsters_list = self._api.list()
@@ -39,7 +40,7 @@ class Monsters:
                 all_monsters.append(db_monsters[monster])
         to_return = []
         try:
-            to_return = self._schema_all.dump({"count": len(all_monsters), "results": all_monsters}) #  self._schema_all.dump({"count": len(all_monsters), "results": all_monsters})        
+            to_return = self._schema_all.dump({"count": len(all_monsters), "results": all_monsters}) 
         except ValidationError as err:
             to_return = {"error": err.messages}
         except Exception as x:
@@ -50,20 +51,20 @@ class Monsters:
     def get_single(self, monster_index: str):
         monster_from_database = self._db.query(self._model).filter(self._model.index == monster_index).one_or_none()
 
-        if monster_from_database is not None and monster_from_database.type:
+        if monster_from_database is not None and monster_from_database.json_data:
             return self._schema_single.dump(monster_from_database)
-        else:
-            monster_from_api = self._api.get(monster_index)
-            if monster_from_api is not None:
-                try:
-                    new_monster = self._model(**monster_from_api)
-                    if monster_from_database is None:
-                        self._db.add(new_monster)
-                    else:
-                        self._db.merge(new_monster)
-                    self._db.commit()
-                except Exception as ex:
-                    print("Error trying to save on db ", str(ex))
-                return self._schema_single.dump(new_monster)
 
-            return None
+        monster_from_api = self._api.get(monster_index)
+        if monster_from_api is not None:
+            try:
+                new_monster = self._model(**monster_from_api)
+                if monster_from_database is None:
+                    self._db.add(new_monster)
+                else:
+                    self._db.merge(new_monster)
+                self._db.commit()
+            except Exception as ex:
+                print("Error trying to save on db ", str(ex))
+            return self._schema_single.dump(new_monster)
+
+        return None

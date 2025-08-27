@@ -16,12 +16,8 @@ class ResponseListSchema(Schema):
     @staticmethod
     def empty():
         return {"count": 0, "results": []}
-
-class ResponseGetSchema(MonsterSchema):
-    pass
-
 class Response(Schema):
     error = fields.String(required=False)
     code = fields.Integer()
-    monster = fields.Nested(ResponseGetSchema, required=False)
+    monster = fields.Nested(MonsterSchema, required=False)
     list = fields.Nested(ResponseListSchema, required=False)

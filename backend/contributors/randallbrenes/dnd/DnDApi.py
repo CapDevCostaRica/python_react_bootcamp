@@ -1,11 +1,12 @@
 from marshmallow import ValidationError
 import requests
-from schemas.response import ResponseListSchema, ResponseGetSchema
+from schemas.monster import MonsterSchema
+from schemas.response import ResponseListSchema
 class DnDApi:
     def __init__(self):
         self._api_url = "https://www.dnd5eapi.co/api/monsters"
         self._list_schema = ResponseListSchema()
-        self._get_schema = ResponseGetSchema()
+        self._get_schema = MonsterSchema()
 
     def list(self):
         resp = requests.get(self._api_url, timeout=5)
@@ -23,8 +24,14 @@ class DnDApi:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             monster_response = response.json()
+            monster_object = {
+                "index": monster_response.get("index"),
+                "name": monster_response.get("name"),
+                "url": monster_response.get("url"),
+                "json_data": monster_response
+            }
             try:
-                return self._get_schema.load(monster_response)
+                return self._get_schema.load(monster_object)
             except ValidationError as err:
                 print("Error validating get from api: ", err.messages)
                 return None

@@ -37,7 +37,7 @@ def post_get_single_data():
     try:
         validated_response = response_validation.load(response)
         response_code = validated_response["code"] if "code" in validated_response else 500
-        response = validated_response["monster"] if "monster" in validated_response else validated_response["error"]
+        response = validated_response["monster"]["json_data"] if "monster" in validated_response else validated_response["error"]
     except ValidationError as err:
         response_code = 400
         response = err.messages
