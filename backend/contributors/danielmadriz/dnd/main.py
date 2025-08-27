@@ -5,11 +5,9 @@ Forward Proxy Caching Service - Main Application Entry Point.
 import os
 import sys
 import logging
-from src.services import create_app
 
-# TODO Validate if this is needed for production
-# Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from src.services import create_app
 
 def main():
     """Main application entry point."""
