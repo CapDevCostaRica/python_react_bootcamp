@@ -25,3 +25,15 @@ class RandallBrenesDnD(Base):
     name = Column(String)
     url = Column(String)
     json_data = Column(JSON, nullable=True)   
+
+class Monster_majocr(Base):
+    __tablename__ = 'monster_majocr'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    data = Column(JSON, nullable=False)
+
+class MonsterList_majocr(Base):
+    __tablename__ = 'monster_list_majocr'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
