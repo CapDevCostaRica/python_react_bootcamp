@@ -66,15 +66,12 @@ class MonsterRepository(IMonsterRepository):
             if not result:
                 self.logger.info(f"Monster not found in cache: {index}")
                 return None
-            
-            data = result.data
-            monster_data = data.get('data', {})
-            
+
             monster = Monster(
-                index=data.get('index', index),
-                name=data.get('name', 'Unknown'),
-                url=data.get('url', ''),
-                data=monster_data
+                index=result.index,
+                name=result.name,
+                url=result.url,
+                data=result.data
             )
             
             self.logger.info(f"Monster retrieved from cache: {index}")
