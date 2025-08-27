@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, JSON, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 Base = declarative_base()
+
 
 class MotivationalPhrase(Base):
     __tablename__ = 'motivational_phrases'
@@ -61,3 +62,14 @@ class kevinWalshMunozMonster(Base):
     image = Column(Text)
     url = Column(Text)
     updated_at = Column(DateTime, default=datetime.utcnow)
+
+class AllMonsterscastroulloaaaron(Base):
+    __tablename__ = 'castroulloaaaron_allmonsters'
+    id = Column(Integer, primary_key=True)
+    json_data = Column(JSON, nullable=False)
+
+
+class Monsterscastroulloaaaron(Base):
+    __tablename__ = 'castroulloaaaron_monsters'
+    id = Column(String, primary_key=True)
+    json_data = Column(JSON, nullable=False)
