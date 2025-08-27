@@ -134,7 +134,7 @@ class MonsterRepository(IMonsterRepository):
         session = self._get_session()
         try:
             result = session.query(Monstersdanielmadriz).filter(
-                Monstersdanielmadriz.id == index
+                Monstersdanielmadriz.index == index
             ).first()
             
             exists = result is not None
