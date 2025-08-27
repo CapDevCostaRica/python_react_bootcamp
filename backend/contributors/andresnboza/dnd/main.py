@@ -76,7 +76,7 @@ def monster_get():
             return jsonify(result), result['status_code']
         if 'monster' in result and isinstance(result['monster'], dict):
             validated = schema.dump(result['monster'])
-            return jsonify({'monster': validated, 'source': result.get('source')})
+            return jsonify(validated)
         return jsonify(result)
     return jsonify({"error": "Invalid payload"}), 400
 
