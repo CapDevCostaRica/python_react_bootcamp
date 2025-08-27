@@ -77,9 +77,10 @@ def get_monster():
     if not monster_get:
         dnd_api_response = requests.request("GET", URL+"/"+data["monster_index"], headers=headers, data=payload)
         if dnd_api_response:
-            schema = GetMonsterResponseSchema()
-            schema.dump(dnd_api_response)
-            response_data = dnd_api_response.json()
+            api_to_json = dnd_api_response.json()
+            schema = GetMonsterResponseSchema(raw_data=api_to_json)
+            schema.dump(api_to_json)
+            response_data = api_to_json
             response = make_response(jsonify(response_data))
             @response.call_on_close
             def update_db():
@@ -87,14 +88,16 @@ def get_monster():
             return response
         return jsonify({'error': 'No monsters found.'}), 404
     else:
-        schema = GetMonsterResponseSchema()
-        schema.dump(monster_get)
+        raw_data = monster_get.data or {}
+        schema = GetMonsterResponseSchema(raw_data=raw_data)
+        schema.dump(raw_data)
         if not monster_get.data or monster_get.data == {}:
             dnd_api_response = requests.request("GET", URL+"/"+data["monster_index"], headers=headers, data=payload)
-            schema = GetMonsterResponseSchema()
-            schema.dump(dnd_api_response)
+            api_to_json = dnd_api_response.json()
+            schema = GetMonsterResponseSchema(raw_data=api_to_json)
+            schema.dump(api_to_json)
 
-            response_data = dnd_api_response.json()
+            response_data = api_to_json
             response = make_response(jsonify(response_data))
 
             @response.call_on_close
@@ -103,16 +106,17 @@ def get_monster():
 
             return response
         else:
-            schema = GetMonsterResponseSchema()
-            result = schema.dump(monster_get)
-            response = make_response(jsonify(result["data"]))
+            schema = GetMonsterResponseSchema(raw_data=raw_data)
+            result = schema.dump(raw_data)
+            response = make_response(result)
 
             @response.call_on_close
             def update_db():
                 dnd_api_response = requests.request("GET", URL+"/"+data["monster_index"], headers=headers, data=payload)
-                schema = GetMonsterResponseSchema()
-                schema.dump(dnd_api_response)
-                response_data = dnd_api_response.json()
+                api_to_json = dnd_api_response.json()
+                schema = GetMonsterResponseSchema(raw_data=api_to_json)
+                schema.dump(api_to_json)
+                response_data = api_to_json
                 db.update_database_monsters_get(response_data)
 
             return response
