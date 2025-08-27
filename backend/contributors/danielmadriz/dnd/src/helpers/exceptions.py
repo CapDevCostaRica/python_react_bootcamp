@@ -28,21 +28,19 @@ class BaseError(Exception):
         return error_dict
 
 
-    """Exception raised when cache operations fail.
-    
-    Used for:
-    - Database connection failures
-    - Cache corruption
-    - Storage quota exceeded
-    
-    HTTP Status: 500 Internal Server Error
-    """
+class ValidationError(BaseError):
+
+    def __init__(self, message: str, details: str = None):
+        super().__init__(message, details, status_code=400)
+
+
+class ServiceError(BaseError):    
+
+    def __init__(self, message: str, details: str = None):
+        super().__init__(message, details, status_code=500)
+
+
+class NotFoundError(BaseError):
     
     def __init__(self, message: str, details: str = None):
-        """Initialize cache error.
-        
-        Args:
-            message: Human-readable cache error message
-            details: Technical details about the cache failure
-        """
-        super().__init__(message, details, status_code=500) 
+        super().__init__(message, details, status_code=404)
