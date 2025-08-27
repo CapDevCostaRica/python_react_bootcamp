@@ -3,6 +3,7 @@ import os
 import subprocess
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
+from sqlite3 import OperationalError
 
 user = os.environ.get("POSTGRES_USER", "postgres")
 password = os.environ.get("POSTGRES_PASSWORD", "postgres")
@@ -19,8 +20,12 @@ def reset_database():
             conn.execute(text("DROP SCHEMA IF EXISTS public CASCADE;"))
             conn.execute(text("CREATE SCHEMA IF NOT EXISTS public;"))
         print("Database schema reset.")
+    except OperationalError as sqlite_operational_error:
+        print(f"{sqlite_operational_error=}")
     except ProgrammingError as pe:
         print(f"Error while resetting DB: {pe}")
+    except Exception as e:
+        print(f"Uncaught exception: {e}")
 
 def run_alembic_upgrade(path):
     print(f"Running alembic upgrade head in {path}")
