@@ -45,7 +45,7 @@ def create_app(
     monster_controller = MonsterController(monster_service, validator)
     
     #Flask services configuration
-    _register_routes(app, monster_controller)
+    #_register_routes(app, monster_controller)
     
     _register_error_handlers(app)
     

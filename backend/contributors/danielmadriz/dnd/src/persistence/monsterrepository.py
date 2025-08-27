@@ -63,49 +63,6 @@ class MonsterRepository(IMonsterRepository):
         finally:
             session.close()
     
-        """Save monster list to persistent storage.
-        
-        Args:
-            monster_list: MonsterList entity to save
-            
-        Returns:
-            True if save successful, False otherwise
-            
-        Raises:
-            CacheError: If database operation fails
-        """
-        session = self._get_session()
-        try:
-            # Clear existing monster list
-            session.query(AllMonstersdanielmadriz).delete()
-            
-            # Create new monster list entry
-            monsters_data = [{
-                'index': monster.index,
-                'name': monster.name,
-                'url': monster.url
-            } for monster in monster_list.monsters]
-            
-            new_monster_list = AllMonstersdanielmadriz(
-                json_data={
-                    'monsters': monsters_data,
-                    'count': monster_list.count
-                }
-            )
-            
-            session.add(new_monster_list)
-            session.commit()
-            
-            self.logger.info("Monster list saved successfully")
-            return True
-            
-        except Exception as e:
-            session.rollback()
-            self.logger.error(f"Failed to save monster list: {str(e)}")
-            raise CacheError(f"Failed to save monster list: {str(e)}")
-        finally:
-            session.close()
-    
     def get_monster(self, index: str) -> Optional[Monster]:
 
         session = self._get_session()

@@ -1,7 +1,7 @@
 """
 Exports concrete implementations of persistence interfaces.
 """
-from .monsterrepository import SQLiteMonsterRepository
+from .monsterrepository import MonsterRepository
 from .dnd5eapiclient import DnD5eApiClient
 
 __all__ = [
