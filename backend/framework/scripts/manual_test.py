@@ -1,7 +1,7 @@
 import requests
 
-list_path = "/"
-get_path = "/monsters"
+list_path = "/list"
+get_path = "/get"
 list_url = f"http://localhost:4000{list_path}"
 get_url = f"http://localhost:4000{get_path}"
 
