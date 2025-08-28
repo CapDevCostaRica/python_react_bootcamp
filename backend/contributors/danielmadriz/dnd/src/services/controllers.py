@@ -78,6 +78,57 @@ class MonsterController:
             }
             return jsonify(error_response), 500
     
+    def list_monsters(self):
+        """
+        Handle POST /list endpoint.
+        Expected payload: {"resource": "monsters"
+        """
+        try:
+            request_data = request.get_json()
+            if not request_data:
+                raise ValidationError("Request body must contain JSON data")
+            
+            if not self.validator.validate_monster_list_request(request_data):
+                raise ValidationError("Invalid monster list request format")
+            
+            self.logger.info("Get monster list request validated successfully")
+            
+            query_result = self.monster_service.get_monster_list()
+            
+            include_cache_info = request.args.get('include_cache_info', 'false').lower() == 'true'
+
+            response_data = self._extract_response(query_result.data)
+
+            if include_cache_info:
+                return jsonify({
+                    'data': response_data,
+                    'cache_info': {
+                        'cached': query_result.is_cached,
+                        'source': query_result.source
+                    }
+                }), 200
+
+            self.logger.info(f"Monster list returned successfully (cached: {query_result.is_cached})")
+            
+            return jsonify(response_data), 200
+            
+        except ValidationError as e:
+            self.logger.warning(f"Validation error in list_monsters: {str(e)}")
+            return jsonify(e.to_dict()), e.status_code
+            
+        except ServiceError as e:
+            self.logger.error(f"Service error in list_monsters: {str(e)}")
+            return jsonify(e.to_dict()), e.status_code
+            
+        except Exception as e:
+            self.logger.error(f"Unexpected error in list_monsters: {str(e)}")
+            error_response = {
+                'error': 'InternalServerError',
+                'message': 'An unexpected error occurred',
+                'status_code': 500
+            }
+            return jsonify(error_response), 500
+    
     def health_check(self):
         """
         Handle GET /health endpoint for monitoring pourposes.
