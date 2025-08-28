@@ -19,7 +19,7 @@ class MonsterService(IMonsterService):
     def get_monster(self, index: str) -> CacheResult:
         try:
             # Validate input
-            if not index or not isinstance(index, str):
+            if not index or not isinstance(index, str) or not index.strip():
                 raise ValidationError("Monster index must be a non-empty string")
             
             self.logger.info(f"Getting monster: {index}")
