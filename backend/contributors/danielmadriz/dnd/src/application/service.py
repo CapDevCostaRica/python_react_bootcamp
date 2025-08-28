@@ -2,9 +2,9 @@
 Implements the core caching strategy and monster management business logic.
 """
 import logging
-from ..domain.interfaces import IMonsterService, IMonsterRepository, IMonsterApiClient
-from ..domain.entities import Monster, MonsterList, CacheResult
-from ..helpers.exceptions import NotFoundError, ServiceError, ValidationError
+from domain.interfaces import IMonsterService, IMonsterRepository, IMonsterApiClient
+from domain.entities import Monster, MonsterList, CacheResult
+from helpers.exceptions import NotFoundError, ServiceError, ValidationError
 
 
 class MonsterService(IMonsterService):
