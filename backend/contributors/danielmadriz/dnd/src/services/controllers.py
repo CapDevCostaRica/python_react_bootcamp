@@ -36,17 +36,21 @@ class MonsterController:
             if not request_data:
                 raise ValidationError("Request body must contain JSON data")
             
-            if not self.validator.validate_monster_request(request_data):
-                raise ValidationError("Invalid monster request format")
+            # Validate request using Marshmallow schema
+            try:
+                validated_data = self.validator.validate_monster_request(request_data)
+                monster_index = validated_data['monster_index']
+            except Exception as e:
+                raise ValidationError(f"Invalid monster request format: {str(e)}")
             
-            monster_index = request_data.get('monster_index')
             self.logger.info(f"Get monster request validated successfully: {monster_index}")
             
             query_result = self.monster_service.get_monster(monster_index)
             
             include_cache_info = request.args.get('include_cache_info', 'false').lower() == 'true'
 
-            response_data = self._extract_response(query_result.data)
+            # Serialize response using Marshmallow schema
+            response_data = self.validator.serialize_monster_response(query_result.data)
 
             if include_cache_info:
                 return jsonify({
@@ -88,8 +92,11 @@ class MonsterController:
             if not request_data:
                 raise ValidationError("Request body must contain JSON data")
             
-            if not self.validator.validate_monster_list_request(request_data):
-                raise ValidationError("Invalid monster list request format")
+            # Validate request using Marshmallow schema
+            try:
+                validated_data = self.validator.validate_monster_list_request(request_data)
+            except Exception as e:
+                raise ValidationError(f"Invalid monster list request format: {str(e)}")
             
             self.logger.info("Get monster list request validated successfully")
             
@@ -97,7 +104,8 @@ class MonsterController:
             
             include_cache_info = request.args.get('include_cache_info', 'false').lower() == 'true'
 
-            response_data = self._extract_response(query_result.data)
+            # Serialize response using Marshmallow schema
+            response_data = self.validator.serialize_monster_list_response(query_result.data)
 
             if include_cache_info:
                 return jsonify({
@@ -164,19 +172,3 @@ class MonsterController:
         
         return health_data
 
-    def _extract_response(self, entity):
-        """Extract the actual data from domain entities."""
-        if hasattr(entity, 'properties'):
-            return entity.properties
-        
-        elif hasattr(entity, 'monsters'):
-            return {
-                'count': entity.count,
-                'results': [{
-                    'index': monster.index,
-                    'name': monster.name,
-                    'url': monster.url
-                } for monster in entity.monsters]
-            }
-        else:
-            return entity
