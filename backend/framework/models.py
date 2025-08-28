@@ -111,3 +111,16 @@ class MonsterDanrodjim(Base):
     name = Column(String, unique=True, nullable=False)
     url = Column(String, unique=True, nullable=False)
     data = Column(JSONB)
+
+    
+class AllMonstersdanielmadriz(Base):
+    __tablename__ = 'danielmadriz_allmonsters'
+    id = Column(String, primary_key=True)
+    json_data = Column(JSON, nullable=False)
+
+class Monstersdanielmadriz(Base):
+    __tablename__ = 'danielmadriz_monsters'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)    
+    data = Column(JSON, nullable=False)
