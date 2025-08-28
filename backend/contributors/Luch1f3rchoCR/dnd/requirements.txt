@@ -1,1 +1,4 @@
-# no extra deps for this contrib
+requests==2.32.5
+psycopg==3.2.9
+psycopg-binary==3.2.9
+marshmallow==4.0.0
