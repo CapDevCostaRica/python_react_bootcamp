@@ -1,8 +1,8 @@
-"""Regenerate crisarias monster tables
+"""Crisarias add monsters tables
 
-Revision ID: 1843a1411c5b
+Revision ID: d53164abfe4b
 Revises: bac07e2df5a7
-Create Date: 2025-08-27 19:19:38.518264
+Create Date: 2025-08-27 19:24:41.874288
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '1843a1411c5b'
+revision: str = 'd53164abfe4b'
 down_revision: Union[str, Sequence[str], None] = 'bac07e2df5a7'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
