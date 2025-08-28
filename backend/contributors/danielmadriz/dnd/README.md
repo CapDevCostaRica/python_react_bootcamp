@@ -17,9 +17,9 @@ backend/contributors/danielmadriz/dnd/
 │   │   │   └── cache_result.py   # CacheResult entity
 │   │   └── interfaces.py         # Abstract contracts for Dependency Injection
 │   ├── application/              # Application Layer - Business logic
-│   ├── infrastructure/           # Infrastructure Layer - External concerns
-│   ├── presentation/             # Presentation Layer - Web API
-│   └── crosscutting/             # Crosscutting Concerns
+│   ├── persistence/              # Infrastructure Layer - External concerns
+│   ├── services/                 # Presentation Layer - Web API
+│   └── helpers/                  # Crosscutting Concerns
 ├── tests/                        # Comprehensive test suite
 ├── main.py                       # Application entry point
 ├── requirements.txt              # Dependencies
