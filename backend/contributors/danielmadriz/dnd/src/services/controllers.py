@@ -28,15 +28,12 @@ class MonsterController:
         """
         Handle POST /get endpoint.
         Expected payload: {"monster_index": <index>}
-        Returns:
-            JSON response with monster data.
         """
         try:
             request_data = request.get_json()
             if not request_data:
                 raise ValidationError("Request body must contain JSON data")
             
-            # Validate request using Marshmallow schema
             try:
                 validated_data = self.validator.validate_monster_request(request_data)
                 monster_index = validated_data['monster_index']
@@ -49,7 +46,6 @@ class MonsterController:
             
             include_cache_info = request.args.get('include_cache_info', 'false').lower() == 'true'
 
-            # Serialize response using Marshmallow schema
             response_data = self.validator.serialize_monster_response(query_result.data)
 
             if include_cache_info:
@@ -85,14 +81,13 @@ class MonsterController:
     def list_monsters(self):
         """
         Handle POST /list endpoint.
-        Expected payload: {"resource": "monsters"
+        Expected payload: {"resource": "monsters"}
         """
         try:
             request_data = request.get_json()
             if not request_data:
                 raise ValidationError("Request body must contain JSON data")
             
-            # Validate request using Marshmallow schema
             try:
                 validated_data = self.validator.validate_monster_list_request(request_data)
             except Exception as e:
@@ -104,7 +99,6 @@ class MonsterController:
             
             include_cache_info = request.args.get('include_cache_info', 'false').lower() == 'true'
 
-            # Serialize response using Marshmallow schema
             response_data = self.validator.serialize_monster_list_response(query_result.data)
 
             if include_cache_info:
@@ -140,8 +134,6 @@ class MonsterController:
     def health_check(self):
         """
         Handle GET /health endpoint for monitoring pourposes.
-        Returns:
-            JSON response with service health status
         """
         try:
             health_data = self._status_response()
