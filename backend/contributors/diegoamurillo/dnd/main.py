@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from marshmallow import Schema, fields, ValidationError, validates_schema
+from marshmallow import Schema, fields, ValidationError
 
 import os
 import sys
@@ -12,55 +12,43 @@ app = Flask(__name__)
 upstream_service = UpstreamService()
 cache_service = CacheService(upstream_service=upstream_service)
 
-
-# Marshmallow schema
-class HandlerSchema(Schema):
-    resource = fields.Str(required=False)
-    monster_index = fields.Str(required=False)
-
-    @validates_schema
-    def validate_payload(self, data, **kwargs):
-        if "resource" in data and data["resource"] == "monsters":
-            return
-        if "monster_index" in data:
-            if not isinstance(data["monster_index"], str) or not data["monster_index"].strip():
-                raise ValidationError({"monster_index": "Must be a non-empty string"})
-            return
-        raise ValidationError("Payload must contain either 'resource':'monsters' or 'monster_index'.")
+class ListSchema(Schema):
+    pass
 
 
-@app.route('/handler', methods=['POST'])
-def handler():
+class GetSchema(Schema):
+    monster_index = fields.Str(required=True)
+
+
+@app.route('/list', methods=['GET'])
+def list_monsters():
     try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No JSON payload provided"}), 400
+        schema = ListSchema()
+        schema.load(request.args)
 
-        # Validate using Marshmallow
-        schema = HandlerSchema()
-        validated_data = schema.load(data)
-
-        if validated_data.get("resource") == "monsters":
-            return list_monsters()
-        elif "monster_index" in validated_data:
-            return get_monster(validated_data["monster_index"])
-        else:
-            return jsonify({"error": "Invalid event payload"}), 400
-
+        monsters_list = cache_service.get_monsters_list()
+        return jsonify({'monsters': monsters_list}), 200
     except ValidationError as err:
         return jsonify({"error": err.messages}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-def list_monsters():
-    monsters_list = cache_service.get_monsters_list()
-    return jsonify({'monsters': monsters_list})
-
-
+@app.route('/get/<monster_index>', methods=['GET'])
 def get_monster(monster_index):
-    monster = cache_service.get_monster_by_index(monster_index)
-    return jsonify({'monster': monster})
+    try:
+        schema = GetSchema()
+        validated_data = schema.load({"monster_index": monster_index})
+
+        monster = cache_service.get_monster_by_index(validated_data["monster_index"])
+        if not monster:
+            return jsonify({"error": f"Monster '{monster_index}' not found"}), 404
+
+        return jsonify({'monster': monster}), 200
+    except ValidationError as err:
+        return jsonify({"error": err.messages}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':
