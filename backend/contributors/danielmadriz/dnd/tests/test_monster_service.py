@@ -135,7 +135,6 @@ class TestMonsterService:
         # Verify repository save was NOT attempted (since API failed)
         mock_repository.save_monster_list.assert_not_called()
         
-
     def test_get_monster_empty_key_error(self, monster_service, mock_repository, mock_api_client):
         # Arrange
         empty_index = ""
@@ -153,3 +152,89 @@ class TestMonsterService:
         
         # Verify API was NOT called (validation failed before reaching API)
         mock_api_client.get_monster.assert_not_called()
+
+    def test_get_monster_cache_hit(self, monster_service, mock_repository, mock_api_client):
+        # Arrange
+        mock_monster = Monster(index="dragon", name="Dragon", url="/api/monsters/dragon", data={"type": "dragon", "size": "huge"})
+        mock_repository.exists_monster.return_value = True
+        mock_repository.get_monster.return_value = mock_monster
+        
+        # Act
+        result = monster_service.get_monster("dragon")
+        
+        # Assert
+        assert isinstance(result, CacheResult)
+        assert result.is_cached is True
+        assert result.source == "cache"
+        assert result.data == mock_monster
+        assert result.data.index == "dragon"
+        assert result.data.name == "Dragon"
+        assert result.data.data["type"] == "dragon"
+        
+        # Verify repository methods were called
+        mock_repository.exists_monster.assert_called_once_with("dragon")
+        mock_repository.get_monster.assert_called_once_with("dragon")
+        
+        # Verify API client was NOT called (cache hit)
+        mock_api_client.get_monster.assert_not_called()
+
+    def test_get_monster_cache_miss(self, monster_service, mock_repository, mock_api_client):
+        # Arrange
+        mock_repository.exists_monster.return_value = False  # Monster not in cache
+        
+        # Mock API response for the monster
+        api_response = {
+            "index": "dragon",
+            "name": "Dragon",
+            "url": "/api/monsters/dragon",
+            "type": "dragon",
+            "size": "huge",
+            "hit_points": 256
+        }
+        mock_api_client.get_monster.return_value = api_response
+        
+        # Mock successful save to cache
+        mock_repository.save_monster.return_value = True
+        
+        # Act
+        result = monster_service.get_monster("dragon")
+        
+        # Assert
+        assert isinstance(result, CacheResult)
+        assert result.is_cached is False
+        assert result.source == "api"
+        assert result.data.index == "dragon"
+        assert result.data.name == "Dragon"
+        assert result.data.data["type"] == "dragon"
+        assert result.data.data["size"] == "huge"
+        assert result.data.data["hit_points"] == 256
+        
+        # Verify repository methods were called
+        mock_repository.exists_monster.assert_called_once_with("dragon")
+        mock_repository.save_monster.assert_called_once()
+        
+        # Verify API client was called (cache miss)
+        mock_api_client.get_monster.assert_called_once_with("dragon")
+
+    def test_get_monster_api_not_found_error(self, monster_service, mock_repository, mock_api_client):
+        # Arrange
+        mock_repository.exists_monster.return_value = False  # Monster not in cache
+        
+        # Mock API to return None (simulating not found)
+        mock_api_client.get_monster.return_value = None
+        
+        # Act & Assert - Should raise ServiceError when API returns None
+        with pytest.raises(ServiceError) as exc_info:
+            monster_service.get_monster("dragon")
+        
+        # Verify the error message
+        assert "Failed to get monster: Monster not found in external API: dragon" in str(exc_info.value)
+        
+        # Verify repository methods were called
+        mock_repository.exists_monster.assert_called_once_with("dragon")
+        
+        # Verify API was called
+        mock_api_client.get_monster.assert_called_once_with("dragon")
+        
+        # Verify repository save was NOT attempted (since API failed)
+        mock_repository.save_monster.assert_not_called()
