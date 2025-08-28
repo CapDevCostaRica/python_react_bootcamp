@@ -11,43 +11,6 @@ class MotivationalPhrase(Base):
     phrase = Column(String)
 
 class AndresnbozaMonster(Base):
-    def to_dict(self):
-        return {
-            'index': self.index,
-            'name': self.name,
-            'size': self.size,
-            'type': self.type,
-            'alignment': self.alignment,
-            'armor_class': json.loads(self.armor_class) if self.armor_class else None,
-            'hit_points': self.hit_points,
-            'hit_dice': self.hit_dice,
-            'hit_points_roll': self.hit_points_roll,
-            'speed': json.loads(self.speed) if self.speed else None,
-            'strength': self.strength,
-            'dexterity': self.dexterity,
-            'constitution': self.constitution,
-            'intelligence': self.intelligence,
-            'wisdom': self.wisdom,
-            'charisma': self.charisma,
-            'proficiencies': json.loads(self.proficiencies) if self.proficiencies else None,
-            'damage_vulnerabilities': json.loads(self.damage_vulnerabilities) if self.damage_vulnerabilities else None,
-            'damage_resistances': json.loads(self.damage_resistances) if self.damage_resistances else None,
-            'damage_immunities': json.loads(self.damage_immunities) if self.damage_immunities else None,
-            'condition_immunities': json.loads(self.condition_immunities) if self.condition_immunities else None,
-            'senses': json.loads(self.senses) if self.senses else None,
-            'languages': self.languages,
-            'challenge_rating': self.challenge_rating,
-            'proficiency_bonus': self.proficiency_bonus,
-            'xp': self.xp,
-            'special_abilities': json.loads(self.special_abilities) if self.special_abilities else None,
-            'actions': json.loads(self.actions) if self.actions else None,
-            'legendary_actions': json.loads(self.legendary_actions) if self.legendary_actions else None,
-            'image': self.image,
-            'url': self.url,
-            'updated_at': self.updated_at,
-            'forms': json.loads(self.forms) if self.forms else None,
-            'reactions': json.loads(self.reactions) if self.reactions else None
-        }
     __tablename__ = 'andresnboza_monster'
     index = Column(String, primary_key=True)
     name = Column(String)
@@ -59,6 +22,69 @@ class AndresnbozaMonster(Base):
     hit_dice = Column(String)
     hit_points_roll = Column(String)
     speed = Column(String)
+    strength = Column(Integer)
+    dexterity = Column(Integer)
+    constitution = Column(Integer)
+    intelligence = Column(Integer)
+    wisdom = Column(Integer)
+    charisma = Column(Integer)
+    proficiencies = Column(String)
+    damage_vulnerabilities = Column(String)
+    damage_resistances = Column(String)
+    damage_immunities = Column(String)
+    condition_immunities = Column(String)
+    senses = Column(String)
+    languages = Column(String)
+    challenge_rating = Column(Integer)
+    proficiency_bonus = Column(Integer)
+    xp = Column(Integer)
+    special_abilities = Column(String)
+    actions = Column(String)
+    legendary_actions = Column(String)
+    image = Column(String)
+    url = Column(String)
+    updated_at = Column(String)
+    forms = Column(String)
+    reactions = Column(String)
+
+    def to_dict(self):
+        return {
+            'index': self.index,
+            'name': self.name,
+            'size': self.size,
+            'type': self.type,
+            'alignment': self.alignment,
+            'armor_class': self.armor_class,
+            'hit_points': self.hit_points,
+            'hit_dice': self.hit_dice,
+            'hit_points_roll': self.hit_points_roll,
+            'speed': self.speed,
+            'strength': self.strength,
+            'dexterity': self.dexterity,
+            'constitution': self.constitution,
+            'intelligence': self.intelligence,
+            'wisdom': self.wisdom,
+            'charisma': self.charisma,
+            'proficiencies': self.proficiencies,
+            'damage_vulnerabilities': self.damage_vulnerabilities,
+            'damage_resistances': self.damage_resistances,
+            'damage_immunities': self.damage_immunities,
+            'condition_immunities': self.condition_immunities,
+            'senses': self.senses,
+            'languages': self.languages,
+            'challenge_rating': self.challenge_rating,
+            'proficiency_bonus': self.proficiency_bonus,
+            'xp': self.xp,
+            'special_abilities': self.special_abilities,
+            'actions': self.actions,
+            'legendary_actions': self.legendary_actions,
+            'image': self.image,
+            'url': self.url,
+            'updated_at': self.updated_at,
+            'forms': self.forms,
+            'reactions': self.reactions
+        }
+
 class kevinWalshMunozMonsterList(Base):
     __tablename__ = 'kevinWalshMunozMonsters'
 
