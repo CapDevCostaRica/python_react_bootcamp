@@ -18,13 +18,35 @@ Follow the main README file instructions about creating migrations.
 
 Import the CSV files, including those under the files directory, use backend/contributors/your_username/your_app_name/seeds.py to do this procedure. Ensure that you do not duplicate the seeding, follow the correct hierarchy in your ETL, and use the more memory-efficient approach. 
 
-Create an endpoint (/people/find) that a user can call to retrieve people records, and return the result count and a list of names.
+Create an endpoint GET(/people/find) that a user can call to retrieve people records, and return the result count and a list of names.
 
-Example:
+Query example:
 
 ```json
 {
-    "result": true, 
+    "filters" : {
+      "food": "lasagna",
+      "family": "mother",  
+      "hobby": "gaming",
+      "eye_color": "hazel",
+      "hair_color": "black",
+      "age": 25,
+      "height_cm": 165,
+      "weight_kg": 65,
+      "nationality": "German",
+      "degree": "PhD",
+      "institution": "MIT"
+    }
+}
+```
+
+Note: not all filters are required
+
+Response example:
+
+```json
+{
+    "success": true, 
     "data": {
         "total": 3,
         "results": ["Misty Greene", "Jason Riley", "Harold Pierce"]
@@ -54,9 +76,93 @@ I have green eyes and brown hair, and I'm 25 years old.
 Create an endpoint for each one of these reports, and return the same format as the previous exercise.
 
 People who like both sushi and ramen
+Route: /people/sushi_ramen
+Example response
+
+```json
+{
+    "success": true, 
+    "data": 3
+}
+```
+
 People with average weight above 70 grouped by hair color
+Route: /people/avg_weight_above_70_hair
+Example response
+
+```json
+{
+    "success": true, 
+    "data": {
+        "hazel" : 85,
+        "black" : 98
+    }
+}
+```
+
 Most common food overall
-Average weight grouped by nationality and hair color using ROLLUP to include subtotals.
+Route: /people/most_common_food_overall
+Example response
+
+```json
+{ 
+    "success": true, 
+    "data": "pizza" 
+}
+```
+
+Average weight grouped by nationality and hair color
+Route: /people/avg_weight_nationality_hair
+Example response
+
+```json
+{
+    "success": true, 
+    "data": {
+        "mexican-hazel" : 45,
+        "spanish-black" : 98
+    }
+}
+```
+
 The top 2 oldest people per nationality
-People ranked by how many hobbies they have
+Route: /people/top_oldest_nationality
+Example response
+
+```json
+{
+    "success": true, 
+    "data": {
+        "mexican" : ["Michael Callahan", "Stephen Thompson"],
+        "spanish" : ["Amy James", "Dominique Medina"]
+    }
+}
+```
+
+People ranked by how many hobbies they have (Top 3)
+Route: /people/top_hobbies
+Example response
+
+```json
+{
+    "success": true, 
+    "data": ["Michael Callahan", "Stephen Thompson", "Tammy Arnold"]
+}
+```
+
 Average height by nationality and average in general
+Route: /people/avg_height_nationality_general
+Example response
+
+```json
+{
+    "success": true, 
+    "data": {
+        "general": 56,
+        "nationalities": {
+            "spanish": 78,
+            "mexican": 98,
+            "american": 0
+        }
+    }
+}
