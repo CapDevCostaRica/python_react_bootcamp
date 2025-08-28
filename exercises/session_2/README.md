@@ -22,6 +22,7 @@ Create an endpoint (/people/find) that a user can call to retrieve people record
 
 Example:
 
+```json
 {
     "result": true, 
     "data": {
@@ -29,6 +30,7 @@ Example:
         "results": ["Misty Greene", "Jason Riley", "Harold Pierce"]
     }
 }
+```
 
 Include tests for the following people.
 
