@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import Column, Integer, String, JSON, Text, DateTime
+from sqlalchemy import Column, Integer, String, JSON, DateTime, func, JSON, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -111,3 +111,20 @@ class MonsterDanrodjim(Base):
     name = Column(String, unique=True, nullable=False)
     url = Column(String, unique=True, nullable=False)
     data = Column(JSONB)
+
+class MonstersCrisarias(Base):
+    __tablename__= 'monsters_crisarias'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    body = Column(JSON)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class MonstersListCrisarias(Base):
+    __tablename__= 'monsters_list_crisarias'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
