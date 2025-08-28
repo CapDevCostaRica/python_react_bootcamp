@@ -1,19 +1,19 @@
 services:
   flask_app:
-    build: 
+    build:
       context: ./backend
       args:
         APPLICATION_FOLDER: ${APPLICATION_FOLDER}
     env_file:
       - ./.env
     ports:
-      - "4000:4000"    
+      - "4000:4000"
     command: bash /app/run_local.sh
     restart: unless-stopped
     volumes:
       - ./backend:/app
     depends_on:
-      - flask_db        
+      - flask_db
   flask_db:
     image: postgres:12
     ports:
@@ -23,7 +23,7 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres      
+      POSTGRES_DB: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
