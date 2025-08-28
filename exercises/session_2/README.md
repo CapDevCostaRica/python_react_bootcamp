@@ -1,16 +1,28 @@
 # Stories
 
 As a user, I want a seeder script to read the different files in the exercise to seed my database at startup.
+
 As a user, I want an endpoint that allows me to provide different characteristics and retrieve the matching people.
 
 # Technical notes
 
-Import the CSV files, including those under the files directory. Ensure that you do not duplicate the seeding, follow the correct hierarchy in your ETL, and use the more memory-efficient approach. 
+Please reset your database 
+
+```shell
+docker-compose run flask_app bash /app/run_local.sh reset_db
+```
+
+Copy backend/contributors/capdevcr/boilerplate to backend/contributors/your_username/your_app_name.
+
+Follow the main README file instructions about creating migrations.
+
+Import the CSV files, including those under the files directory, use backend/contributors/your_username/your_app_name/seeds.py to do this procedure. Ensure that you do not duplicate the seeding, follow the correct hierarchy in your ETL, and use the more memory-efficient approach. 
 
 Create an endpoint (/people/find) that a user can call to retrieve people records, and return the result count and a list of names.
 
 Example:
 
+```json
 {
     "result": true, 
     "data": {
@@ -18,6 +30,7 @@ Example:
         "results": ["Misty Greene", "Jason Riley", "Harold Pierce"]
     }
 }
+```
 
 Include tests for the following people.
 
