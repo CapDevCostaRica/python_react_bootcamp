@@ -102,8 +102,13 @@ class MonsterRepository(IMonsterRepository):
                     )
                     monsters.append(monster)
                 
+                monster_list = MonsterList(
+                    monsters=monsters,
+                    count=count
+                )
+                
                 self.logger.info(f"Monster list retrieved from cache: {count} monsters (key data only)")
-                return monsters
+                return monster_list
             else:
                 self.logger.info("Monster list is empty")
                 return None
@@ -117,31 +122,25 @@ class MonsterRepository(IMonsterRepository):
     def save_monster_list(self, monster_list: MonsterList) -> bool:
         session = self._get_session()
         try:
-            # Check if monster list already exists
             existing_list = session.query(AllMonstersdanielmadriz).first()
             
             if existing_list:
                 self.logger.info("Monster list already exists in cache, skipping save")
                 return True
             else:
-                # Create new monster list entry
-                new_monster_list = AllMonstersdanielmadriz(
-                    json_data={
-                        'monsters': [
-                            {
-                                'index': monster.index,
-                                'name': monster.name,
-                                'url': monster.url
-                            }
-                            for monster in monster_list.monsters
-                        ],
-                        'count': monster_list.count,
-                        'cached_at': datetime.utcnow().isoformat(),
-                        'source': 'dnd5e_api'
-                    }
-                )
-                session.add(new_monster_list)
-                self.logger.info(f"Monster list cached with {monster_list.count} monsters")
+                for monster in monster_list.monsters:
+                    new_monster_list = AllMonstersdanielmadriz(
+                        id=monster.index,
+                        json_data={
+                            'index': monster.index,
+                            'name': monster.name,
+                            'url': monster.url,
+                            'data': monster
+                        }
+                    )
+                    session.add(new_monster_list)
+                
+                self.logger.info(f"Monster list cached with {monster_list.count} monsters (individual rows)")
                 session.commit()
             
             return True

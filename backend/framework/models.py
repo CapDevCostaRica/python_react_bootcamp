@@ -94,7 +94,7 @@ class MonsterList_majocr(Base):
     
 class AllMonstersdanielmadriz(Base):
     __tablename__ = 'danielmadriz_allmonsters'
-    id = Column(Integer, primary_key=True)
+    id = Column(String, primary_key=True)
     json_data = Column(JSON, nullable=False)
 
 class Monstersdanielmadriz(Base):
