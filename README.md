@@ -54,7 +54,7 @@ docker-compose exec flask_app bash
 
 This will only work for apps created using backend/contributors/capdevcr/boilerplate
 
-After updating the `backend/contributors/your_username/your_app_name/models.py` adding or updating the table(s), follow the next steps:
+After updating the `backend/contributors/your_username/your_app_name/app/models.py` adding or updating the table(s), follow the next steps:
 
 1. Ensure docker is running with the containers from this project.
 2. Go to `backend/contributors/your_username/your_app_name`.
