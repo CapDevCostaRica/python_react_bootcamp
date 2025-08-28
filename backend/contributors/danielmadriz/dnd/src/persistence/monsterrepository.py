@@ -85,15 +85,18 @@ class MonsterRepository(IMonsterRepository):
     def get_monster_list(self) -> Optional[MonsterList]:
         session = self._get_session()
         try:
-            result = session.query(AllMonstersdanielmadriz)
+            result = session.query(AllMonstersdanielmadriz).first()
             
-            data = result.json_data
-            monsters_data = data.get('monsters', [])
-            count = data.get('count', 0)
+            if not result:
+                self.logger.info("Monster list not found in cache")
+                return None
             
-            if monsters_data and count > 0:
+            all_monsters = session.query(AllMonstersdanielmadriz).all()
+            
+            if all_monsters and len(all_monsters) > 0:
                 monsters = []
-                for monster_data in monsters_data:
+                for monster_row in all_monsters:
+                    monster_data = monster_row.json_data
                     monster = Monster(
                         index=monster_data.get('index', ''),
                         name=monster_data.get('name', 'Unknown'),
@@ -104,10 +107,10 @@ class MonsterRepository(IMonsterRepository):
                 
                 monster_list = MonsterList(
                     monsters=monsters,
-                    count=count
+                    count=len(monsters)
                 )
                 
-                self.logger.info(f"Monster list retrieved from cache: {count} monsters (key data only)")
+                self.logger.info(f"Monster list retrieved from cache: {len(monsters)} monsters (individual rows)")
                 return monster_list
             else:
                 self.logger.info("Monster list is empty")
@@ -135,7 +138,7 @@ class MonsterRepository(IMonsterRepository):
                             'index': monster.index,
                             'name': monster.name,
                             'url': monster.url,
-                            'data': monster
+                            'data': monster.data
                         }
                     )
                     session.add(new_monster_list)
