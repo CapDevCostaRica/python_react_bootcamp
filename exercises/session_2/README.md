@@ -75,8 +75,8 @@ I have green eyes and brown hair, and I'm 25 years old.
 
 Create an endpoint for each one of these reports, and return the same format as the previous exercise.
 
-People who like both sushi and ramen
-Route: /people/sushi_ramen
+People who like both sushi and ramen\
+Route: /people/sushi_ramen\
 Example response
 
 ```json
@@ -86,8 +86,8 @@ Example response
 }
 ```
 
-People with average weight above 70 grouped by hair color
-Route: /people/avg_weight_above_70_hair
+People with average weight above 70 grouped by hair color\
+Route: /people/avg_weight_above_70_hair\
 Example response
 
 ```json
@@ -100,8 +100,9 @@ Example response
 }
 ```
 
-Most common food overall
-Route: /people/most_common_food_overall
+### Extra 1
+Most common food overall\
+Route: /people/most_common_food_overall\
 Example response
 
 ```json
@@ -111,8 +112,9 @@ Example response
 }
 ```
 
-Average weight grouped by nationality and hair color
-Route: /people/avg_weight_nationality_hair
+### Extra 2
+Average weight grouped by nationality and hair color\
+Route: /people/avg_weight_nationality_hair\
 Example response
 
 ```json
@@ -125,10 +127,11 @@ Example response
 }
 ```
 
-The top 2 oldest people per nationality
-Route: /people/top_oldest_nationality
+The top 2 oldest people per nationality\
+Route: /people/top_oldest_nationality\
 Example response
 
+### Extra 3
 ```json
 {
     "success": true, 
@@ -139,8 +142,9 @@ Example response
 }
 ```
 
-People ranked by how many hobbies they have (Top 3)
-Route: /people/top_hobbies
+### Extra 4
+People ranked by how many hobbies they have (Top 3)\
+Route: /people/top_hobbies\
 Example response
 
 ```json
@@ -150,8 +154,9 @@ Example response
 }
 ```
 
-Average height by nationality and average in general
-Route: /people/avg_height_nationality_general
+### Extra 5
+Average height by nationality and average in general\
+Route: /people/avg_height_nationality_general\
 Example response
 
 ```json
