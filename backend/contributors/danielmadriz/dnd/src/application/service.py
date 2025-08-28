@@ -2,9 +2,11 @@
 Implements the core caching strategy and monster management business logic.
 """
 import logging
-from domain.interfaces import IMonsterService, IMonsterRepository, IMonsterApiClient
-from domain.entities import Monster, MonsterList, CacheResult
-from helpers.exceptions import NotFoundError, ServiceError, ValidationError
+from src.domain.interfaces import IMonsterService, IMonsterRepository, IMonsterApiClient
+from src.domain.entities.monster import Monster
+from src.domain.entities.monster_list import MonsterList
+from src.domain.entities.cache_result import CacheResult
+from src.helpers.exceptions import NotFoundError, ServiceError, ValidationError
 
 
 class MonsterService(IMonsterService):
@@ -22,7 +24,7 @@ class MonsterService(IMonsterService):
             
             self.logger.info(f"Getting monster: {index}")
             
-            # Step 1: Check cache first (fast path)
+            # Check cache first (fast path)
             if self.repository.exists_monster(index):
                 cached_monster = self.repository.get_monster(index)
                 if cached_monster:
@@ -33,14 +35,14 @@ class MonsterService(IMonsterService):
                         source="cache"
                     )
             
-            # Step 2: Cache miss - fetch from external API
+            # Cache miss - fetch from external API
             self.logger.info(f"Cache miss for monster: {index}, fetching from API")
             
             api_data = self.api_client.get_monster(index)
             if not api_data:
                 raise NotFoundError(f"Monster not found in external API: {index}")
             
-            # Step 3: Transform API data to domain entity
+            # Transform API data to domain entity
             monster = Monster(
                 index=index,
                 name=api_data.get("name", "Unknown"),
@@ -48,13 +50,13 @@ class MonsterService(IMonsterService):
                 data=api_data  # Store the complete API response
             )
             
-            # Step 4: Cache the result for future requests
+            # Cache the result for future requests
             if self.repository.save_monster(monster):
                 self.logger.info(f"Cached monster: {index}")
             else:
                 self.logger.warning(f"Failed to cache monster: {index}")
             
-            # Step 5: Return result with metadata
+            # Return result with metadata
             return CacheResult(
                 data=monster,
                 is_cached=False,

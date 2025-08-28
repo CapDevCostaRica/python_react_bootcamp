@@ -3,13 +3,12 @@ Domain Layer - Abstract interfaces and contracts.
 """
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, Any
-from .entities import Monster, MonsterList, CacheResult
+from src.domain.entities.monster import Monster
+from src.domain.entities.monster_list import MonsterList
+from src.domain.entities.cache_result import CacheResult
 
 
 class IMonsterRepository(ABC):
-    """
-    Repository interface for monster data persistence.
-    """
     
     @abstractmethod
     def save_monster(self, monster: Monster) -> bool:
@@ -52,8 +51,6 @@ class IMonsterApiClient(ABC):
     def get_monster_list(self) -> Optional[Dict[str, Any]]:
         """Fetch complete monster list from external API."""
         pass
-    
-
 
 
 class IMonsterService(ABC):

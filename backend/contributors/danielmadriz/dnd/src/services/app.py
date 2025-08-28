@@ -4,9 +4,11 @@ Implements dependency injection and HTTP error handling.
 """
 import logging
 from flask import Flask, jsonify, request
-from ..persistence import MonsterRepository, DnD5eApiClient
-from ..application import MonsterService, MonsterValidator
-from .controllers import MonsterController
+from src.persistence.monsterrepository import MonsterRepository
+from src.persistence.dnd5eapiclient import DnD5eApiClient
+from src.application.service import MonsterService
+from src.application.validators import MonsterValidator
+from src.services.controllers import MonsterController
 
 
 def create_app(
@@ -25,8 +27,8 @@ def create_app(
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     
-    app.config['JSON_SORT_KEYS'] = False  # Preserve response order
-    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True  # Pretty JSON responses
+    app.config['JSON_SORT_KEYS'] = False
+    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
     
     # Create dependencies if not provided (for production)
     if repository is None:

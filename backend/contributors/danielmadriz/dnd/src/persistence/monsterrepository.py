@@ -4,13 +4,16 @@ Implements the repository interface for monster data storage.
 """
 import logging
 import sys
-import os
 from datetime import datetime
 from typing import Optional
-from ..domain.interfaces import IMonsterRepository
-from ..domain.entities import Monster, MonsterList
-from ..helpers.exceptions import CacheError
 
+from src.domain.interfaces import IMonsterRepository
+from src.domain.entities.monster import Monster
+from src.domain.entities.monster_list import MonsterList
+from src.helpers.exceptions import CacheError
+
+import sys
+sys.path.append('/app/framework')
 from database import get_session
 from models import Monstersdanielmadriz, AllMonstersdanielmadriz
 from sqlalchemy.orm import Session

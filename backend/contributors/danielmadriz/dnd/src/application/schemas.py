@@ -38,7 +38,7 @@ class MonsterResponseSchema(Schema):
 class MonsterListResponseSchema(Schema):
     """Schema for monster list response serialization."""
     count = fields.Int(required=True)
-    results = fields.List(fields.Nested(MonsterResponseSchema), required=True)
+    monsters = fields.List(fields.Nested(MonsterResponseSchema), required=True)
 
 
 class CacheInfoSchema(Schema):

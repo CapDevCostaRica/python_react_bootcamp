@@ -5,15 +5,24 @@ Checks the local DB before hitting the upstream D&D API. On cache miss,
 retrieves, persists, and returns the payload. All I/O is schema-validated;
 errors are wrapped into typed HTTP responses with trace correlation
 """
-
 import logging
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..')))
-
-from flask import request, jsonify
-from ..domain.interfaces import IMonsterService
-from ..helpers.exceptions import BaseError, ValidationError, ServiceError, NotFoundError
+from flask import Blueprint, request, jsonify
+from src.application.service import MonsterService
+from src.application.validators import MonsterValidator
+from src.application.schemas import (
+    MonsterRequestSchema,
+    MonsterListRequestSchema,
+    MonsterResponseSchema,
+    MonsterListResponseSchema,
+    CacheInfoSchema,
+    CachedResponseSchema,
+    ErrorResponseSchema,
+    HealthResponseSchema
+)
+from src.persistence.monsterrepository import MonsterRepository
+from src.persistence.dnd5eapiclient import DnD5eApiClient
+from src.domain.interfaces import IMonsterService
+from src.helpers.exceptions import ValidationError, ServiceError
 
 
 class MonsterController:
@@ -158,7 +167,7 @@ class MonsterController:
                 'endpoints': {
                     'list': 'POST /list - Get monster list with caching',
                     'get': 'POST /get - Get specific monster with caching',
-                    'health': 'GET /health - Service health check'
+                    'health': 'GET / - Service health check'
                 }
             }
         

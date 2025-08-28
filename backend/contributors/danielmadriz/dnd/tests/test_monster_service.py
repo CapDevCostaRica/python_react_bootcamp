@@ -3,8 +3,10 @@ Unit tests for MonsterService class
 """
 import pytest
 from unittest.mock import Mock
-from application.service import MonsterService
-from domain.entities import Monster, MonsterList, CacheResult
+from src.application.service import MonsterService
+from src.domain.entities.monster import Monster
+from src.domain.entities.monster_list import MonsterList
+from src.domain.entities.cache_result import CacheResult
 
 
 @pytest.fixture
