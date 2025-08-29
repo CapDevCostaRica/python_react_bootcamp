@@ -85,12 +85,26 @@ class Monsterscastroulloaaaron(Base):
     id = Column(String, primary_key=True)
     json_data = Column(JSON, nullable=False)
 
+class DMuriMonstersList(Base):
+    __tablename__ = 'dmuri_monsters_list'
+    id = Column(Integer, primary_key=True)
+    data = Column(JSON, nullable=False)
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+class DMuriMonster(Base):
+    __tablename__ = 'dmuri_monsters'
+    index = Column(String(100), primary_key=True)
+    data = Column(JSON, nullable=False)
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 class RandallBrenesDnD(Base):
     __tablename__ = 'randallbrenes_dnd_monsters'
     index = Column(String, primary_key=True)
     name = Column(String)
     url = Column(String)
-    json_data = Column(JSON, nullable=True)   
+    json_data = Column(JSON, nullable=True)  
 
 class Monster_majocr(Base):
     __tablename__ = 'monster_majocr'
