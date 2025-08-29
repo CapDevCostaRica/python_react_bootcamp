@@ -45,7 +45,15 @@ class ProficiencyEntrySchema(Schema):
     value       = fields.Integer(required=True)
     proficiency = fields.Nested(APIReferenceSchema, required=True)
 
+
 class SensesSchema(Schema):
+    class Meta:
+        unknown = INCLUDE 
+
+    blindsight = fields.String(required=False)
+    darkvision = fields.String(required=False)
+    truesight = fields.String(required=False)
+    tremorsense = fields.String(required=False)
     passive_perception = fields.Integer(required=True)
 
 class DamageComponentSchema(Schema):
