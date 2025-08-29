@@ -15,6 +15,11 @@ class GetInputSchema(Schema):
 class odkeyo_MonsterListItemSchema(Schema):
     index = fields.String(required=True)
     name  = fields.String(required=True)
+    url   = fields.Method("get_url", dump_only=True)  # ← agrega url calculado
+
+    def get_url(self, obj):
+        idx = getattr(obj, "index", None) or (obj.get("index") if isinstance(obj, dict) else None)
+        return f"/api/monsters/{idx}" if idx else None
 
 class odkeyo_MonsterListSchema(Schema):
     count   = fields.Integer(required=True)
@@ -65,38 +70,42 @@ class ConditionImmunitySchema(Schema):
     name  = fields.String(required=True)
     url   = fields.String(required=True)
 
-class odkeyo_MonsterDetailSchema(Schema):
-    
+class MonsterDetailDataSchema(Schema):
+    class Meta:
+        unknown = INCLUDE
+
     index = fields.String(required=True)
     name  = fields.String(required=True)
-    size = fields.String(required=True)
-    type = fields.String(required=True)
-    alignment = fields.String(required=True)
-    armor_class = fields.List(fields.Nested(ArmorClassItemSchema), required=True)
-    hit_points = fields.Integer(required=True)
-    hit_dice = fields.String(required=True)
-    hit_points_roll = fields.String(required=True)
-    speed = fields.Nested(SpeedSchema, required=True)
-    strength = fields.Integer(required=True)
-    dexterity = fields.Integer(required=True)
-    constitution = fields.Integer(required=True)
-    intelligence = fields.Integer(required=True)
-    wisdom = fields.Integer(required=True)
-    charisma = fields.Integer(required=True)
-    proficiencies = fields.List(fields.Nested(ProficiencyEntrySchema), required=True)
-    damage_vulnerabilities = fields.List(fields.String(), required=True)
-    damage_resistances = fields.List(fields.String(), required=True)
-    damage_immunities = fields.List(fields.String(), required=True)
-    condition_immunities = fields.List(fields.Nested(ConditionImmunitySchema), required=True)
-    senses = fields.Nested(SensesSchema, required=True)
-    languages = fields.String(required=True, allow_none=True)
-    challenge_rating  = fields.Float(required=True)
-    proficiency_bonus = fields.Integer(required=True)
-    xp = fields.Integer(required=True)
-    actions = fields.List(fields.Nested(ActionSchema), required=True)
-    legendary_actions = fields.List(fields.Nested(ActionSchema), required=True)
-    reactions = fields.List(fields.Nested(ActionSchema), required=True)
-    special_abilities = fields.List(fields.Nested(ActionSchema), required=True)
+
+
+    size = fields.String(required=False)
+    type = fields.String(required=False)
+    alignment = fields.String(required=False)
+    armor_class = fields.List(fields.Nested(ArmorClassItemSchema), required=False)
+    hit_points = fields.Integer(required=False)
+    hit_dice = fields.String(required=False)
+    hit_points_roll = fields.String(required=False)
+    speed = fields.Nested(SpeedSchema, required=False)
+    strength = fields.Integer(required=False)
+    dexterity = fields.Integer(required=False)
+    constitution = fields.Integer(required=False)
+    intelligence = fields.Integer(required=False)
+    wisdom = fields.Integer(required=False)
+    charisma = fields.Integer(required=False)
+    proficiencies = fields.List(fields.Nested(ProficiencyEntrySchema), required=False)
+    damage_vulnerabilities = fields.List(fields.String(), required=False)
+    damage_resistances = fields.List(fields.String(), required=False)
+    damage_immunities = fields.List(fields.String(), required=False)
+    condition_immunities = fields.List(fields.Nested(ConditionImmunitySchema), required=False)
+    senses = fields.Nested(SensesSchema, required=False)
+    languages = fields.String(required=False, allow_none=True)
+    challenge_rating  = fields.Float(required=False)
+    proficiency_bonus = fields.Integer(required=False)
+    xp = fields.Integer(required=False)
+    actions = fields.List(fields.Nested(ActionSchema), required=False)
+    legendary_actions = fields.List(fields.Nested(ActionSchema), required=False)
+    reactions = fields.List(fields.Nested(ActionSchema), required=False)
+    special_abilities = fields.List(fields.Nested(ActionSchema), required=False)
     image = fields.String(required=False)
     url = fields.String(required=False)
-    forms = fields.List(fields.Raw(), required=True)
+    forms = fields.List(fields.Raw(), required=False)
