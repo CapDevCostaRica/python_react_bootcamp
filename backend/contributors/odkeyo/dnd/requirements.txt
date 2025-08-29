@@ -1,0 +1,6 @@
+Flask==3.0.3
+marshmallow
+SQLAlchemy
+alembic
+psycopg[binary]
+requests
