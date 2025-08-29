@@ -61,8 +61,9 @@ def get_handler():
             data_dict = data if isinstance(data, dict) else getattr(data, "data", data)
 
             det_check.load(data_dict)
-
-            return jsonify(data_dict), 200
+            clean = dict(data_dict)
+            clean.pop("updated_at", None) 
+            return jsonify(clean), 200
         finally:
             session.close()
     except odkeyo_UpstreamError as e:
