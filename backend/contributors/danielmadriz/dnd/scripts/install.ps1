@@ -2,7 +2,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$PythonVersions = @("3.13.7", "3.13", "3.11", "3")
+$PythonVersions = @("3.13", "3.12", "3.11", "3")
 $VenvName = ".venv"
 $VenvMarker = "pyvenv.cfg"
 
