@@ -83,7 +83,7 @@ class PeopleService:
 
                 if conditions:
                     sql_query = sql_query.where(and_(*conditions))
-
+                sql_query = sql_query.distinct()
             return sql_query
     
         except Exception as e:

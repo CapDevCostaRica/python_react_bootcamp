@@ -37,7 +37,7 @@ def execute_service(service_method, input_data=None, response_schema=None):
 def health():
     return {"status": "ok"}
 
-@app.route('/people/find', methods=['POST', 'GET'])
+@app.route('/people/find', methods=['GET'])
 def find():
     body = request.get_json(force=True)
     data, err = None, None
@@ -53,12 +53,14 @@ def sushi_ramen():
     filters = [{"food": "sushi"}, {"food": "ramen"}]
     return execute_service(people_service.find, input_data={"filters": filters}, response_schema=response_find_schema)
 
-@app.route('/people/avg_weight_above_70_hair', methods=['POST', 'GET'])
+@app.route('/people/avg_weight_above_70_hair', methods=['GET'])
 def avg_weight_above_hair():
-    body = request.get_json(force=True)
+    body = request.get_json(force=True, silent=True)
+    weight = 70
     try:
-        data = age_schema.load(body)
-        weight = data.get('filters', {}).get('weight', 70)
+        if body:
+            data = age_schema.load(body)
+            weight = data.get('filters', {}).get('weight', 70)
     except ValidationError as err:
         return jsonify({"success": False, "message": err.messages, "code": 400}), 400
 
@@ -67,7 +69,7 @@ def avg_weight_above_hair():
 
 @app.route('/people/most_common_food_overall')
 def most_common_food_overall():
-    return execute_service(people_service.extra1, response_schema=string_response_schema)
+    return execute_service(people_service.extra1, response_schema=string_response_schema, input_data=None)
 
 
 @app.route('/people/avg_weight_nationality_hair')
