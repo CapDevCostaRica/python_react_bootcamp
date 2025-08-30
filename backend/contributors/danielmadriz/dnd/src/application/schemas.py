@@ -8,23 +8,11 @@ from typing import Dict, Any
 class MonsterRequestSchema(Schema):
     """Schema for POST /get monster request validation."""
     monster_index = fields.Str(required=True, validate=lambda x: len(x.strip()) > 0)
-    
-    @validates_schema
-    def validate_monster_index(self, data, **kwargs):
-        """Custom validation for monster_index."""
-        if not data.get('monster_index') or not data['monster_index'].strip():
-            raise ValidationError('monster_index is required and cannot be empty')
 
 
 class MonsterListRequestSchema(Schema):
     """Schema for POST /list monster request validation."""
     resource = fields.Str(required=True, validate=lambda x: x == 'monsters')
-    
-    @validates_schema
-    def validate_resource(self, data, **kwargs):
-        """Custom validation for resource field."""
-        if data.get('resource') != 'monsters':
-            raise ValidationError('resource must be "monsters"')
 
 
 class MonsterResponseSchema(Schema):
