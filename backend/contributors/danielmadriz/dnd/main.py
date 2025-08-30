@@ -7,11 +7,11 @@ import sys
 import logging
 
 from src.services.app import create_app
+from src.helpers.logging_config import setup_logging
 
 def main():
     """Main application entry point."""
     try:
-        from src.helpers.logging_config import setup_logging
         setup_logging(level="INFO", log_file="servicedanielmadriz.log")
         
         logger = logging.getLogger(__name__)
