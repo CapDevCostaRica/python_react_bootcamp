@@ -136,15 +136,12 @@ class PeopleService:
 
     def avg_weight_above_hair(self, age):
         try:
-            db = get_session()
-            query = select(People.hair_color, func.avg(People.age).label("age_avg")).group_by(People.hair_color).where(People.weight_kg > age)
-
-            results = db.execute(query).all()
-            db.close()
-            
-            data = {}
-            for row in results:
-                data[row.hair_color] = round(row.age_avg) if row.age_avg else 0.0
+            with get_session() as db:
+                query = select(People.hair_color, func.avg(People.age).label("age_avg")).group_by(People.hair_color).where(People.weight_kg > age)
+                results = db.execute(query).all()
+                data = {}
+                for row in results:
+                    data[row.hair_color] = round(row.age_avg) if row.age_avg else 0.0
 
             return self.okResponse(data)
         except Exception as e:

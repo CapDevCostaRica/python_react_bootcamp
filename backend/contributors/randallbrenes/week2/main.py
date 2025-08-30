@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 from app.people_service import PeopleService
 from app.schema import (
-    AgeGroupSchema, RequestFindSchema, ResponseFindSchema,
+    WeightGroupSchema, RequestFindSchema, ResponseFindSchema,
     ResponseDictSchema, ResponseStringGroupSchema, ResponseListSchema
 )
 
@@ -10,11 +10,30 @@ app = Flask(__name__)
 
 find_schema = RequestFindSchema()
 response_find_schema = ResponseFindSchema()
-age_schema = AgeGroupSchema()
+weight_schema = WeightGroupSchema()
 dict_response_schema = ResponseDictSchema()
 string_response_schema = ResponseStringGroupSchema()
 list_response_schema = ResponseListSchema()
 people_service = PeopleService()
+
+def field_value(value: str):
+    if value.isdigit():
+        return int(value)
+    try:
+        return float(value)
+    except ValueError:
+        pass
+    if value.lower() in ["true", "false"]:
+        return value.lower() == "true"
+    return value
+
+def parse_query_string(args):
+    result = { "filters": {} }
+    for key, value in args.items():
+        # 8:-1 remove filters[] string
+        field_name = key[8:-1].replace('"', "").replace("'", "")
+        result["filters"][field_name] = field_value(value)
+    return result
 
 def execute_service(service_method, input_data=None, response_schema=None):
     try:
@@ -39,7 +58,8 @@ def health():
 
 @app.route('/people/find', methods=['GET'])
 def find():
-    body = request.get_json(force=True)
+    query_string = request.args.to_dict()
+    body = parse_query_string(query_string)
     data, err = None, None
     try:
         data = find_schema.load(body)
@@ -55,27 +75,27 @@ def sushi_ramen():
 
 @app.route('/people/avg_weight_above_70_hair', methods=['GET'])
 def avg_weight_above_hair():
-    body = request.get_json(force=True, silent=True)
+    body = None
     weight = 70
+    if len(request.args):
+        query_string = request.args.to_dict()
+        body = parse_query_string(query_string)
     try:
         if body:
-            data = age_schema.load(body)
+            data = weight_schema.load(body)
             weight = data.get('filters', {}).get('weight', 70)
     except ValidationError as err:
         return jsonify({"success": False, "message": err.messages, "code": 400}), 400
 
     return execute_service(people_service.avg_weight_above_hair, input_data=weight, response_schema=dict_response_schema)
 
-
 @app.route('/people/most_common_food_overall')
 def most_common_food_overall():
     return execute_service(people_service.extra1, response_schema=string_response_schema, input_data=None)
 
-
 @app.route('/people/avg_weight_nationality_hair')
 def avg_weight_nationality_hair():
     return execute_service(people_service.extra2, response_schema=dict_response_schema)
-
 
 @app.route('/people/top_oldest_nationality')
 def top_oldest_nationality():

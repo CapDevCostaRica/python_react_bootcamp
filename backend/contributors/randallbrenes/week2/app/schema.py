@@ -44,7 +44,7 @@ class ResponseStringGroupSchema(Schema):
 class WeightGroupFilter(Schema):
     weight = fields.Integer(required=True)
 
-class AgeGroupSchema(Schema):
+class WeightGroupSchema(Schema):
     filters = fields.Nested(WeightGroupFilter, required=False)
 
 class FoodGroupFilter(Schema):
