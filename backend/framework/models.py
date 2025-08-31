@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy import Column, Integer, String, JSON, Text, DateTime
+from sqlalchemy import Column, Integer, String, JSON, DateTime, func, JSON, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -9,6 +9,19 @@ class MotivationalPhrase(Base):
     id = Column(Integer, primary_key=True)
     phrase = Column(String)
 
+
+# Monster cache for randymorales proxy
+class randymorales_MonsterCache(Base):
+    __tablename__ = 'randymorales_monster_cache'
+    id = Column(Integer, primary_key=True)
+    monster_index = Column(String, unique=True, nullable=False)
+    monster_data = Column(String, nullable=False)  # Store JSON as string
+
+class randymorales_MonsterListCache(Base):
+    __tablename__ = 'randymorales_monster_list_cache'
+    id = Column(Integer, primary_key=True)
+    resource = Column(String, unique=True, nullable=False)
+    list_data = Column(String, nullable=False)  # Store JSON as string
 class kevinWalshMunozMonsterList(Base):
     __tablename__ = 'kevinWalshMunozMonsters'
 
@@ -111,3 +124,20 @@ class Monstersdanielmadriz(Base):
     name = Column(String, nullable=False)
     url = Column(String, nullable=False)    
     data = Column(JSON, nullable=False)
+
+class MonstersCrisarias(Base):
+    __tablename__= 'monsters_crisarias'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    body = Column(JSON)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class MonstersListCrisarias(Base):
+    __tablename__= 'monsters_list_crisarias'
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
