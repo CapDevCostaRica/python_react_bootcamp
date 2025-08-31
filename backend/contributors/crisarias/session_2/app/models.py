@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Index, Integer, Identity, Text, DateTime, func, JSON, DateTime
+from sqlalchemy import Column, ForeignKey, Index, Integer, Identity, Text, DateTime, func, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -25,7 +25,7 @@ Index('ix_person_nationality', Person.nationality)
 
 class Study(Base):
     __tablename__= 'study'
-    id = Column(Identity, primary_key=True, autoincrement=True)
+    id = Column(Integer,Identity(), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), nullable=False)
     degree = Column(Text, nullable=False)
     institution = Column(Text, nullable=False)
@@ -34,7 +34,7 @@ Index('ix_study_institution', Study.institution)
 
 class Family(Base):
     __tablename__= 'family'
-    id = Column(Identity, primary_key=True, autoincrement=True)
+    id = Column(Integer,Identity(), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), nullable=False)
     relation = Column(Text, nullable=False)
     name = Column(Text, nullable=False)
@@ -42,14 +42,14 @@ Index('ix_family_relation', Family.relation)
 
 class FavoriteFood(Base):
     __tablename__= 'favorite_food'
-    id = Column(Identity, primary_key=True, autoincrement=True)
+    id = Column(Integer, Identity(), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), nullable=False)
     food = Column(Text, nullable=False)
 Index('ix_favorite_food_food', FavoriteFood.food)
 
 class Hobby(Base):
     __tablename__= 'hobby'
-    id = Column(Identity, primary_key=True, autoincrement=True)
+    id = Column(Integer, Identity(), primary_key=True)
     person_id = Column(Integer, ForeignKey('person.id'), nullable=False)
     hobby = Column(Text, nullable=False)
 Index('ix_hobby_hobby', Hobby.hobby)
