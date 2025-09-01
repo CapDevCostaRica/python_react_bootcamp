@@ -41,13 +41,14 @@ jobs:
 
           echo "Changed files:\n$CHANGED"
 
-          APPS=$(echo "$CHANGED" | grep -Eo '^backend/contributors/[^/]+/[^/]+' || true | sort -u)
+          # Extract unique contributor app folders (trim CRLF and dedupe)
+          APPS=$(echo "$CHANGED" | grep -Eo '^backend/contributors/[^/]+/[^/]+' || true | sed 's/\r$//' | awk '!seen[$0]++')
           if [ -z "$APPS" ]; then
             echo "ERROR: No changes under backend/contributors detected. PR must modify only one contributor app folder."
             exit 1
           fi
 
-          APPS_COUNT=$(echo "$APPS" | wc -l)
+          APPS_COUNT=$(echo "$APPS" | sed '/^\s*$/d' | wc -l)
           if [ "$APPS_COUNT" -gt 1 ]; then
             echo "WARNING: Multiple contributor contributor app folders modified in this PR. Selecting the first one and continuing."
             echo "Detected contributor app folders (first is used):"
