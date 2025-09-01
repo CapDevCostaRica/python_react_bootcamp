@@ -35,3 +35,11 @@ class FoodSchema_majocr(Schema):
 class PersonFoodAssociationSchema_majocr(Schema):
     person_id = fields.Integer(required=True)
     food_id = fields.Integer(required=True)
+
+class PeopleDataSchema(Schema):
+    total = fields.Integer(required=True)
+    results = fields.List(fields.String(), required=True)
+
+class PeopleResponseSchema(Schema):
+    success = fields.Boolean(required=True)
+    data = fields.Nested(PeopleDataSchema, required=True)

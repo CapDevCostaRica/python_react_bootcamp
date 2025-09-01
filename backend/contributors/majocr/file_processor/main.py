@@ -1,6 +1,9 @@
 import os
 import sys
-from flask import Flask
+from flask import Flask, jsonify, request
+
+from app.service import query_people_by_filters
+from app.schema import PeopleResponseSchema
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from app.config.seed_config import get_seed_config
 from database import get_session
@@ -50,6 +53,49 @@ def is_data_seeded(session):
 @app.route('/')
 def health():
     return {'status': 'here_ok'}
+
+def extract_filters(args):
+    filters = {}
+    for key, value in args.items():
+        if key.startswith('filters[') and key.endswith(']'):
+            filter_key = key[len('filters['):-1]
+            filters[filter_key] = value
+    if 'age' in filters:
+        try:
+            filters['age'] = int(filters['age'])
+        except ValueError:
+            print(f"Invalid age value: {filters['age']}. It should be an integer.")
+            filters.pop('age')
+    if 'height_cm' in filters:
+        try:
+            filters['height_cm'] = float(filters['height_cm'])
+        except ValueError:
+            print(f"Invalid height_cm value: {filters['height_cm']}. It should be a float.")
+            filters.pop('height_cm')
+    if 'weight_kg' in filters:
+        try:
+            filters['weight_kg'] = float(filters['weight_kg'])
+        except ValueError:
+            print(f"Invalid weight_kg value: {filters['weight_kg']}. It should be a float.")
+            filters.pop('weight_kg')
+    return filters
+
+@app.route('/people/find', methods=['GET'])
+def find_people():
+    filters = extract_filters(request.args)
+    print(f"Filters received: {filters}")
+    people = query_people_by_filters(session, filters)
+    print(f"Found {len(people)} people matching filters.")
+    schema = PeopleResponseSchema()
+    response_data = {
+        "success": True,
+        "data": {
+            "total": len(people),
+            "results": [person.name for person in people]
+        }
+    }
+    validated_data = schema.load(response_data)
+    return jsonify(validated_data)
 
 if __name__ == '__main__':
     session = get_session()

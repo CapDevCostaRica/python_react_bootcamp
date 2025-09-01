@@ -68,8 +68,6 @@ def insert_new_hobbies(session, unique_hobbies):
                 session.add(new_hobby)
             except ValidationError as error:
                 print(f"Validation error for hobby '{hobby_name}': {error.messages}")
-            #new_hobby = Hobby_majocr(name=hobby_name)
-            #session.add(new_hobby)
     session.commit()
     print(f"Inserted {len(unique_hobbies)} unique hobbies.")
 
@@ -109,10 +107,6 @@ def link_hobbies_to_people(session, hobbies_data):
                     new_associations.append(new_association)
                 except ValidationError as error:
                     print(f"Validation error for person_id {person_id} and hobby_id {hobby_id}: {error.messages}")
-                #new_associations.append(Person_Hobby_Association_majocr(
-                #    person_id=person_id,
-                #    hobby_id=hobby_id
-                #))
             else:
                 print(f"Association between person_id {person_id} and hobby_id {hobby_id} already exists.")
     session.add_all(new_associations)
@@ -176,8 +170,7 @@ def insert_new_foods(session, unique_foods):
                 session.add(new_food)
             except ValidationError as error:
                 print(f"Validation error for food '{food_name}': {error.messages}")
-            #new_food = Food_majocr(name=food_name)
-            #session.add(new_food)
+
     session.commit()
     print(f"Inserted {len(unique_foods)} unique foods.")
 
@@ -216,10 +209,6 @@ def link_foods_to_people(session, foods_data):
                     new_association = Person_Food_Association_majocr(**validate_data)
                     new_associations.append(new_association)
 
-                #new_associations.append(Person_Food_Association_majocr(
-                #    person_id=person_id,
-                #    food_id=food_id
-                #))
                 except ValidationError as error:
                     print(f"Validation error for person_id {person_id} and food_id {food_id}: {error.messages}")
             else:
