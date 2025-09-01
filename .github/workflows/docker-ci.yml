@@ -18,6 +18,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # persist-credentials allows later git fetch/push if needed
+          persist-credentials: true
 
       - name: Detect APPLICATION_FOLDER from changed files and load .env and test.env
         run: |
@@ -27,10 +31,12 @@ jobs:
           echo "Using base ref: $BASE_REF"
           git fetch origin "$BASE_REF" --depth=1 || true
 
-          CHANGED=$(git diff --name-only origin/${BASE_REF}...HEAD || true)
+          # compare PR head (GITHUB_SHA) against the base ref
+          CHANGED=$(git diff --name-only origin/${BASE_REF}...${GITHUB_SHA} || true)
+          # if still empty, try listing files changed in the PR via git (safer fallback)
           if [ -z "$CHANGED" ]; then
-            # fallback to last commit
-            CHANGED=$(git diff --name-only HEAD~1..HEAD || true)
+            echo "No diff found using origin/${BASE_REF}...${GITHUB_SHA}, attempting git log-based fallback"
+            CHANGED=$(git --no-pager show --name-only --pretty="" ${GITHUB_SHA} || true)
           fi
 
           echo "Changed files:\n$CHANGED"
