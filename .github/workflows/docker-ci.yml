@@ -79,11 +79,25 @@ jobs:
           fi
 
           echo "Loading $TEST_ENV_PATH into environment"
-          # Load test.env into GITHUB_ENV and current shell
-          grep -v '^\s*#' "$TEST_ENV_PATH" | sed '/^\s*$/d' | while IFS= read -r line; do
+          # Load test.env into GITHUB_ENV and current shell (robust parsing)
+          grep -v '^\s*#' "$TEST_ENV_PATH" | sed '/^\s*$/d' | sed 's/\r$//' | while IFS= read -r line; do
+            # skip lines without an equals sign
+            if ! echo "$line" | grep -q '='; then
+              continue
+            fi
+            # split key and value
             key="${line%%=*}"
-            echo "$line" >> $GITHUB_ENV
-            export "${line%%=*}=${line#*=}"
+            # trim whitespace around key
+            key="$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            value="${line#*=}"
+            # remove surrounding single or double quotes from value
+            case "$value" in
+              "\""*) value="${value:1:${#value}-2}" ;;
+              "'"*) value="${value:1:${#value}-2}" ;;
+            esac
+            # append to GITHUB_ENV and export into current shell
+            echo "${key}=${value}" >> $GITHUB_ENV
+            export "${key}=${value}"
           done
 
           # Load .env but do not overwrite APPLICATION_FOLDER or variables already set by test.env
