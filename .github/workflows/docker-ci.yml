@@ -242,12 +242,15 @@ jobs:
             } catch (e) {
               content = 'Could not read pytest log.';
             }
-            const short = content.split('\n').slice(0, 200).join('\n');
+            const summaryRegex = /((?:\d+ passed)?(?:, \d+ failed)?(?:, \d+ skipped)?(?:, \d+ xfailed)?(?:, \d+ xpassed)? in \d+\.\d+s)/;
+            const match = content.match(summaryRegex);
+            const summaryLine = match ? match[1].trim() : 'Could not find pytest summary line.';
+
             const exitCode = '${{ steps.pytest_run.outputs.pytest_exit }}';
             const pr = context.payload.pull_request;
             if (pr) {
-              const statusMessage = (exitCode === '0') ? 'All tests passed ✅' : 'Some tests failed ❌ — check the logs';
-              const body = `**Pytest run summary**\n\n${statusMessage}\n\nExit code: ${exitCode}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
+              const statusMessage = (exitCode === '0') ? 'All required tests passed ✅' : 'Some required tests failed ❌';
+              const body = `**Pytest Results**\n\n${statusMessage}\n\n**Summary:** \`${summaryLine}\`\n\n<details><summary>Full pytest log</summary>\n\n\`\`\`\n${content}\n\`\`\`\n\n</details>`;
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
