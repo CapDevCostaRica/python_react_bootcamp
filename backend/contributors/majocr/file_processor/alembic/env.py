@@ -6,6 +6,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from contributors.majocr.file_processor.app.models import Base as Base_majocr
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -22,7 +23,7 @@ try:
     from app.models import Base
 except ModuleNotFoundError:
     from app.framework.models import Base
-target_metadata = Base.metadata
+target_metadata = Base_majocr.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
