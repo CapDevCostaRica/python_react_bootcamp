@@ -1,13 +1,6 @@
 name: CI - Docker Compose Integration
 
 on:
-  push:
-    paths:
-      - 'exercises/session_2/**'
-      - 'backend/**'
-      - 'tests/**'
-      - 'docker-compose.yml'
-      - '.github/workflows/**'
   pull_request:
     paths:
       - 'exercises/session_2/**'
@@ -28,11 +21,13 @@ jobs:
 
       - name: Detect APPLICATION_FOLDER from changed files and load .env and test.env
         run: |
-          echo "Detecting changed contributor folder"
-          # Ensure we have main to diff against
-          git fetch origin main --depth=1 || true
+          echo "Detecting changed contributor folder from PR base"
+          # Determine PR base ref (GITHUB_BASE_REF is set on pull_request events)
+          BASE_REF=${GITHUB_BASE_REF:-main}
+          echo "Using base ref: $BASE_REF"
+          git fetch origin "$BASE_REF" --depth=1 || true
 
-          CHANGED=$(git diff --name-only origin/main...HEAD || true)
+          CHANGED=$(git diff --name-only origin/${BASE_REF}...HEAD || true)
           if [ -z "$CHANGED" ]; then
             # fallback to last commit
             CHANGED=$(git diff --name-only HEAD~1..HEAD || true)
