@@ -75,6 +75,7 @@ I have green eyes and brown hair, and I'm 25 years old.
 
 Create an endpoint for each one of these reports, and return the same format as the previous exercise.
 
+### Extra 1
 People who like both sushi and ramen\
 Route: /people/sushi_ramen\
 Example response
@@ -86,6 +87,7 @@ Example response
 }
 ```
 
+### Extra 2
 People with average weight above 70 grouped by hair color\
 Route: /people/avg_weight_above_70_hair\
 Example response
@@ -100,7 +102,7 @@ Example response
 }
 ```
 
-### Extra 1
+### Extra 3
 Most common food overall\
 Route: /people/most_common_food_overall\
 Example response
@@ -112,7 +114,7 @@ Example response
 }
 ```
 
-### Extra 2
+### Extra 4
 Average weight grouped by nationality and hair color\
 Route: /people/avg_weight_nationality_hair\
 Example response
@@ -127,11 +129,12 @@ Example response
 }
 ```
 
+### Extra 5
 The top 2 oldest people per nationality\
 Route: /people/top_oldest_nationality\
 Example response
 
-### Extra 3
+
 ```json
 {
     "success": true, 
@@ -142,7 +145,7 @@ Example response
 }
 ```
 
-### Extra 4
+### Extra 6
 People ranked by how many hobbies they have (Top 3)\
 Route: /people/top_hobbies\
 Example response
@@ -154,7 +157,7 @@ Example response
 }
 ```
 
-### Extra 5
+### Extra 7
 Average height by nationality and average in general\
 Route: /people/avg_height_nationality_general\
 Example response
