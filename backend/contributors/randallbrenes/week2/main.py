@@ -16,6 +16,12 @@ string_response_schema = ResponseStringGroupSchema()
 list_response_schema = ResponseListSchema()
 people_service = PeopleService()
 
+def parse_response(response_obj):
+    code = response_obj.get('code', 500)
+    del response_obj['code']
+
+    return jsonify(response_obj), code
+
 def field_value(value: str):
     if value.isdigit():
         return int(value)
@@ -50,7 +56,7 @@ def execute_service(service_method, input_data=None, response_schema=None):
     except Exception as e:
         response = {"success": False, "message": str(e), "code": 500}
 
-    return jsonify(response), response.get('code', 500)
+    return parse_response(response)
 
 @app.route('/')
 def health():
