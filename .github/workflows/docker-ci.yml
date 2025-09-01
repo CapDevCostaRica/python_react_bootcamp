@@ -226,25 +226,26 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs')
-            const path = 'reports/pytest.log'
-            let content = ''
+            const fs = require('fs');
+            const path = 'reports/pytest.log';
+            let content = '';
             try {
-              content = fs.readFileSync(path, { encoding: 'utf8' })
+              content = fs.readFileSync(path, { encoding: 'utf8' });
             } catch (e) {
-              content = 'Could not read pytest log.'
+              content = 'Could not read pytest log.';
             }
-            const short = content.split('\n').slice(0, 200).join('\n')
-            const exitCode = core.getInput('pytest_exit') || '${{ steps.pytest_run.outputs.pytest_exit }}'
-            const pr = context.payload.pull_request
+            const short = content.split('\n').slice(0, 200).join('\n');
+            const exitCode = '${{ steps.pytest_run.outputs.pytest_exit }}';
+            const pr = context.payload.pull_request;
             if (pr) {
-              const body = `**Pytest run summary**\n\nExit code: ${exitCode}\n\n\n<details><summary>First 200 lines of pytest log</summary>\n\n\n\n\n${short}\n\n</details>`
+              const body = `**Pytest run summary**\n\nExit code: ${exitCode}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: pr.number,
                 body
-              })
+              });
+            }
 
       - name: Tear down docker-compose
         if: always()
