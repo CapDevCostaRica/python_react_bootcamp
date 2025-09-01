@@ -247,4 +247,3 @@ def test_avg_height_nationality_general_extra():
     for k, v in expected_nationalities.items():
         assert k in nationalities, f"missing nationality {k}"
         assert pytest.approx(nationalities.get(k), rel=1e-3) == v
-
