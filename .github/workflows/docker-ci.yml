@@ -235,19 +235,46 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const path = 'reports/pytest.log';
-            let content = '';
-            try {
-              content = fs.readFileSync(path, { encoding: 'utf8' });
-            } catch (e) {
-              content = 'Could not read pytest log.';
+            function safeRead(path) {
+              try { return fs.readFileSync(path, 'utf8'); } catch (e) { return null; }
             }
-            const short = content.split('\n').slice(0, 200).join('\n');
+
+            function parseJUnitCounts(xml) {
+              if (!xml) return { tests: 0, failures: 0, errors: 0, skipped: 0 };
+              const m = xml.match(/tests="(\d+)"[^>]*failures="(\d+)"[^>]*errors="(\d+)"[^>]*skipped="(\d+)"/i);
+              if (m) return { tests: +m[1], failures: +m[2], errors: +m[3], skipped: +m[4] };
+              const m2 = xml.match(/tests="(\d+)"[^>]*failures="(\d+)"[^>]*errors="(\d+)"/i);
+              if (m2) return { tests: +m2[1], failures: +m2[2], errors: +m2[3], skipped: 0 };
+              const m3 = xml.match(/tests="(\d+)"/i);
+              if (m3) return { tests: +m3[1], failures: 0, errors: 0, skipped: 0 };
+              return { tests: 0, failures: 0, errors: 0, skipped: 0 };
+            }
+
+            const requiredXml = safeRead('reports/required-report.xml');
+            const optionalXml = safeRead('reports/optional-report.xml');
+            const requiredCounts = parseJUnitCounts(requiredXml);
+            const optionalCounts = parseJUnitCounts(optionalXml);
+
+            const totals = {
+              tests: requiredCounts.tests + optionalCounts.tests,
+              failures: requiredCounts.failures + optionalCounts.failures,
+              errors: requiredCounts.errors + optionalCounts.errors,
+              skipped: requiredCounts.skipped + optionalCounts.skipped,
+            };
+            totals.passed = Math.max(0, totals.tests - totals.failures - totals.errors - totals.skipped);
+
+            const log = safeRead('reports/pytest.log') || '';
+            // count xfailed / xpassed occurrences in the combined log
+            const xfailed = (log.match(/\b(XFAIL|xfailed|xfail)\b/gi) || []).length;
+            const xpassed = (log.match(/\b(XPASS|xpassed|xpass)\b/gi) || []).length;
+
+            const short = log.split('\n').slice(0, 200).join('\n');
             const exitCode = '${{ steps.pytest_run.outputs.pytest_exit }}';
             const pr = context.payload.pull_request;
             if (pr) {
-              const statusMessage = (exitCode === '0') ? 'All tests passed ✅' : 'Some tests failed ❌ — check the logs';
-              const body = `**Pytest run summary**\n\n${statusMessage}\n\nExit code: ${exitCode}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
+              const statusMessage = (exitCode === '0') ? 'All required tests passed ✅' : 'Required tests failed ❌';
+              const body = `**Pytest run summary**\n\n${statusMessage}\n\nExit code: ${exitCode}\n\nTotals:\n- tests: ${totals.tests}\n- passed: ${totals.passed}\n- failures: ${totals.failures}\n- errors: ${totals.errors}\n- skipped: ${totals.skipped}\n- xfailed (log count): ${xfailed}\n- xpassed (log count): ${xpassed}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
+
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
