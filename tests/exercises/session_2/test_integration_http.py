@@ -116,6 +116,67 @@ def test_avg_weight_above_70_hair_extra():
         assert pytest.approx(data.get(k), rel=1e-3) == v
 
 
+def test_most_common_food_overall_extra():
+    url = f"{API_URL}/people/most_common_food_overall"
+    resp = requests.get(url, timeout=10)
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload == {"success": True, "data": "curry"}
+
+
+def test_avg_weight_nationality_hair_extra():
+    url = f"{API_URL}/people/avg_weight_nationality_hair"
+    resp = requests.get(url, timeout=10)
+    assert resp.status_code == 200
+    payload = resp.json()
+
+    expected = {
+        "american-auburn": 67,
+        "american-black": 78,
+        "american-blonde": 70,
+        "american-brown": 94,
+        "american-gray": 75,
+        "american-red": 74,
+        "brazilian-auburn": 70,
+        "brazilian-black": 75,
+        "brazilian-blonde": 98,
+        "brazilian-brown": 68,
+        "brazilian-gray": 87,
+        "canadian-auburn": 75,
+        "canadian-black": 70,
+        "canadian-blonde": 67,
+        "canadian-brown": 66,
+        "canadian-gray": 70,
+        "french-auburn": 74,
+        "french-black": 88,
+        "french-blonde": 68,
+        "french-brown": 78,
+        "french-gray": 77,
+        "german-auburn": 83,
+        "german-black": 76,
+        "german-blonde": 78,
+        "german-brown": 87,
+        "german-gray": 85,
+        "mexican-auburn": 73,
+        "mexican-black": 80,
+        "mexican-blonde": 81,
+        "mexican-brown": 75,
+        "mexican-gray": 80,
+        "nigerian-auburn": 74,
+        "nigerian-black": 71,
+        "nigerian-blonde": 73,
+        "nigerian-brown": 76,
+        "nigerian-gray": 64,
+        "spanish-auburn": 58,
+        "spanish-black": 85,
+        "spanish-blonde": 72,
+        "spanish-brown": 79,
+        "spanish-gray": 76,
+    }
+
+    assert payload == {"success": True, "data": expected}
+
+
 def test_top_oldest_nationality_extra():
     url = f"{API_URL}/people/top_oldest_nationality"
     resp = requests.get(url, timeout=10)
@@ -180,65 +241,3 @@ def test_avg_height_nationality_general_extra():
         assert k in nationalities, f"missing nationality {k}"
         assert pytest.approx(nationalities.get(k), rel=1e-3) == v
 
-
-def test_most_common_food_overall_extra():
-    url = f"{API_URL}/people/most_common_food_overall"
-    resp = requests.get(url, timeout=10)
-    assert resp.status_code == 200
-    payload = resp.json()
-    assert payload == {"success": True, "data": "curry"}
-
-
-def test_avg_weight_nationality_hair_extra():
-    url = f"{API_URL}/people/avg_weight_nationality_hair"
-    resp = requests.get(url, timeout=10)
-    assert resp.status_code == 200
-    payload = resp.json()
-    assert payload.get("success") is True
-    data = payload.get("data")
-    assert isinstance(data, dict)
-    expected_keys = {
-        "american-auburn",
-        "american-black",
-        "american-blonde",
-        "american-brown",
-        "american-gray",
-        "american-red",
-        "brazilian-auburn",
-        "brazilian-black",
-        "brazilian-blonde",
-        "brazilian-brown",
-        "brazilian-gray",
-        "brazilian-red",
-        "canadian-auburn",
-        "canadian-black",
-        "canadian-brown",
-        "canadian-gray",
-        "canadian-red",
-        "french-auburn",
-        "french-black",
-        "french-brown",
-        "french-red",
-        "german-auburn",
-        "german-black",
-        "german-blonde",
-        "german-brown",
-        "mexican-auburn",
-        "mexican-blonde",
-        "mexican-brown",
-        "mexican-gray",
-        "mexican-red",
-        "nigerian-auburn",
-        "nigerian-black",
-        "nigerian-blonde",
-        "nigerian-brown",
-        "nigerian-gray",
-        "nigerian-red",
-        "spanish-black",
-        "spanish-gray",
-        "spanish-red",
-    }
-    assert expected_keys.issubset(set(data.keys()))
-    for k in expected_keys:
-        v = data.get(k)
-        assert isinstance(v, (int, float))
