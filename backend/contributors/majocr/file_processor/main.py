@@ -84,6 +84,7 @@ def extract_filters(args):
 def find_people():
     filters = extract_filters(request.args)
     print(f"Filters received: {filters}")
+    session = get_session()
     people = query_people_by_filters(session, filters)
     print(f"Found {len(people)} people matching filters.")
     schema = PeopleResponseSchema()
