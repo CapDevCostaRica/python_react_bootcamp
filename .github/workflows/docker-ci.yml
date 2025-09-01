@@ -141,9 +141,10 @@ jobs:
           done
 
       - name: Start Docker Compose (build & run)
-        uses: docker/compose-action@v2
-        with:
-          run: up -d --build
+        run: |
+          echo "Starting docker compose directly (no external action)"
+          docker compose version || true
+          docker compose up -d --build
 
       - name: Reset database inside flask_app container
         run: |
