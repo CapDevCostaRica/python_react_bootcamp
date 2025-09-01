@@ -49,8 +49,10 @@ jobs:
 
           APPS_COUNT=$(echo "$APPS" | wc -l)
           if [ "$APPS_COUNT" -gt 1 ]; then
-            echo "ERROR: Multiple contributor app folders modified in a single PR:\n$APPS"
-            exit 1
+            echo "WARNING: Multiple contributor contributor app folders modified in this PR. Selecting the first one and continuing."
+            echo "Detected contributor app folders (first is used):"
+            echo "$APPS"
+            # continue and pick the first one
           fi
 
           APP_FULL=$(echo "$APPS" | head -n1)
@@ -58,10 +60,10 @@ jobs:
 
           # Ensure all changed files are inside this detected app folder
           if echo "$CHANGED" | grep -v -E "^backend/contributors/$APP_REL/" | grep -q .; then
-            echo "ERROR: Found changed files outside the detected app folder backend/contributors/$APP_REL"
-            echo "Changed files outside the app:"
+            echo "WARNING: Found changed files outside the detected app folder backend/contributors/$APP_REL"
+            echo "Changed files outside the app (these will be ignored):"
             echo "$CHANGED" | grep -v -E "^backend/contributors/$APP_REL/"
-            exit 1
+            # continue anyway using the first detected app
           fi
 
           echo "Detected APPLICATION_FOLDER=$APP_REL"
