@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions: 
       contents: read
+      issues: write
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -212,7 +214,8 @@ jobs:
           # Run pytest, save junit xml and full log
           pytest "$TEST_PATH" -q --junitxml=reports/pytest-report.xml 2>&1 | tee reports/pytest.log || true
           echo "pytest exit code: ${PIPESTATUS[0]}"
-          echo "::set-output name=pytest_exit::${PIPESTATUS[0]}"
+          # set step output using the Actions environment file (replacement for deprecated set-output)
+          echo "pytest_exit=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
         id: pytest_run
 
       - name: Upload pytest reports
