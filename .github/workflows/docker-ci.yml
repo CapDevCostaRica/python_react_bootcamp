@@ -79,26 +79,26 @@ jobs:
           fi
 
           echo "Loading $TEST_ENV_PATH into environment"
-          # Load test.env into GITHUB_ENV and current shell (robust parsing)
-          grep -v '^\s*#' "$TEST_ENV_PATH" | sed '/^\s*$/d' | sed 's/\r$//' | while IFS= read -r line; do
-            # skip lines without an equals sign
+          # Create a filtered temp file with only KEY=VALUE lines (no comments or blank lines)
+          TMP_TEST_ENV=$(mktemp)
+          grep -v '^\s*#' "$TEST_ENV_PATH" | sed '/^\s*$/d' | sed 's/\r$//' > "$TMP_TEST_ENV"
+
+          # Use 'set -o allexport' + source so variables become exported in the current shell
+          set -o allexport
+          # shellcheck disable=SC1090
+          source "$TMP_TEST_ENV"
+          set +o allexport
+
+          # Append the filtered lines to GITHUB_ENV so subsequent steps receive them
+          while IFS= read -r line; do
+            # skip any malformed lines without '='
             if ! echo "$line" | grep -q '='; then
               continue
             fi
-            # split key and value
-            key="${line%%=*}"
-            # trim whitespace around key
-            key="$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
-            value="${line#*=}"
-            # remove surrounding single or double quotes from value
-            case "$value" in
-              "\""*) value="${value:1:${#value}-2}" ;;
-              "'"*) value="${value:1:${#value}-2}" ;;
-            esac
-            # append to GITHUB_ENV and export into current shell
-            echo "${key}=${value}" >> $GITHUB_ENV
-            export "${key}=${value}"
-          done
+            echo "$line" >> $GITHUB_ENV
+          done < "$TMP_TEST_ENV"
+
+          rm -f "$TMP_TEST_ENV"
 
           # Load .env but do not overwrite APPLICATION_FOLDER or variables already set by test.env
           if [ -f .env ]; then
