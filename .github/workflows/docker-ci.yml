@@ -212,19 +212,24 @@ jobs:
           TEST_PATH="${TEST_FOLDER#/}"
           echo "Running pytest on: $TEST_PATH"
           # Run pytest, save junit xml and full log
-          pytest "$TEST_PATH" -q --junitxml=reports/pytest-report.xml 2>&1 | tee reports/pytest.log || true
-          echo "pytest exit code: ${PIPESTATUS[0]}"
+          pytest "$TEST_PATH" -q --junitxml=reports/pytest-report.xml 2>&1 | tee reports/pytest.log
+          PYTEST_EXIT=${PIPESTATUS[0]}
+          echo "pytest exit code: $PYTEST_EXIT"
           # set step output using the Actions environment file (replacement for deprecated set-output)
-          echo "pytest_exit=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+          echo "pytest_exit=$PYTEST_EXIT" >> $GITHUB_OUTPUT
+          # exit with pytest exit code so the job reflects test status; later steps that must run use 'if: always()'
+          exit $PYTEST_EXIT
         id: pytest_run
 
       - name: Upload pytest reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pytest-reports
           path: reports/
 
       - name: Post pytest summary to PR
+        if: always()
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
