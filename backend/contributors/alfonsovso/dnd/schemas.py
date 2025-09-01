@@ -12,15 +12,15 @@ class MonsterIndexItemSchema(Schema):
     url   = fields.String(required=True)
 
 class ListResponseSchema(Schema):
+    count   = fields.Integer(required=True)
     results = fields.List(fields.Nested(MonsterIndexItemSchema), required=True)
 
 class MonsterDetailSchema(Schema):
     index = fields.String(required=True)
     name  = fields.String(required=True)
-
     class Meta:
-        unknown = INCLUDE
+        unknown = INCLUDE  # dejamos pasar campos extra del upstream
 
 class ErrorSchema(Schema):
-    error = fields.String(required=True)
+    error   = fields.String(required=True)
     details = fields.Raw(required=False)
