@@ -241,7 +241,8 @@ jobs:
             const exitCode = '${{ steps.pytest_run.outputs.pytest_exit }}';
             const pr = context.payload.pull_request;
             if (pr) {
-              const body = `**Pytest run summary**\n\nExit code: ${exitCode}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
+              const statusMessage = (exitCode === '0') ? 'All tests passed ✅' : 'Some tests failed ❌ — check the logs';
+              const body = `**Pytest run summary**\n\n${statusMessage}\n\nExit code: ${exitCode}\n\n<details><summary>First 200 lines of pytest log</summary>\n\n${short}\n\n</details>`;
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
