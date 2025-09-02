@@ -1,5 +1,5 @@
 from app.models import Family_majocr, Food_majocr, Hobby_majocr, People_majocr, Person_Food_Association_majocr, Person_Hobby_Association_majocr, Study_majocr
-from app.seeds import seed_family, seed_foods, seed_hobbies, seed_people, seed_studies
+from seeds import seed_family, seed_foods, seed_hobbies, seed_people, seed_studies
 
 def actual_validation_count(session, table, min_expected):
     actual_count = session.query(table).count()
