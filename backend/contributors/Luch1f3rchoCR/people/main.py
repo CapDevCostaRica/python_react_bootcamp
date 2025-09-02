@@ -1,28 +1,31 @@
-from flask import Flask, request, jsonify
+from flask import Flask, Blueprint, request, jsonify
 from sqlalchemy import select, and_, func
 
 from .app.database import SessionLocal
 from .app.models import People, Favorite, Hobbies, Family, Studies
 
 app = Flask(__name__)
+people_bp = Blueprint("people", __name__, url_prefix="/people")
 
 @app.get("/")
 def health():
     return {"status": "ok"}
 
-# -------- helpers --------
 def _filters_from_request():
     q = dict(request.args)
     body = request.get_json(silent=True) or {}
-    if isinstance(body.get("filters"), dict):
-        q.update(body["filters"])
+    if isinstance(body, dict):
+        if isinstance(body.get("filters"), dict):
+            q.update(body["filters"])
+        for k, v in body.items():
+            if k not in q and k != "filters":
+                q[k] = v
     return q
 
 def _lc(s):
     return (s or "").lower()
 
-
-@app.get("/people/find")
+@people_bp.route("/find", methods=["GET", "POST"])
 def people_find():
     q = _filters_from_request()
     filters = []
@@ -30,10 +33,9 @@ def people_find():
     if "eye_color"   in q: filters.append(func.lower(People.eye_color)   == _lc(q["eye_color"]))
     if "hair_color"  in q: filters.append(func.lower(People.hair_color)  == _lc(q["hair_color"]))
     if "nationality" in q: filters.append(func.lower(People.nationality) == _lc(q["nationality"]))
-
-    if "age"        in q: filters.append(People.age        == int(q["age"]))
-    if "height_cm"  in q: filters.append(People.height_cm  == int(q["height_cm"]))
-    if "weight_kg"  in q: filters.append(People.weight_kg  == int(q["weight_kg"]))
+    if "age"        in q: filters.append(People.age       == int(q["age"]))
+    if "height_cm"  in q: filters.append(People.height_cm == int(q["height_cm"]))
+    if "weight_kg"  in q: filters.append(People.weight_kg == int(q["weight_kg"]))
 
     join_fav   = "food" in q
     join_hobby = "hobby" in q
@@ -61,13 +63,12 @@ def people_find():
     return jsonify({
         "success": True,
         "data": {
-            "results": results,
-            "total": len(results)
+            "total": len(results),
+            "results": results
         }
     })
 
-
-@app.get("/people/sushi_ramen")
+@people_bp.get("/sushi_ramen")
 def people_sushi_ramen():
     subq = (
         select(Favorite.person_id)
@@ -81,8 +82,7 @@ def people_sushi_ramen():
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
 
-
-@app.get("/people/sushi")
+@people_bp.get("/sushi")
 def people_sushi():
     stmt = (
         select(func.count(func.distinct(Favorite.person_id)))
@@ -92,8 +92,7 @@ def people_sushi():
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
 
-
-@app.get("/people/avg_weight_above_70_hair")
+@people_bp.get("/avg_weight_above_70_hair")
 def avg_weight_above_70_hair():
     min_w = request.args.get("min", 70, type=int)
     stmt = (
@@ -103,11 +102,10 @@ def avg_weight_above_70_hair():
     )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
-    data = { (hc or ""): int(round(avg or 0)) for hc, avg in rows }
+    data = {(hc or ""): int(round(avg or 0)) for hc, avg in rows}
     return jsonify({"success": True, "data": data})
 
-
-@app.get("/people/most_common_food_overall")
+@people_bp.get("/most_common_food_overall")
 def most_common_food_overall():
     stmt = (
         select(Favorite.food, func.count(Favorite.id))
@@ -119,8 +117,7 @@ def most_common_food_overall():
         row = db.execute(stmt).first()
     return jsonify({"success": True, "data": (row.food if row else "")})
 
-
-@app.get("/people/avg_weight_nationality_hair")
+@people_bp.get("/avg_weight_nationality_hair")
 def avg_weight_nationality_hair():
     stmt = (
         select(People.nationality, People.hair_color, func.avg(People.weight_kg))
@@ -128,14 +125,10 @@ def avg_weight_nationality_hair():
     )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
-    data = {
-        f"{_lc(nat)}-{_lc(hc)}": int(round(avg or 0))
-        for nat, hc, avg in rows
-    }
+    data = {f"{_lc(nat)}-{_lc(hc)}": int(round(avg or 0)) for nat, hc, avg in rows}
     return jsonify({"success": True, "data": data})
 
-
-@app.get("/people/top_oldest_nationality")
+@people_bp.get("/top_oldest_nationality")
 def top_oldest_nationality():
     subq = (
         select(
@@ -160,8 +153,7 @@ def top_oldest_nationality():
         out.setdefault(key, []).append(full_name)
     return jsonify({"success": True, "data": out})
 
-
-@app.get("/people/top_hobbies")
+@people_bp.get("/top_hobbies")
 def top_hobbies():
     stmt = (
         select(People.full_name, func.count(Hobbies.id))
@@ -175,17 +167,17 @@ def top_hobbies():
     names = [full_name for full_name, _ in rows]
     return jsonify({"success": True, "data": names})
 
-
-@app.get("/people/avg_height_nationality_general")
+@people_bp.get("/avg_height_nationality_general")
 def avg_height_nationality_general():
     with SessionLocal() as db:
         general = db.execute(select(func.avg(People.height_cm))).scalar()
         rows = db.execute(
-            select(People.nationality, func.avg(People.height_cm))
-            .group_by(People.nationality)
+            select(People.nationality, func.avg(People.height_cm)).group_by(People.nationality)
         ).all()
     result = {
         "general": int(round(general or 0)),
-        "nationalities": { _lc(nat): int(round(avg or 0)) for nat, avg in rows },
+        "nationalities": {_lc(nat): int(round(avg or 0)) for nat, avg in rows},
     }
     return jsonify({"success": True, "data": result})
+
+app.register_blueprint(people_bp)
