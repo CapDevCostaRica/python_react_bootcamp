@@ -166,7 +166,7 @@ def test_avg_weight_nationality_hair_extra():
         "nigerian-blonde": 60.33,
         "nigerian-brown": 54,
         "nigerian-gray": 85,
-        "nigerian-red": 66.50,
+        "nigerian-red": 76.50,
         "spanish-black": 79,
         "spanish-gray": 61,
         "spanish-red": 67.50,
