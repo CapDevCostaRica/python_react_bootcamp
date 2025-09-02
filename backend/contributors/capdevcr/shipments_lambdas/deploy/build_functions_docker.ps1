@@ -1,22 +1,16 @@
 $ErrorActionPreference = "Stop"
 
-# Paths base
-$ShipRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)   # .../contributors/capdevcr/shipments_lambdas
-$CapRoot  = Split-Path -Parent $ShipRoot                                           # .../contributors/capdevcr
+$ShipRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)   # .../contributors/name/shipments_lambdas
+$CapRoot  = Split-Path -Parent $ShipRoot                                           # .../contributors/name
 $BuildDir = Join-Path $CapRoot "infra\build"
 
 $env:APP_SRC = "contributors/capdevcr/shipments_lambdas/app"
 
-# Archivo de requirements a usar:
-# - si tienes un requirements específico para estas lambdas, pon su ruta aquí
-# - si no, suele estar en shipments_lambdas/requirements.txt
 $env:REQ_FILE = "contributors/capdevcr/shipments_lambdas/requirements.txt"
 
-# Limpiar build
 if (Test-Path $BuildDir) { Remove-Item $BuildDir -Recurse -Force }
 New-Item -ItemType Directory -Path $BuildDir | Out-Null
 
-# Construir deps Linux-compatibles y empaquetar 2 funciones
 docker run --rm `
   -v "$($CapRoot):/cap" `
   -w /cap `
@@ -26,21 +20,17 @@ docker run --rm `
   bash -lc @'
 set -euo pipefail
 
-# Variables desde -e
 : "${APP_SRC:?APP_SRC is required}"
 : "${REQ_FILE:?REQ_FILE is required}"
 
-# Rutas absolutas dentro del contenedor
 CAP="/cap"
 BUILD="$CAP/contributors/capdevcr/infra/build"
 APP_SRC_ABS="$CAP/$APP_SRC"
 REQ_FILE_ABS="$CAP/$REQ_FILE"
 
-# 1) site-packages para Lambda (Linux)
 python -m pip install --upgrade pip
 python -m pip install -r "$REQ_FILE_ABS" -t "$BUILD/_site"
 
-# 2) Empaquetar funciones
 python - << 'PY'
 import os, shutil, zipfile, sys
 
