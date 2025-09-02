@@ -1,8 +1,4 @@
 import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'app')))
-from models import Base as Base_majocr
-
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -26,7 +22,7 @@ try:
     from app.models import Base
 except ModuleNotFoundError:
     from app.framework.models import Base
-target_metadata = Base_majocr.metadata
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
