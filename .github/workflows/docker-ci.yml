@@ -1,0 +1,266 @@
+name: CI - Docker Compose Integration
+
+on:
+  pull_request:
+    paths:
+      - 'exercises/session_2/**'
+      - 'backend/**'
+      - 'tests/**'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    permissions: 
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # persist-credentials allows later git fetch/push if needed
+          persist-credentials: true
+
+      - name: Detect APPLICATION_FOLDER from changed files and load .env and test.env
+        run: |
+          echo "Detecting changed contributor folder from PR base"
+          # Determine PR base ref (GITHUB_BASE_REF is set on pull_request events)
+          BASE_REF=${GITHUB_BASE_REF:-main}
+          echo "Using base ref: $BASE_REF"
+          git fetch origin "$BASE_REF" --depth=1 || true
+
+          # compare PR head (GITHUB_SHA) against the base ref
+          CHANGED=$(git diff --name-only origin/${BASE_REF}...${GITHUB_SHA} || true)
+          # if still empty, try listing files changed in the PR via git (safer fallback)
+          if [ -z "$CHANGED" ]; then
+            echo "No diff found using origin/${BASE_REF}...${GITHUB_SHA}, attempting git log-based fallback"
+            CHANGED=$(git --no-pager show --name-only --pretty="" ${GITHUB_SHA} || true)
+          fi
+
+          echo "Changed files:\n$CHANGED"
+
+          # Extract unique contributor app folders (trim CRLF and dedupe)
+          APPS=$(echo "$CHANGED" | grep -Eo '^backend/contributors/[^/]+/[^/]+' || true | sed 's/\r$//' | awk '!seen[$0]++')
+          if [ -z "$APPS" ]; then
+            echo "ERROR: No changes under backend/contributors detected. PR must modify only one contributor app folder."
+            exit 1
+          fi
+
+          APPS_COUNT=$(echo "$APPS" | sed '/^\s*$/d' | wc -l)
+          if [ "$APPS_COUNT" -gt 1 ]; then
+            echo "WARNING: Multiple contributor contributor app folders modified in this PR. Selecting the first one and continuing."
+            echo "Detected contributor app folders (first is used):"
+            echo "$APPS"
+            # continue and pick the first one
+          fi
+
+          APP_FULL=$(echo "$APPS" | head -n1)
+          APP_REL=${APP_FULL#backend/contributors/}
+
+          # Ensure all changed files are inside this detected app folder
+          if echo "$CHANGED" | grep -v -E "^backend/contributors/$APP_REL/" | grep -q .; then
+            echo "WARNING: Found changed files outside the detected app folder backend/contributors/$APP_REL"
+            echo "Changed files outside the app (these will be ignored):"
+            echo "$CHANGED" | grep -v -E "^backend/contributors/$APP_REL/"
+            # continue anyway using the first detected app
+          fi
+
+          echo "Detected APPLICATION_FOLDER=$APP_REL"
+          echo "APPLICATION_FOLDER=$APP_REL" >> $GITHUB_ENV
+          export APPLICATION_FOLDER="$APP_REL"
+
+          # Require test.env inside the contributor folder
+          TEST_ENV_PATH="backend/contributors/$APP_REL/test.env"
+          if [ ! -f "$TEST_ENV_PATH" ]; then
+            echo "ERROR: Required file $TEST_ENV_PATH not found. The contributor folder must include test.env"
+            exit 1
+          fi
+
+          echo "Loading $TEST_ENV_PATH into environment"
+          # Create a filtered temp file with only KEY=VALUE lines (no comments or blank lines)
+          TMP_TEST_ENV=$(mktemp)
+          grep -v '^\s*#' "$TEST_ENV_PATH" | sed '/^\s*$/d' | sed 's/\r$//' > "$TMP_TEST_ENV"
+
+          # Use 'set -o allexport' + source so variables become exported in the current shell
+          set -o allexport
+          # shellcheck disable=SC1090
+          source "$TMP_TEST_ENV"
+          set +o allexport
+
+          # Append the filtered lines to GITHUB_ENV so subsequent steps receive them
+          while IFS= read -r line; do
+            # skip any malformed lines without '='
+            if ! echo "$line" | grep -q '='; then
+              continue
+            fi
+            echo "$line" >> $GITHUB_ENV
+          done < "$TMP_TEST_ENV"
+
+          rm -f "$TMP_TEST_ENV"
+
+          # Load .env but do not overwrite APPLICATION_FOLDER or variables already set by test.env
+          if [ -f .env ]; then
+            echo "Loading .env (skipping keys set by test.env and APPLICATION_FOLDER)"
+            grep -v '^\s*#' .env | sed '/^\s*$/d' | while IFS= read -r line; do
+              key="${line%%=*}"
+              # skip APPLICATION_FOLDER (we detected it from PR)
+              if [ "$key" = "APPLICATION_FOLDER" ]; then
+                continue
+              fi
+              # if key already set in environment (from test.env), skip
+              if [ -n "$(printenv "$key")" ]; then
+                echo "Skipping $key from .env because it is already set"
+                continue
+              fi
+              echo "$line" >> $GITHUB_ENV
+              export "${line%%=*}=${line#*=}"
+            done
+          fi
+
+          # Ensure TEST_FOLDER is set (either from test.env, .env or repository env)
+          if [ -z "${TEST_FOLDER+x}" ] || [ -z "$TEST_FOLDER" ]; then
+            echo "ERROR: TEST_FOLDER is not set. Please set TEST_FOLDER in test.env, .env or repository secrets."
+            exit 1
+          fi
+          echo "Using TEST_FOLDER=$TEST_FOLDER"
+
+      - name: Prepare .env for docker-compose
+        run: |
+          echo "Preparing .env using .env.example and APPLICATION_FOLDER=$APPLICATION_FOLDER"
+          if [ -f .env ]; then
+            echo ".env already exists, updating APPLICATION_FOLDER"
+            NEW_ENV=false
+          else
+            if [ -f .env.example ]; then
+              cp .env.example .env
+              NEW_ENV=true
+            else
+              echo "ERROR: .env.example not found" && exit 1
+            fi
+          fi
+          # Replace or add APPLICATION_FOLDER line in .env
+          if grep -q '^APPLICATION_FOLDER=' .env; then
+            sed -i "s|^APPLICATION_FOLDER=.*|APPLICATION_FOLDER=${APPLICATION_FOLDER}|" .env
+          else
+            echo "APPLICATION_FOLDER=${APPLICATION_FOLDER}" >> .env
+          fi
+          echo ".env content:"
+          cat .env
+          # Export all variables from .env into GITHUB_ENV (skip APPLICATION_FOLDER)
+          echo "Exporting .env variables to GITHUB_ENV"
+          grep -v '^\s*#' .env | sed '/^\s*$/d' | while IFS= read -r line; do
+            key="${line%%=*}"
+            if [ "$key" = "APPLICATION_FOLDER" ]; then
+              continue
+            fi
+            echo "$line" >> $GITHUB_ENV
+          done
+
+      - name: Start Docker Compose (build & run)
+        run: |
+          echo "Starting docker compose directly (no external action)"
+          docker compose version || true
+          docker compose up -d --build
+
+      - name: Reset database inside flask_app container
+        run: |
+          echo "Running reset_db inside flask_app container"
+          docker compose run --rm flask_app bash /app/run_local.sh reset_db
+
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for postgres to be ready..."
+          for i in $(seq 1 30); do
+            if docker compose exec -T flask_db pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-postgres}; then
+              echo "Postgres is ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Wait for API to be ready
+        run: |
+          API_URL=${API_URL:-http://127.0.0.1:4000}
+          echo "Waiting for API at $API_URL"
+          for i in $(seq 1 40); do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL" || true)
+            if [ "$status" = "200" ] || [ "$status" = "404" ]; then
+              echo "API responding with HTTP $status"
+              break
+            fi
+            echo "API not ready yet (status=$status), retrying... ($i/40)"
+            sleep 3
+          done
+
+      - name: Set up Python for running tests
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip          
+          pip install pytest requests
+
+      - name: Run pytest and collect reports
+        run: |
+          mkdir -p reports
+          TEST_PATH="${TEST_FOLDER#/}"
+          echo "Running pytest on: $TEST_PATH"
+          # Run pytest, save junit xml and full log
+          pytest "$TEST_PATH" -q --junitxml=reports/pytest-report.xml 2>&1 | tee reports/pytest.log
+          PYTEST_EXIT=${PIPESTATUS[0]}
+          echo "pytest exit code: $PYTEST_EXIT"
+          # set step output using the Actions environment file (replacement for deprecated set-output)
+          echo "pytest_exit=$PYTEST_EXIT" >> $GITHUB_OUTPUT
+          # exit with pytest exit code so the job reflects test status; later steps that must run use 'if: always()'
+          exit $PYTEST_EXIT
+        id: pytest_run
+
+      - name: Upload pytest reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-reports
+          path: reports/
+
+      - name: Post pytest summary to PR
+        if: always()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = 'reports/pytest.log';
+            let content = '';
+            try {
+              content = fs.readFileSync(path, { encoding: 'utf8' });
+            } catch (e) {
+              content = 'Could not read pytest log.';
+            }
+            const summaryRegex = /((?:\d+ passed)?(?:, \d+ failed)?(?:, \d+ skipped)?(?:, \d+ xfailed)?(?:, \d+ xpassed)? in \d+\.\d+s)/;
+            const match = content.match(summaryRegex);
+            const summaryLine = match ? match[1].trim() : 'Could not find pytest summary line.';
+
+            const exitCode = '${{ steps.pytest_run.outputs.pytest_exit }}';
+            const pr = context.payload.pull_request;
+            if (pr) {
+              const statusMessage = (exitCode === '0') ? 'All required tests passed ✅' : 'Some required tests failed ❌';
+              const body = `**Pytest Results**\n\n${statusMessage}\n\n**Summary:** \`${summaryLine}\`\n\n<details><summary>Full pytest log</summary>\n\n\`\`\`\n${content}\n\`\`\`\n\n</details>`;
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body
+              });
+            }
+
+      - name: Tear down docker-compose
+        if: always()
+        run: |
+          echo "Tearing down docker-compose services"
+          docker compose down -v || true
