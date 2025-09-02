@@ -1,12 +1,6 @@
-pycache
-__pycache__
-.env
-.qodo
+.DS_Store
+.idea/
+__pycache__/
 *.pyc
-**/venv/
-**/.venv/
-.vscode
-.idea
-.DS_Store
-tests/tmp/*
-.DS_Store
+*.bak
+docker-compose.yml.bak
