@@ -14,7 +14,7 @@ base_path = Path(__file__).resolve().parent
 
 def get_csv_path(filename):
     #print (f"Base path: {base_path}")
-    csv_path = base_path / ".." / ".." / ".." / ".." / "exercises" / "session_2" / "files" / filename
+    csv_path = base_path / "files" / filename
     resolved_path = csv_path.resolve()
     print(f"Path: {resolved_path}")
     return resolved_path
