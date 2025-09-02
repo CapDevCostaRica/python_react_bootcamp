@@ -171,11 +171,6 @@ jobs:
           echo "Running reset_db inside flask_app container"
           docker compose run --rm flask_app bash /app/run_local.sh reset_db
 
-      - name: Init schema + seed (EX02)
-        run: |
-          echo "Bootstrapping DB in flask_app with APPLICATION_FOLDER=${APPLICATION_FOLDER}"
-          docker compose exec -T flask_app bash -lc "bash backend/contributors/${APPLICATION_FOLDER}/ci_init.sh"
-
       - name: Wait for Postgres to be ready
         run: |
           echo "Waiting for postgres to be ready..."
