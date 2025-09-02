@@ -1,8 +1,7 @@
-# backend/run_local.sh
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "waiting for postgres..."
+
 python - <<'PY'
 import os, time, psycopg
 host=os.environ.get("POSTGRES_HOST","flask_db")
@@ -20,12 +19,15 @@ else:
     raise SystemExit("postgres not ready")
 PY
 
-# 🚫 NO tocar el framework salvo que lo pidas explícito
+
 if [[ "${ENABLE_FRAMEWORK_BOOTSTRAP:-0}" == "1" ]]; then
   echo "Bootstrapping framework (alembic/seeds)…"
   python /app/framework/scripts/populate_database.py || true
 fi
 
-# Arranca tu app (ajusta módulo si aplica)
-export FLASK_APP=app.app
-flask run --host=0.0.0.0 --port=4000
+
+FLASK_APP_DEFAULT="app.contributors.Luch1f3rchoCR.people.main:app"
+export FLASK_APP="${FLASK_APP:-$FLASK_APP_DEFAULT}"
+
+
+exec flask --app "$FLASK_APP" run --host=0.0.0.0 --port=4000
