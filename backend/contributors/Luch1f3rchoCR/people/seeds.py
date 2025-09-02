@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
 import csv, re, sys
 from pathlib import Path
-from typing import Iterator, Dict, Any, Tuple, Set
+from typing import Iterator, Dict, Any, Tuple, Set, Optional, Iterable
+
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 try:
     from .app.database import SessionLocal
@@ -20,13 +21,13 @@ DATA_DIR = Path(__file__).parent / "data"
 def _normrow(row: dict) -> dict:
     return {(k or "").strip().lower(): (v or "").strip() for k, v in row.items()}
 
-def int_or_none(v):
+def int_or_none(v: Any) -> Optional[int]:
     if v is None:
         return None
     m = re.search(r"-?\d+", str(v).strip())
     return int(m.group()) if m else None
 
-def _gentilic(nat_raw: str | None) -> str | None:
+def _gentilic(nat_raw: Optional[str]) -> Optional[str]:
     if not nat_raw:
         return None
     s = nat_raw.strip().lower()
@@ -43,12 +44,14 @@ def _gentilic(nat_raw: str | None) -> str | None:
     }
     return table.get(s) or s.title()
 
-def _csv(path: Path) -> Iterator[Dict[str, Any]]:
+def _csv(path: Path) -> Iterable[Dict[str, Any]]:
     if not path.exists():
-        return iter(())
-    with path.open(newline="", encoding="utf-8") as f:
-        for raw in csv.DictReader(f):
-            yield _normrow(raw)
+        return ()
+    def gen() -> Iterator[Dict[str, Any]]:
+        with path.open(newline="", encoding="utf-8") as f:
+            for raw in csv.DictReader(f):
+                yield _normrow(raw)
+    return gen()
 
 def _titlecase(s: str) -> str:
     parts = (s or "").split()
@@ -78,11 +81,11 @@ def _ensure_unique_indexes(s: Session):
                 sql = f"CREATE UNIQUE INDEX IF NOT EXISTS {idx} ON {tbl} ({', '.join(cols)})"
                 s.execute(text(sql))
             s.flush()
-        except Exception:
+        except SQLAlchemyError:
             s.rollback()
     try:
         s.execute(text("SELECT 1"))
-    except Exception:
+    except SQLAlchemyError:
         s.rollback()
 
 def load_people(s: Session):
