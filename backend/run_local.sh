@@ -22,7 +22,5 @@ if [[ "${ENABLE_FRAMEWORK_BOOTSTRAP:-0}" == "1" ]]; then
   python /app/framework/scripts/populate_database.py || true
 fi
 
-FLASK_APP_DEFAULT="contributors.Luch1f3rchoCR.people.main:app"
-export FLASK_APP="${FLASK_APP:-$FLASK_APP_DEFAULT}"
-
-flask run --host=0.0.0.0 --port=4000
+export PYTHONPATH="${PYTHONPATH:-/app:/app/framework}"
+exec flask --app "$FLASK_APP" run --host=0.0.0.0 --port=4000
