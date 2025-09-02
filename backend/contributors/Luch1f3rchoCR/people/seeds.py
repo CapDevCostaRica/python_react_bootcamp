@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import csv, re, sys
+import re, sys
 from pathlib import Path
-from typing import Iterator, Dict, Any, Tuple, Set, Optional, Iterable
+from typing import Dict, Any, Tuple, Set, Optional
 
+import pandas as pd
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -18,19 +19,16 @@ except ImportError:
 
 DATA_DIR = Path(__file__).parent / "data"
 
-def _normrow(row: dict) -> dict:
-    return {(k or "").strip().lower(): (v or "").strip() for k, v in row.items()}
-
 def int_or_none(v: Any) -> Optional[int]:
-    if v is None:
+    if v is None or pd.isna(v):
         return None
     m = re.search(r"-?\d+", str(v).strip())
     return int(m.group()) if m else None
 
 def _gentilic(nat_raw: Optional[str]) -> Optional[str]:
-    if not nat_raw:
+    if not nat_raw or pd.isna(nat_raw):
         return None
-    s = nat_raw.strip().lower()
+    s = str(nat_raw).strip().lower()
     table = {
         "méxico":"Mexican","mexico":"Mexican","mexican":"Mexican",
         "spain":"Spanish","españa":"Spanish","spanish":"Spanish",
@@ -43,15 +41,6 @@ def _gentilic(nat_raw: Optional[str]) -> Optional[str]:
         "nigeria":"Nigerian","nigerian":"Nigerian",
     }
     return table.get(s) or s.title()
-
-def _csv(path: Path) -> Iterable[Dict[str, Any]]:
-    if not path.exists():
-        return ()
-    def gen() -> Iterator[Dict[str, Any]]:
-        with path.open(newline="", encoding="utf-8") as f:
-            for raw in csv.DictReader(f):
-                yield _normrow(raw)
-    return gen()
 
 def _titlecase(s: str) -> str:
     parts = (s or "").split()
@@ -90,8 +79,9 @@ def _ensure_unique_indexes(s: Session):
 
 def load_people(s: Session):
     seen: Set[int] = set()
-    for row in _csv(DATA_DIR / "people_data.csv"):
-        if not row.get("id"):
+    df = pd.read_csv(DATA_DIR / "people_data.csv")
+    for _, row in df.iterrows():
+        if pd.isna(row.get("id")):
             continue
         pid = int(row["id"])
         if pid in seen:
@@ -106,7 +96,8 @@ def load_people(s: Session):
                 p.full_name = row["full_name"]
 
 def load_physical(s: Session):
-    for row in _csv(DATA_DIR / "physical_data.csv"):
+    df = pd.read_csv(DATA_DIR / "physical_data.csv")
+    for _, row in df.iterrows():
         pid = int_or_none(row.get("person_id") or row.get("id"))
         if pid is None:
             continue
@@ -114,9 +105,9 @@ def load_physical(s: Session):
         if not p:
             p = People(id=pid)
             s.add(p)
-        if row.get("eye_color"):
+        if not pd.isna(row.get("eye_color")):
             p.eye_color = row["eye_color"]
-        if row.get("hair_color"):
+        if not pd.isna(row.get("hair_color")):
             p.hair_color = row["hair_color"]
         age = int_or_none(row.get("age"))
         if age is not None:
@@ -133,11 +124,12 @@ def load_physical(s: Session):
 
 def load_favorites(s: Session):
     seen: Set[Tuple[int,str]] = set()
-    for row in _csv(DATA_DIR / "favorite_data.csv"):
-        if not row.get("person_id"):
+    df = pd.read_csv(DATA_DIR / "favorite_data.csv")
+    for _, row in df.iterrows():
+        if pd.isna(row.get("person_id")):
             continue
         pid = int(row["person_id"])
-        food = (row.get("food") or "").strip()
+        food = str(row.get("food") or "").strip()
         if not food:
             continue
         key = (pid, food)
@@ -152,11 +144,12 @@ def load_favorites(s: Session):
 
 def load_hobbies(s: Session):
     seen: Set[Tuple[int,str]] = set()
-    for row in _csv(DATA_DIR / "hobbies_data.csv"):
-        if not row.get("person_id"):
+    df = pd.read_csv(DATA_DIR / "hobbies_data.csv")
+    for _, row in df.iterrows():
+        if pd.isna(row.get("person_id")):
             continue
         pid = int(row["person_id"])
-        hobby = (row.get("hobby") or "").strip()
+        hobby = str(row.get("hobby") or "").strip()
         if not hobby:
             continue
         key = (pid, hobby)
@@ -171,12 +164,13 @@ def load_hobbies(s: Session):
 
 def load_family(s: Session):
     seen: Set[Tuple[int,str,str]] = set()
-    for row in _csv(DATA_DIR / "family_data.csv"):
-        if not row.get("person_id"):
+    df = pd.read_csv(DATA_DIR / "family_data.csv")
+    for _, row in df.iterrows():
+        if pd.isna(row.get("person_id")):
             continue
         pid = int(row["person_id"])
-        relation = (row.get("relation") or "").casefold()
-        name = _titlecase(row.get("name") or "")
+        relation = str(row.get("relation") or "").casefold()
+        name = _titlecase(str(row.get("name") or ""))
         if not relation or not name:
             continue
         key = (pid, relation, name)
@@ -193,12 +187,13 @@ def load_family(s: Session):
 
 def load_studies(s: Session):
     seen: Set[Tuple[int,str,str]] = set()
-    for row in _csv(DATA_DIR / "studies_data.csv"):
-        if not row.get("person_id"):
+    df = pd.read_csv(DATA_DIR / "studies_data.csv")
+    for _, row in df.iterrows():
+        if pd.isna(row.get("person_id")):
             continue
         pid = int(row["person_id"])
-        degree = (row.get("degree") or "").strip()
-        inst = (row.get("institution") or "").strip()
+        degree = str(row.get("degree") or "").strip()
+        inst = str(row.get("institution") or "").strip()
         if not degree and not inst:
             continue
         key = (pid, degree, inst)
