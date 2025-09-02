@@ -1,15 +1,16 @@
 from http import HTTPStatus
 
-import models
-from auth import JWTError, decode_jwt, encode_jwt
-from database import get_session
-from flask import Flask, jsonify, request
-from schemas import (
+import app.models as models
+from app.auth import JWTError, decode_jwt, encode_jwt
+from app.database import get_session
+from app.schemas import (
     ErrorSchema,
     LoginRequestSchema,
     LoginResponseSchema,
     ShippingListRequestSchema,
+    ShippingListResponseSchema,
 )
+from flask import Flask, jsonify, request
 from sqlalchemy import cast, func, literal
 from sqlalchemy.dialects.postgresql import JSON, aggregate_order_by
 from sqlalchemy.orm import aliased
@@ -17,10 +18,10 @@ from sqlalchemy.orm import aliased
 app = Flask(__name__)
 
 USERS = {
-    "manager": {"sub": "manager", "role": "manager"},
-    "warehouse_dependent": {
-        "sub": "warehouse_dependent",
-        "role": "warehouse_dependent",
+    "store_manager": {"sub": "store_manager", "role": "store_manager"},
+    "warehouse_staff": {
+        "sub": "warehouse_staff",
+        "role": "warehouse_staff",
     },
 }
 
@@ -46,7 +47,7 @@ def login():
 
 @app.post("/shipment/list")
 def list_shipments():
-    expected_roles = ("manager", "warehouse_dependent")
+    expected_roles = ("store_manager", "warehouse_staff")
     auth = request.headers.get("Authorization", "")
 
     if not auth.startswith("Bearer "):
@@ -141,32 +142,36 @@ def list_shipments():
                 models.Shipment.status == models.ShipmentStatus(status)
             )
 
-        return {
-            "results": [
+        return jsonify(
+            ShippingListResponseSchema().dump(
                 {
-                    "id": row.id,
-                    "status": row.status,
-                    "created_at": row.created_at,
-                    "in_transit_at": row.in_transit_at,
-                    "delivered_at": row.delivered_at,
-                    "origin_warehouse": {
-                        "name": row.origin_warehouse_name,
-                        "postal_code": row.origin_warehouse_postal_code,
-                    },
-                    "target_warehouse": {
-                        "name": row.target_warehouse_name,
-                        "postal_code": row.target_warehouse_postal_code,
-                    },
-                    "carrier": {"username": row.carrier_username},
-                    "created_by": {"username": row.created_by_username},
-                    "in_transit_by": {"username": row.in_transit_by_username},
-                    "delivered_by": {"username": row.delivered_by_username},
-                    "shipment_locations": row.shipment_locations,
+                    "results": [
+                        {
+                            "id": row.id,
+                            "status": row.status,
+                            "created_at": row.created_at,
+                            "in_transit_at": row.in_transit_at,
+                            "delivered_at": row.delivered_at,
+                            "origin_warehouse": {
+                                "name": row.origin_warehouse_name,
+                                "postal_code": row.origin_warehouse_postal_code,
+                            },
+                            "target_warehouse": {
+                                "name": row.target_warehouse_name,
+                                "postal_code": row.target_warehouse_postal_code,
+                            },
+                            "carrier": {"username": row.carrier_username},
+                            "created_by": {"username": row.created_by_username},
+                            "in_transit_by": {"username": row.in_transit_by_username},
+                            "delivered_by": {"username": row.delivered_by_username},
+                            "shipment_locations": row.shipment_locations,
+                        }
+                        for row in query.all()
+                    ],
+                    "result_count": query.count(),
                 }
-                for row in query.all()
-            ],
-            "result_count": query.count(),
-        }
+            )
+        ), HTTPStatus.OK
 
 
 if __name__ == "__main__":

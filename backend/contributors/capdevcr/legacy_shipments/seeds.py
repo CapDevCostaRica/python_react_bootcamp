@@ -1,8 +1,8 @@
 import random
 from datetime import timedelta
 
-from database import get_session
-from models import (
+from app.database import get_session
+from app.models import (
     Shipment,
     ShipmentLocation,
     ShipmentStatus,

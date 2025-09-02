@@ -1,5 +1,5 @@
+from app.models import ShipmentStatus
 from marshmallow import Schema, ValidationError, fields, validates_schema
-from models import ShipmentStatus
 
 
 class ErrorSchema(Schema):
@@ -35,15 +35,15 @@ class WarehouseSchema(Schema):
 
 class ShipmentLocationSchema(Schema):
     postal_code = fields.String(required=True)
-    noted_at = fields.DateTime(required=True)
+    noted_at = fields.String(required=True)
 
 
 class ShipmentSchema(Schema):
     id = fields.Integer(required=True)
     status = fields.Enum(ShipmentStatus, by_value=True, required=True)
-    created_at = fields.DateTime(required=True)
-    in_transit_at = fields.DateTime(allow_none=True)
-    delivered_at = fields.DateTime(allow_none=True)
+    created_at = fields.String(required=True)
+    in_transit_at = fields.String(allow_none=True)
+    delivered_at = fields.String(allow_none=True)
     origin_warehouse = fields.Nested(WarehouseSchema, required=True)
     target_warehouse = fields.Nested(WarehouseSchema, required=True)
     carrier = fields.Nested(UserSchema, required=True)
