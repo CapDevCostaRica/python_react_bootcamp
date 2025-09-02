@@ -283,3 +283,8 @@ def seed_studies(session, studies_csv_path):
             
     session.commit()
     print(f"Inserted {len(studies_records)} study records.")   
+
+if __name__ == '__main__':
+    from main import is_data_seeded, get_session
+    session = get_session()
+    is_data_seeded(session)
