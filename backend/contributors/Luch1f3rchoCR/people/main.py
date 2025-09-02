@@ -27,11 +27,9 @@ def people_find():
     q = _filters_from_request()
     filters = []
 
-
     if "eye_color"   in q: filters.append(func.lower(People.eye_color)   == _lc(q["eye_color"]))
     if "hair_color"  in q: filters.append(func.lower(People.hair_color)  == _lc(q["hair_color"]))
     if "nationality" in q: filters.append(func.lower(People.nationality) == _lc(q["nationality"]))
-
 
     if "age"        in q: filters.append(People.age        == int(q["age"]))
     if "height_cm"  in q: filters.append(People.height_cm  == int(q["height_cm"]))
@@ -42,27 +40,31 @@ def people_find():
     join_fam   = "family" in q
     join_study = ("degree" in q) or ("institution" in q)
 
-    stmt = select(People).distinct()
+    stmt = select(People.full_name).distinct()
     if join_fav:   stmt = stmt.join(Favorite, Favorite.person_id == People.id)
     if join_hobby: stmt = stmt.join(Hobbies,  Hobbies.person_id  == People.id)
     if join_fam:   stmt = stmt.join(Family,   Family.person_id   == People.id)
     if join_study: stmt = stmt.join(Studies,  Studies.person_id  == People.id)
 
-
-    if "food"        in q: filters.append(func.lower(Favorite.food)         == _lc(q["food"]))
-    if "hobby"       in q: filters.append(func.lower(Hobbies.hobby)         == _lc(q["hobby"]))
-    if "family"      in q: filters.append(func.lower(Family.relation)       == _lc(q["family"]))
-    if "degree"      in q: filters.append(func.lower(Studies.degree)        == _lc(q["degree"]))
-    if "institution" in q: filters.append(func.lower(Studies.institution)   == _lc(q["institution"]))
+    if "food"        in q: filters.append(func.lower(Favorite.food)       == _lc(q["food"]))
+    if "hobby"       in q: filters.append(func.lower(Hobbies.hobby)       == _lc(q["hobby"]))
+    if "family"      in q: filters.append(func.lower(Family.relation)     == _lc(q["family"]))
+    if "degree"      in q: filters.append(func.lower(Studies.degree)      == _lc(q["degree"]))
+    if "institution" in q: filters.append(func.lower(Studies.institution) == _lc(q["institution"]))
 
     if filters:
         stmt = stmt.where(and_(*filters))
 
     with SessionLocal() as db:
-        people = db.execute(stmt).scalars().all()
+        results = db.execute(stmt).scalars().all()
 
-    names = [p.full_name for p in people]
-    return jsonify({"success": True, "data": {"total": len(names), "results": names}})
+    return jsonify({
+        "success": True,
+        "data": {
+            "results": results,
+            "total": len(results)
+        }
+    })
 
 
 @app.get("/people/sushi_ramen")
@@ -78,6 +80,8 @@ def people_sushi_ramen():
     with SessionLocal() as db:
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
+
+
 @app.get("/people/sushi")
 def people_sushi():
     stmt = (
@@ -87,6 +91,8 @@ def people_sushi():
     with SessionLocal() as db:
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
+
+
 @app.get("/people/avg_weight_above_70_hair")
 def avg_weight_above_70_hair():
     min_w = request.args.get("min", 70, type=int)
