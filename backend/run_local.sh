@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-DB_SCRIPT=$1
+DB_SCRIPT=${1:-populate_database}
 
 if [ "$DB_SCRIPT" = "reset_db" ]; then
   python /app/framework/scripts/reset_db.py
   exit 0
-elif [ "$DB_SCRIPT" = "populate_database" ]; then
+else
   python /app/framework/scripts/populate_database.py
 fi
 

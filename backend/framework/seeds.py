@@ -1,5 +1,6 @@
-from database import get_session
+
 from models import MotivationalPhrase
+from database import get_session
 
 phrases = [
     "Believe in yourself!",
@@ -11,21 +12,16 @@ phrases = [
     "Success doesn’t just find you. You have to go out and get it.",
     "The harder you work for something, the greater you’ll feel when you achieve it.",
     "Don’t stop when you’re tired. Stop when you’re done.",
-    "Wake up with determination. Go to bed with satisfaction.",
+    "Wake up with determination. Go to bed with satisfaction."
 ]
 
-
-def seed_motivational_phrases(session):
+def seed_motivational_phrases():
+    session = get_session()
     for phrase in phrases:
         session.add(MotivationalPhrase(phrase=phrase))
-
     session.commit()
     session.close()
-
     print("Seeded motivational phrases.")
 
-
 if __name__ == "__main__":
-    session = get_session()
-    seed_motivational_phrases(session)
-    session.close()
+    seed_motivational_phrases()
