@@ -151,7 +151,7 @@ class PeopleService:
     def avg_weight_above_hair(self, weight):
         try:
             with get_session() as db:
-                query = select(People.hair_color, func.avg(People.weight_kg).label("weight_avg")).group_by(People.hair_color).where(People.weight_kg > weight)
+                query = select(People.hair_color, func.avg(People.weight_kg).label("weight_avg")).group_by(People.hair_color).having(func.avg(People.weight_kg) > weight)
                 results = db.execute(query).all()
                 data = {}
                 for row in results:
