@@ -136,7 +136,7 @@ def get_avg_weight_nationality_hair():
 def  top_oldest_nationality():
     session = get_session()
     data = get_top_oldest_natuinality(session)
-    return jsonify(data)
+    return jsonify({"success": True, "data": data})
 
 #Extra 6
 #People ranked by how many hobbies they have (Top 3)
