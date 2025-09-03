@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy import select, and_, func
+import re
 
 from .app.database import SessionLocal
 from .app.models import People, Favorite, Hobbies, Family, Studies
 
 people_bp = Blueprint("people", __name__, url_prefix="/people")
+
 
 def _as_list(v):
     if v is None:
@@ -12,6 +14,7 @@ def _as_list(v):
     if isinstance(v, (list, tuple)):
         return list(v)
     return [v]
+
 
 def _maybe_json_dict(v):
     if not isinstance(v, str):
@@ -27,7 +30,6 @@ def _maybe_json_dict(v):
         return None
 
 
-import re
 def _filters_from_request():
     out = {}
     for k, vs in request.args.lists():
@@ -61,8 +63,10 @@ def _filters_from_request():
 
     return out
 
+
 def _lc(s):
     return (s or "").lower()
+
 
 def _ci_in(col, values):
     vals = [_lc(v) for v in _as_list(values) if v is not None]
@@ -70,21 +74,25 @@ def _ci_in(col, values):
         return None
     return func.lower(col).in_(vals)
 
+
 @people_bp.route("/find", methods=["GET", "POST"])
 def people_find():
     q = _filters_from_request()
     filters = []
 
-    need_fav   = "food" in q
+    need_fav = "food" in q
     need_hobby = "hobby" in q
-    need_fam   = "family" in q
+    need_fam = "family" in q
     need_study = ("degree" in q) or ("institution" in q)
 
     stmt = select(People.full_name).select_from(People).distinct()
 
-    if "eye_color"   in q: filters.append(_ci_in(People.eye_color,   q["eye_color"]))
-    if "hair_color"  in q: filters.append(_ci_in(People.hair_color,  q["hair_color"]))
-    if "nationality" in q: filters.append(_ci_in(People.nationality, q["nationality"]))
+    if "eye_color" in q:
+        filters.append(_ci_in(People.eye_color, q["eye_color"]))
+    if "hair_color" in q:
+        filters.append(_ci_in(People.hair_color, q["hair_color"]))
+    if "nationality" in q:
+        filters.append(_ci_in(People.nationality, q["nationality"]))
 
     if "age" in q:
         nums = []
@@ -141,6 +149,7 @@ def people_find():
 
     return jsonify({"success": True, "data": {"total": len(results), "results": results}})
 
+
 @people_bp.get("/sushi_ramen")
 def people_sushi_ramen():
     subq = (
@@ -155,6 +164,7 @@ def people_sushi_ramen():
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
 
+
 @people_bp.get("/sushi")
 def people_sushi():
     stmt = (
@@ -165,18 +175,30 @@ def people_sushi():
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
 
+
 @people_bp.get("/avg_weight_above_70_hair")
 def avg_weight_above_70_hair():
     min_w = request.args.get("min", 70, type=int)
     stmt = (
         select(People.hair_color, func.avg(People.weight_kg))
-        .where(People.weight_kg > min_w)
+        .where(People.weight_kg.isnot(None), People.weight_kg > min_w)
         .group_by(People.hair_color)
     )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
-    data = {(hc or ""): int(round(avg or 0)) for hc, avg in rows}
+
+    def to_num(x):
+        v = round(float(x), 2)
+        return int(v) if v.is_integer() else v
+
+    data = {}
+    for hair, avg in rows:
+        if avg is None:
+            continue
+        data[(hair or "")] = to_num(avg)
+
     return jsonify({"success": True, "data": data})
+
 
 @people_bp.get("/most_common_food_overall")
 def most_common_food_overall():
@@ -190,16 +212,30 @@ def most_common_food_overall():
         row = db.execute(stmt).first()
     return jsonify({"success": True, "data": (row.food if row else "")})
 
+
 @people_bp.get("/avg_weight_nationality_hair")
 def avg_weight_nationality_hair():
     stmt = (
         select(People.nationality, People.hair_color, func.avg(People.weight_kg))
+        .where(People.weight_kg.isnot(None))
         .group_by(People.nationality, People.hair_color)
     )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
-    data = {f"{_lc(nat)}-{_lc(hc)}": int(round(avg or 0)) for nat, hc, avg in rows}
+
+    def to_num(x):
+        v = round(float(x), 2)
+        return int(v) if v.is_integer() else v
+
+    data = {}
+    for nat, hair, avg in rows:
+        if avg is None:
+            continue
+        key = f"{_lc(nat)}-{_lc(hair)}"
+        data[key] = to_num(avg)
+
     return jsonify({"success": True, "data": data})
+
 
 @people_bp.get("/top_oldest_nationality")
 def top_oldest_nationality():
@@ -209,8 +245,8 @@ def top_oldest_nationality():
             func.coalesce(People.nationality, "").label("nat"),
             func.row_number().over(
                 partition_by=func.coalesce(People.nationality, ""),
-                order_by=People.age.desc()
-            ).label("rk")
+                order_by=People.age.desc(),
+            ).label("rk"),
         ).subquery()
     )
     stmt = (
@@ -220,11 +256,14 @@ def top_oldest_nationality():
     )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
+
     out = {}
     for full_name, nat in rows:
-        key = _lc(nat)
+        key = nat or ""
         out.setdefault(key, []).append(full_name)
+
     return jsonify({"success": True, "data": out})
+
 
 @people_bp.get("/top_hobbies")
 def top_hobbies():
@@ -240,12 +279,20 @@ def top_hobbies():
     names = [full_name for full_name, _ in rows]
     return jsonify({"success": True, "data": names})
 
+
 @people_bp.get("/avg_height_nationality_general")
 def avg_height_nationality_general():
     with SessionLocal() as db:
         general = db.execute(select(func.avg(People.height_cm))).scalar()
         rows = db.execute(
-            select(People.nationality, func.avg(People.height_cm)).group_by(People.nationality)
+            select(People.nationality, func.avg(People.height_cm))
+            .where(People.height_cm.isnot(None))
+            .group_by(People.nationality)
         ).all()
-    result = {"general": int(round(general or 0)), "nationalities": {_lc(nat): int(round(avg or 0)) for nat, avg in rows}}
+
+    def to_float_2(x):
+        return round(float(x or 0), 2)
+
+    nationalities = {_lc(nat): to_float_2(avg) for nat, avg in rows}
+    result = {"general": to_float_2(general), "nationalities": nationalities}
     return jsonify({"success": True, "data": result})
