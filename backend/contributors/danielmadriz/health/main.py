@@ -31,8 +31,23 @@ def health():
 @app.route('/people/find', methods=['GET'])
 def find_people_endpoint():
     try:
+        # Parse filters from query parameters (handles filters[key]=value format)
+        filters = {}
+        logger.info(f"Raw request args: {dict(request.args)}")
+        
+        for key, value in request.args.items():
+            if key.startswith('filters[') and key.endswith(']'):
+                # Extract the filter name from filters[key]
+                filter_name = key[8:-1]  # Remove 'filters[' and ']'
+                filters[filter_name] = value
+                logger.info(f"Parsed filter: {filter_name} = {value}")
+            elif key == 'filters':
+                # Handle direct filters parameter
+                filters = value
+        
+        logger.info(f"Final parsed filters: {filters}")
+        
         # Validate request parameters
-        filters = dict(request.args)
         is_valid, validated_filters, errors = validate_request_data(PeopleFindRequestSchema, filters)
         
         if not is_valid:
@@ -47,7 +62,7 @@ def find_people_endpoint():
             return jsonify(error_response), 400
         
         session = get_session()
-        people = find_people(session)
+        people = find_people(session, validated_filters)
         
         response_data = {
             "success": True,
