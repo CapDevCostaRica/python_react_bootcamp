@@ -27,29 +27,45 @@ def _maybe_json_dict(v):
         return None
 
 def _filters_from_request():
-    out = {}
-    for k, vs in request.args.lists():
-        out[k] = vs if len(vs) > 1 else vs[0]
+    q = {}
+
+    for k, v in request.args.items():
+        if k.startswith("filters[") and k.endswith("]"):
+            q[k[8:-1]] = v
+        elif k not in q:
+            q[k] = v
+
     if request.form:
-        for k, vs in request.form.lists():
-            if k == "filters" and len(vs) == 1:
-                j = _maybe_json_dict(vs[0])
+        for k, v in request.form.items():
+            if k.startswith("filters[") and k.endswith("]"):
+                q[k[8:-1]] = v
+            elif k == "filters":
+                j = _maybe_json_dict(v)
                 if isinstance(j, dict):
                     for kk, vv in j.items():
-                        if kk not in out:
-                            out[kk] = vv
-                continue
-            if k not in out:
-                out[k] = vs if len(vs) > 1 else vs[0]
+                        if kk not in q:
+                            q[kk] = vv
+            elif k not in q:
+                q[k] = v
+
     body = request.get_json(silent=True)
     if isinstance(body, dict):
-        if isinstance(body.get("filters"), dict):
-            for kk, vv in body["filters"].items():
-                out[kk] = vv if kk not in out else out[kk]
+        f = body.get("filters")
+        if isinstance(f, dict):
+            for kk, vv in f.items():
+                if kk not in q:
+                    q[kk] = vv
+        elif isinstance(f, str):
+            j = _maybe_json_dict(f)
+            if isinstance(j, dict):
+                for kk, vv in j.items():
+                    if kk not in q:
+                        q[kk] = vv
         for kk, vv in body.items():
-            if kk != "filters" and kk not in out:
-                out[kk] = vv
-    return out
+            if kk != "filters" and kk not in q:
+                q[kk] = vv
+
+    return q
 
 def _lc(s):
     return (s or "").lower()
