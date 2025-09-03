@@ -1,7 +1,8 @@
 import sys, os
 from pathlib import Path
-from sqlalchemy import create_engine, delete
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
+from config import get_engine
 from app.models import (
     Base,
     odkeyo_ex2Person as Person,
@@ -34,15 +35,7 @@ def _batch_insert_unique(session: Session, Model, rows_iter, keyfunc, normalize=
         session.commit()
 
 def reset_db_and_seed():
-    user = os.environ.get("POSTGRES_USER", "postgres")
-    pwd  = os.environ.get("POSTGRES_PASSWORD", "postgres")
-    host = os.environ.get("POSTGRES_HOST", "localhost")
-    port = os.environ.get("POSTGRES_PORT", "5432")
-    db   = os.environ.get("POSTGRES_DB", "postgres")
-    db_url = f"postgresql+psycopg://{user}:{pwd}@{host}:{port}/{db}"
-
-    engine = create_engine(db_url, future=True)
-    Base.metadata.create_all(engine)
+    engine = get_engine()
 
     files_dir = Path(__file__).resolve().parent / "files"
 
