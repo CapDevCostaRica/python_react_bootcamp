@@ -1,13 +1,26 @@
 import os
 import sys
-from flask import Flask, jsonify
+import logging
+from flask import Flask, jsonify, request
 from app.people_service import find_people
 from app.people_extras import get_sushi_ramen_count, get_avg_weight_above_70_by_hair_color, get_most_common_food_overall, get_avg_weight_by_nationality_hair_color, get_top_oldest_people_per_nationality, get_top_people_by_hobbies, get_avg_height_nationality_general
+from app.schemas import (
+    PeopleFindRequestSchema, PeopleFindResponseSchema,
+    SushiRamenResponseSchema, AvgWeightHairResponseSchema,
+    MostCommonFoodResponseSchema, AvgWeightNationalityHairResponseSchema,
+    TopOldestNationalityResponseSchema, TopHobbiesResponseSchema,
+    AvgHeightNationalityGeneralResponseSchema,
+    validate_request_data, validate_response_data
+)
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from database import get_session
 from pathlib import Path
 
 sys.path.append(os.path.dirname(__file__))
+
+# Initialize logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -18,6 +31,21 @@ def health():
 @app.route('/people/find', methods=['GET'])
 def find_people_endpoint():
     try:
+        # Validate request parameters
+        filters = dict(request.args)
+        is_valid, validated_filters, errors = validate_request_data(PeopleFindRequestSchema, filters)
+        
+        if not is_valid:
+            error_response = {
+                "success": False,
+                "error": f"Validation error: {errors}",
+                "data": {
+                    "total": 0,
+                    "results": []
+                }
+            }
+            return jsonify(error_response), 400
+        
         session = get_session()
         people = find_people(session)
         
@@ -29,7 +57,12 @@ def find_people_endpoint():
             }
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(PeopleFindResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -53,7 +86,12 @@ def people_sushi_ramen():
             "data": count
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(SushiRamenResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -74,7 +112,12 @@ def people_avg_weight_above_70_hair():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(AvgWeightHairResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -95,7 +138,12 @@ def people_most_common_food_overall():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(MostCommonFoodResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -116,7 +164,12 @@ def people_avg_weight_nationality_hair():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(AvgWeightNationalityHairResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -137,7 +190,12 @@ def people_top_oldest_nationality():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(TopOldestNationalityResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -158,7 +216,12 @@ def people_top_hobbies():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(TopHobbiesResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
@@ -179,7 +242,12 @@ def people_avg_height_nationality_general():
             "data": result
         }
         
-        return jsonify(response_data)
+        # Validate response data
+        is_valid, validated_response, errors = validate_response_data(AvgHeightNationalityGeneralResponseSchema, response_data)
+        if not is_valid:
+            logger.warning(f"Response validation failed: {errors}")
+        
+        return jsonify(validated_response if is_valid else response_data)
         
     except Exception as e:
         error_response = {
