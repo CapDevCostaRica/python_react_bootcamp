@@ -4,6 +4,7 @@ import os
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, exists, func
+import pandas as pd
 app_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, app_dir)
 from models import Person, FavoriteFood, PhysicalProfile, Hobby
@@ -255,21 +256,15 @@ def get_avg_height_nationality_general(session: Session) -> Dict[str, Any]:
             PhysicalProfile.nationality
         ).all()
         
-        nationalities_dict = {}
-        total_weighted_height = 0
-        total_count = 0
+        df = pd.DataFrame(nationality_results, columns=['nationality', 'avg_height', 'count'])
+        df['avg_height'] = df['avg_height'].astype(float)
+        df['count'] = df['count'].astype(int)
         
-        for nationality, avg_height, count in nationality_results:
-            avg_height_float = float(avg_height) if avg_height else 0
-            count_int = int(count) if count else 0
-            
-            nationalities_dict[nationality] = avg_height_float
-            total_weighted_height += avg_height_float * count_int
-            total_count += count_int
-            
-            logger.info(f"Nationality '{nationality}': average height {avg_height_float}, count {count_int}")
+        df['weighted_height'] = df['avg_height'] * df['count']
+        general_avg = df['weighted_height'].sum() / df['count'].sum() if df['count'].sum() > 0 else 0
         
-        general_avg = total_weighted_height / total_count if total_count > 0 else 0
+        nationalities_dict = df.set_index('nationality')['avg_height'].to_dict()
+        
         logger.info(f"General average height calculated from nationality data: {general_avg}")
         
         result = {
