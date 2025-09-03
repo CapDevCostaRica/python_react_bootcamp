@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, exists, func
 app_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, app_dir)
-from models import Person, FavoriteFood, PhysicalProfile
+from models import Person, FavoriteFood, PhysicalProfile, Hobby
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -204,4 +204,35 @@ def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[st
         
     except Exception as e:
         logger.error(f"Error in get_top_oldest_people_per_nationality: {str(e)}")
+        raise
+
+
+def get_top_people_by_hobbies(session: Session) -> List[str]:
+    try:
+        
+        results = session.query(
+            Person.full_name,
+            func.count(Hobby.hobby).label('hobby_count')
+        ).join(
+            Hobby, Person.id == Hobby.person_id
+        ).group_by(
+            Person.id, Person.full_name
+        ).order_by(
+            func.count(Hobby.hobby).desc()
+        ).limit(3).all()
+        
+        names = []
+        for result in results:
+            name = result[0]
+            hobby_count = result[1]
+            names.append(name)
+            logger.info(f"Person '{name}' has {hobby_count} hobbies")
+        
+        logger.info(f"Top people by hobbies query completed, found {len(names)} people")
+        logger.info(f"Results: {names}")
+        
+        return names
+        
+    except Exception as e:
+        logger.error(f"Error in get_top_people_by_hobbies: {str(e)}")
         raise
