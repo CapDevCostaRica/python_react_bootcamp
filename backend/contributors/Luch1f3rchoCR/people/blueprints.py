@@ -8,6 +8,8 @@ people_bp = Blueprint("people", __name__, url_prefix="/people")
 
 def _filters_from_request():
     q = dict(request.args)
+    if request.form:
+        q.update(request.form.to_dict(flat=True))
     body = request.get_json(silent=True) or {}
     if isinstance(body, dict):
         if isinstance(body.get("filters"), dict):
