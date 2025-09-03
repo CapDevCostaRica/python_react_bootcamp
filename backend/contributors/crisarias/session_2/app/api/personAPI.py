@@ -24,8 +24,8 @@ def getPersons(request):
         logger.error(f"Bad request from {request.remote_addr}: {e.messages}")
         raise ValueError(e.messages)
 
-def getSuchiAndRamenCountReport():
-    logger.info("Received getSuchiAndRamenPersonReport request.")
+def getSushiAndRamenCountReport():
+    logger.info("Received getSushiAndRamenPersonReport request.")
     personsCount = getPersonThatEatFoodsDL(["sushi", "ramen"])
     return personsCount
 

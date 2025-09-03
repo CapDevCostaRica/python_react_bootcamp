@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, abort
 from app.telemetry import logger
 from app.api.personAPI import (
     getPersons,
-    getSuchiAndRamenCountReport,
+    getSushiAndRamenCountReport,
     getMostCommonFoodReport,
     getAvgWeightAbove70HairReport,
     getAverageWeightByNationalityAndHairReport,
@@ -44,7 +44,7 @@ def findPeople():
 def reportSushiRamen():
     logger.info(f"Received request from {request.remote_addr}")
     try:
-        data = getSuchiAndRamenCountReport()
+        data = getSushiAndRamenCountReport()
         logger.info(f"Sending response to {request.remote_addr}")
         return jsonify({
             "success": True,
