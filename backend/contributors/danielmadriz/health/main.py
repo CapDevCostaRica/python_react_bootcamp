@@ -2,7 +2,7 @@ import os
 import sys
 from flask import Flask, jsonify
 from app.people_service import find_people
-from app.people_extras import get_sushi_ramen_count
+from app.people_extras import get_sushi_ramen_count, get_avg_weight_above_70_by_hair_color
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from database import get_session
 from pathlib import Path
@@ -60,6 +60,27 @@ def people_sushi_ramen():
             "success": False,
             "error": str(e),
             "data": 0
+        }
+        return jsonify(error_response), 500
+
+@app.route('/people/avg_weight_above_70_hair', methods=['GET'])
+def people_avg_weight_above_70_hair():
+    try:
+        session = get_session()
+        result = get_avg_weight_above_70_by_hair_color(session)
+        
+        response_data = {
+            "success": True,
+            "data": result
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        error_response = {
+            "success": False,
+            "error": str(e),
+            "data": {}
         }
         return jsonify(error_response), 500
 
