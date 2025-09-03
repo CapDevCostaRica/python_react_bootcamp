@@ -46,7 +46,20 @@ def find_people():
     if request.is_json:
         filters = request.json.get('filters', {})
     else:
-        filters = request.args.to_dict()
+        # Extract filters from query params
+        filters = {}
+        for key, value in request.args.items():
+            # Check if key is in format filters[something]
+            if key.startswith('filters[') and key.endswith(']'):
+                # Extract the actual filter key
+                filter_key = key[8:-1]  # Remove 'filters[' and ']'
+                filters[filter_key] = value
+            # Also check direct parameters (not in filters[...] format)
+            elif key in ["eye_color", "hair_color", "age", "height_cm", "weight_kg", "nationality", 
+                       "family", "food", "hobby", "degree", "institution"]:
+                filters[key] = value
+                
+        logger.info(f"Extracted filters: {filters}")
     
     session = get_session()
     
