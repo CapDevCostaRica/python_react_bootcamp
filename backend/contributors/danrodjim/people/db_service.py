@@ -207,10 +207,10 @@ def find_avg_height_nationality_general():
 
         result = {
             "nationalities": {
-                nationality: round(avg_height, 2)
+                nationality: round(float(avg_height), 2)
                 for nationality, avg_height in nationality_results
             },
-            "general": round(general_result, 2)
+            "general": round(float(general_result), 2)
         }
 
     return result
