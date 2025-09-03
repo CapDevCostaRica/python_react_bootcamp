@@ -86,7 +86,17 @@ def get_avg_weight_above_70_by_hair_color(session: Session) -> Dict[str, float]:
             PhysicalProfile.hair_color
         ).all()
         
-        result_dict = {hair_color: float(avg_weight) for hair_color, avg_weight in results}
+        # Convert to integers if whole numbers, otherwise keep as floats with 2 decimals
+        def convert_to_int_or_float(val):
+            rounded_val = round(float(val), 2)
+            if rounded_val == int(rounded_val):
+                return int(rounded_val)
+            else:
+                return rounded_val
+        
+        result_dict = {}
+        for hair_color, avg_weight in results:
+            result_dict[hair_color] = convert_to_int_or_float(avg_weight)
         
         logger.info(f"Avg weight above {MIN_WEIGHT_THRESHOLD_KG} by hair color query completed, found {len(result_dict)} hair colors")
         logger.info(f"Results: {result_dict}")
@@ -154,10 +164,19 @@ def get_avg_weight_by_nationality_hair_color(session: Session) -> Dict[str, floa
         ).all()
         
         df = pd.DataFrame(results, columns=['nationality', 'hair_color', 'avg_weight'])
-        df['avg_weight'] = df['avg_weight'].astype(float)
-        df['key'] = df['nationality'] + '-' + df['hair_color']
+        df['avg_weight'] = df['avg_weight'].astype(float).round(2)
+        df['key'] = df['nationality'].str.lower() + '-' + df['hair_color'].str.lower()
         
-        result_dict = df.set_index('key')['avg_weight'].to_dict()
+        # Convert to integers if whole numbers, otherwise keep as floats
+        def convert_to_int_or_float(val):
+            if val == int(val):
+                return int(val)
+            else:
+                return float(val)
+        
+        result_dict = {}
+        for key, val in df.set_index('key')['avg_weight'].items():
+            result_dict[key] = convert_to_int_or_float(val)
         
         logger.info(f"Avg weight by nationality-hair color query completed, found {len(result_dict)} combinations")
         logger.info(f"Results: {result_dict}")
@@ -262,7 +281,23 @@ def get_avg_height_nationality_general(session: Session) -> Dict[str, Any]:
         df['weighted_height'] = df['avg_height'] * df['count']
         general_avg = df['weighted_height'].sum() / df['count'].sum() if df['count'].sum() > 0 else 0
         
-        nationalities_dict = df.set_index('nationality')['avg_height'].to_dict()
+        # Convert to integers if whole numbers, otherwise keep as floats with 2 decimals
+        def convert_to_int_or_float(val):
+            rounded_val = round(float(val), 2)
+            if rounded_val == int(rounded_val):
+                return int(rounded_val)
+            else:
+                return rounded_val
+        
+        # Create nationalities dict with lowercase keys and proper rounding
+        nationalities_dict = {}
+        for _, row in df.iterrows():
+            nationality = row['nationality'].lower()
+            avg_height = convert_to_int_or_float(row['avg_height'])
+            nationalities_dict[nationality] = avg_height
+        
+        # Round general average
+        general_avg = convert_to_int_or_float(general_avg)
         
         logger.info(f"General average height calculated from nationality data: {general_avg}")
         
