@@ -6,13 +6,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 from database import get_session
 import pandas as pd
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 def seed_people():
     logger.info("Seeding people...")
     session = get_session()
     try:
         logger.info("Getting information from file files/people_data.csv")
         existentIds = {person.id for person in session.query(Person).all()}
-        for chunk in pd.read_csv("files/people_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/people_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 if row["id"] not in existentIds:
                     person = Person(
@@ -36,7 +38,7 @@ def seed_people_physical_data():
     try:
         logger.info("Getting information from file files/physical_data.csv")
         existentIds = {person.id for person in session.query(Person).all()}
-        for chunk in pd.read_csv("files/physical_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/physical_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 if row["person_id"] in existentIds:
                     person = Person(id=row["person_id"])
@@ -60,7 +62,7 @@ def seed_hobbies():
     session = get_session()
     try:
         logger.info("Getting information from file files/hobbies_data.csv")
-        for chunk in pd.read_csv("files/hobbies_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/hobbies_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 existing_hobbies = {hobby.hobby for hobby in session.query(Hobby).filter(Hobby.person_id == row["person_id"]).all()}
                 if row["hobby"] not in existing_hobbies:
@@ -81,7 +83,7 @@ def seed_favorite_foods():
     session = get_session()
     try:
         logger.info("Getting information from file files/favorite_data.csv")
-        for chunk in pd.read_csv("files/favorite_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/favorite_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 existing_favorite_foods = {food.food for food in session.query(FavoriteFood).filter(FavoriteFood.person_id == row["person_id"]).all()}
                 if row["food"] not in existing_favorite_foods:
@@ -102,7 +104,7 @@ def seed_studies():
     session = get_session()
     try:
         logger.info("Getting information from file files/studies_data.csv")
-        for chunk in pd.read_csv("files/studies_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/studies_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 existing_studies = {(study.degree, study.institution) for study in session.query(Study).filter(Study.person_id == row["person_id"]).all()}
                 if (row["degree"], row["institution"]) not in existing_studies:
@@ -123,7 +125,7 @@ def seed_families():
     session = get_session()
     try:
         logger.info("Getting information from file files/family_data.csv")
-        for chunk in pd.read_csv("files/family_data.csv", chunksize=1000):
+        for chunk in pd.read_csv(os.path.join(script_dir, "files/family_data.csv"), chunksize=1000):
             for _, row in chunk.iterrows():
                 existing_families = {(family.relation, family.name) for family in session.query(Family).filter(Family.person_id == row["person_id"]).all()}
                 if (row["relation"], row["name"]) not in existing_families:
