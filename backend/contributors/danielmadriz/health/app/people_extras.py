@@ -165,3 +165,43 @@ def get_avg_weight_by_nationality_hair_color(session: Session) -> Dict[str, floa
     except Exception as e:
         logger.error(f"Error in get_avg_weight_by_nationality_hair_color: {str(e)}")
         raise
+
+
+def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[str]]:
+
+    try:
+        logger.info("Starting top_oldest_people_per_nationality query")
+     
+        # Get all nationalities
+        nationalities = session.query(PhysicalProfile.nationality).distinct().all()
+        logger.info(f"Found nationalities: {[nat[0] for nat in nationalities]}")
+        
+        result_dict = {}
+        
+        for nationality_tuple in nationalities:
+            nationality = nationality_tuple[0]
+            
+            oldest_people = session.query(
+                Person.full_name
+            ).join(
+                PhysicalProfile, Person.id == PhysicalProfile.person_id
+            ).filter(
+                PhysicalProfile.nationality == nationality,
+                PhysicalProfile.age.isnot(None)
+            ).order_by(
+                PhysicalProfile.age.desc()
+            ).limit(2).all()
+            
+            names = [person[0] for person in oldest_people]
+            result_dict[nationality] = names
+            
+            logger.info(f"Nationality '{nationality}': found {len(names)} oldest people")
+        
+        logger.info(f"Top oldest people per nationality query completed, found {len(result_dict)} nationalities")
+        logger.info(f"Results: {result_dict}")
+        
+        return result_dict
+        
+    except Exception as e:
+        logger.error(f"Error in get_top_oldest_people_per_nationality: {str(e)}")
+        raise
