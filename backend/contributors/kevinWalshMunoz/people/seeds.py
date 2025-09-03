@@ -7,7 +7,6 @@ from pathlib import Path
 
 from app.models import Base, Person, PhysicalAttribute, FamilyRelation, FavoriteFood, Hobby, Education
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from database import get_session
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
