@@ -153,10 +153,11 @@ def get_avg_weight_by_nationality_hair_color(session: Session) -> Dict[str, floa
             PhysicalProfile.hair_color
         ).all()
         
-        result_dict = {}
-        for nationality, hair_color, avg_weight in results:
-            key = f"{nationality}-{hair_color}"
-            result_dict[key] = float(avg_weight)
+        df = pd.DataFrame(results, columns=['nationality', 'hair_color', 'avg_weight'])
+        df['avg_weight'] = df['avg_weight'].astype(float)
+        df['key'] = df['nationality'] + '-' + df['hair_color']
+        
+        result_dict = df.set_index('key')['avg_weight'].to_dict()
         
         logger.info(f"Avg weight by nationality-hair color query completed, found {len(result_dict)} combinations")
         logger.info(f"Results: {result_dict}")
@@ -222,12 +223,10 @@ def get_top_people_by_hobbies(session: Session) -> List[str]:
             func.count(Hobby.hobby).desc()
         ).limit(3).all()
         
-        names = []
-        for result in results:
-            name = result[0]
-            hobby_count = result[1]
-            names.append(name)
-            logger.info(f"Person '{name}' has {hobby_count} hobbies")
+        df = pd.DataFrame(results, columns=['name', 'hobby_count'])
+        df['hobby_count'] = df['hobby_count'].astype(int)
+        
+        names = df['name'].tolist()
         
         logger.info(f"Top people by hobbies query completed, found {len(names)} people")
         logger.info(f"Results: {names}")
