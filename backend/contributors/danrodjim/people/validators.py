@@ -26,4 +26,3 @@ class PersonSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Person
         load_instance = True
-        include_relationships = True

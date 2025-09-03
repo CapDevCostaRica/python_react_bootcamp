@@ -1,6 +1,6 @@
 from database import get_session
 from sqlalchemy import select, func, desc
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, aliased
 from app.models import Person, Food, Family, Hobby, Study
 import csv
 import heapq
@@ -9,12 +9,7 @@ from pathlib import Path
 
 def find_person(filters):
     with get_session() as session:
-        person_query = select(Person).options(
-            selectinload(Person.foods),
-            selectinload(Person.hobbies),
-            selectinload(Person.family),
-            selectinload(Person.studies)
-        )
+        person_query = select(Person).distinct()
 
         person_filters = {
             "name": Person.name,
@@ -49,7 +44,7 @@ def find_person(filters):
 
         result = session.scalars(person_query).all()
 
-        return result
+    return result
 
 
 def find_sushi_ramen():
@@ -148,4 +143,74 @@ def find_avg_weight_nationality_hair():
         )
 
         result = session.execute(person_query).all()
+    return result
+
+
+def find_top_oldest_nationality():
+    with get_session() as session:
+        row_number_column = func.row_number().over(
+            partition_by=Person.nationality,
+            order_by=Person.age.desc()
+        ).label("row_num")
+
+        subquery = (
+            select(
+                Person.id,
+                Person.nationality,
+                Person.name,
+                row_number_column
+            ).subquery()
+        )
+
+        person_alias = aliased(subquery)
+
+        query = (
+            select(
+                person_alias.c.nationality,
+                person_alias.c.name
+            )
+            .where(person_alias.c.row_num <= 2)
+        )
+
+        results = session.execute(query).all()
+    return results
+    
+def find_top_hobbies():
+    with get_session() as session:
+        hobby_count_column = func.count(Hobby.id).label("hobby_count")
+
+        query = (
+            select(Person.name)
+            .outerjoin(Hobby)
+            .group_by(Person.id, Person.name)
+            .order_by(desc(hobby_count_column), Person.name.asc())
+            .limit(3)
+        )
+
+        results = session.scalars(query).all()
+    return results
+
+def find_avg_height_nationality_general():
+    with get_session() as session:
+        avg_by_nationality_query = (
+            select(
+                func.lower(Person.nationality),
+                func.avg(Person.height_cm)
+            )
+            .group_by(Person.nationality)
+        )
+
+        nationality_results = session.execute(avg_by_nationality_query).all()
+
+        avg_general_query = select(func.avg(Person.height_cm))
+        general_result = session.execute(avg_general_query).scalar()
+
+        result = {
+            "nationalities": {
+                nationality: round(avg_height, 2)
+                for nationality, avg_height in nationality_results
+            },
+            "general": round(general_result, 2)
+        }
+
     return result
