@@ -236,3 +236,52 @@ def get_top_people_by_hobbies(session: Session) -> List[str]:
     except Exception as e:
         logger.error(f"Error in get_top_people_by_hobbies: {str(e)}")
         raise
+
+
+def get_avg_height_nationality_general(session: Session) -> Dict[str, Any]:
+    try:
+        logger.info("Starting avg_height_nationality_general query")
+        
+        height_count = session.query(PhysicalProfile).filter(PhysicalProfile.height_cm.isnot(None)).count()
+        logger.info(f"Total height entries: {height_count}")
+
+        nationality_results = session.query(
+            PhysicalProfile.nationality,
+            func.avg(PhysicalProfile.height_cm).label('avg_height'),
+            func.count(PhysicalProfile.height_cm).label('count')
+        ).filter(
+            PhysicalProfile.height_cm.isnot(None)
+        ).group_by(
+            PhysicalProfile.nationality
+        ).all()
+        
+        nationalities_dict = {}
+        total_weighted_height = 0
+        total_count = 0
+        
+        for nationality, avg_height, count in nationality_results:
+            avg_height_float = float(avg_height) if avg_height else 0
+            count_int = int(count) if count else 0
+            
+            nationalities_dict[nationality] = avg_height_float
+            total_weighted_height += avg_height_float * count_int
+            total_count += count_int
+            
+            logger.info(f"Nationality '{nationality}': average height {avg_height_float}, count {count_int}")
+        
+        general_avg = total_weighted_height / total_count if total_count > 0 else 0
+        logger.info(f"General average height calculated from nationality data: {general_avg}")
+        
+        result = {
+            "general": general_avg,
+            "nationalities": nationalities_dict
+        }
+        
+        logger.info(f"Avg height nationality general query completed")
+        logger.info(f"Results: {result}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in get_avg_height_nationality_general: {str(e)}")
+        raise

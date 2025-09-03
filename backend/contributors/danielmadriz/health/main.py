@@ -2,7 +2,7 @@ import os
 import sys
 from flask import Flask, jsonify
 from app.people_service import find_people
-from app.people_extras import get_sushi_ramen_count, get_avg_weight_above_70_by_hair_color, get_most_common_food_overall, get_avg_weight_by_nationality_hair_color, get_top_oldest_people_per_nationality, get_top_people_by_hobbies
+from app.people_extras import get_sushi_ramen_count, get_avg_weight_above_70_by_hair_color, get_most_common_food_overall, get_avg_weight_by_nationality_hair_color, get_top_oldest_people_per_nationality, get_top_people_by_hobbies, get_avg_height_nationality_general
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from database import get_session
 from pathlib import Path
@@ -165,6 +165,27 @@ def people_top_hobbies():
             "success": False,
             "error": str(e),
             "data": []
+        }
+        return jsonify(error_response), 500
+
+@app.route('/people/avg_height_nationality_general', methods=['GET'])
+def people_avg_height_nationality_general():
+    try:
+        session = get_session()
+        result = get_avg_height_nationality_general(session)
+        
+        response_data = {
+            "success": True,
+            "data": result
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        error_response = {
+            "success": False,
+            "error": str(e),
+            "data": {"general": 0, "nationalities": {}}
         }
         return jsonify(error_response), 500
 
