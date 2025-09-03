@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import os
 import sys
 import logging
+from sqlalchemy import func, desc, and_
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(current_dir)
@@ -18,24 +19,6 @@ app = Flask(__name__)
 @app.route('/')
 def health():
     return {'status': 'ok'}
-
-@app.route('/people/all', methods=['GET'])
-def get_all_people():
-    session = get_session()
-    try:
-        people = session.query(Person).all()
-        return jsonify({
-            "success": True,
-            "data": {
-                "total": len(people),
-                "results": [person.full_name for person in people]
-            }
-        })
-    except Exception as e:
-        logger.error(f"Error al obtener personas: {str(e)}", exc_info=True)
-        return jsonify({"success": False, "error": str(e)}), 500
-    finally:
-        session.close()
 
 @app.route('/people/find', methods=['GET'])
 def find_people():
@@ -149,6 +132,34 @@ def find_people():
         return jsonify({"success": False, "error": str(e)}), 500
     finally:
         session.close()
+
+
+@app.route('/people/sushi_ramen', methods=['GET'])
+def sushi_ramen_lovers():
+    """
+    People who like both sushi and pasta
+    """
+    session = get_session()
+    try:
+
+        people_ids = session.query(FavoriteFood.person_id)\
+            .filter(FavoriteFood.food.in_(["sushi", "pasta"]))\
+            .group_by(FavoriteFood.person_id)\
+            .having(func.count(func.distinct(FavoriteFood.food)) == 2)\
+            .all()
+        
+        count = len(people_ids)
+        
+        return jsonify({
+            "success": True,
+            "data": count
+        })
+    except Exception as e:
+        logger.error(f"Error in endpoint sushi_ramen: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        session.close()
+
 
 if __name__ == '__main__':
     print("Seeding database...")
