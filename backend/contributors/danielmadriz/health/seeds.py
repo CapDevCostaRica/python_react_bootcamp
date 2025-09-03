@@ -3,11 +3,21 @@ import sys
 from pathlib import Path
 from typing import List, Any, Optional, Callable
 import pandas as pd
+# Add app path first for local models
+app_path = os.path.join(os.path.dirname(__file__), 'app')
+sys.path.insert(0, app_path)
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
+# Import local models first
 from models import Person, PhysicalProfile, FavoriteFood, Hobby, FamilyRelation, Study
 from logger_config.loggerconfig import setup_application_logging, get_logger
 from mappers.dataframe_mapper import DataFrameMapper
+
+# Add framework path for database access
+framework_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'framework')
+if framework_path not in sys.path:
+    sys.path.insert(0, framework_path)
+
+from database import get_session
 
 setup_application_logging()
 logger = get_logger(__name__)
@@ -67,35 +77,35 @@ def process_people_data(session) -> int:
 
 def process_physical_data(session):
     csv_path = CSV_FILES_DIR / "physical_data.csv"
-    _process_csv_data(
+    return _process_csv_data(
         session, csv_path, mapper.process_physical_dataframe, 
         "physical profiles", _check_physical_profile_exists
     )
 
 def process_favorite_foods(session):
     csv_path = CSV_FILES_DIR / "favorite_data.csv"
-    _process_csv_data(
+    return _process_csv_data(
         session, csv_path, mapper.process_favorite_food_dataframe, 
         "favorite foods", _check_favorite_food_exists
     )
 
 def process_hobbies(session):
     csv_path = CSV_FILES_DIR / "hobbies_data.csv"
-    _process_csv_data(
+    return _process_csv_data(
         session, csv_path, mapper.process_hobby_dataframe, 
         "hobbies", _check_hobby_exists
     )
 
 def process_family_relations(session):
     csv_path = CSV_FILES_DIR / "family_data.csv"
-    _process_csv_data(
+    return _process_csv_data(
         session, csv_path, mapper.process_family_relation_dataframe, 
         "family relations", _check_family_relation_exists
     )
 
 def process_studies(session):
     csv_path = CSV_FILES_DIR / "studies_data.csv"
-    _process_csv_data(
+    return _process_csv_data(
         session, csv_path, mapper.process_study_dataframe, 
         "studies", _check_study_exists
     )
@@ -105,6 +115,8 @@ def check_existing_data(session):
     if existing_people > 0:
         logger.warning(f"WARNING: {existing_people} people already exist in database. Skipping existing records")
         logger.info("="*50)
+        return True  # Return True if data exists
+    return False  # Return False if no data exists
 
 def _read_csv_file_to_dataframe(csv_path: Path) -> pd.DataFrame:
     if not csv_path.exists():
@@ -114,7 +126,8 @@ def _read_csv_file_to_dataframe(csv_path: Path) -> pd.DataFrame:
     try:
         df = pd.read_csv(csv_path, encoding=CSV_ENCODING)
         string_columns = df.select_dtypes(include=['object']).columns
-        df[string_columns] = df[string_columns].astype(str).str.strip()
+        for col in string_columns:
+            df[col] = df[col].astype(str).str.strip()
         return df
     except Exception as e:
         logger.error(f"Error reading CSV file {csv_path}: {e}")
@@ -124,11 +137,26 @@ def _process_batch(session, batch: List[Any], batch_name: str) -> int:
     if not batch:
         return 0
     
-    session.add_all(batch)
-    session.commit()
-    processed_count = len(batch)
-    logger.debug(f"Processed batch of {processed_count} {batch_name}")
-    return processed_count
+    try:
+        session.add_all(batch)
+        session.commit()
+        processed_count = len(batch)
+        logger.debug(f"Processed batch of {processed_count} {batch_name}")
+        return processed_count
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error processing batch of {batch_name}: {e}")
+        # Try to process items individually to identify problematic records
+        individual_count = 0
+        for item in batch:
+            try:
+                session.add(item)
+                session.commit()
+                individual_count += 1
+            except Exception as individual_error:
+                session.rollback()
+                logger.warning(f"Skipping duplicate or invalid {batch_name}: {individual_error}")
+        return individual_count
 
 def _process_csv_data(
     session,
@@ -193,3 +221,60 @@ def _check_study_exists(session, study: Study) -> bool:
         Study.degree == study.degree,
         Study.institution == study.institution
     ).first() is not None
+
+
+def seed_all_data():
+    logger.info("Starting health database seeding process for exercise 2")
+    
+    # Get database session
+    session = get_session()
+    
+    try:
+        # Check if data already exists
+        if check_existing_data(session):
+            logger.info("Database already contains data. Seeding process completed successfully (no new data needed).")
+            return
+        
+        total_processed = 0
+        
+        # 1. Process people data
+        people_count = process_people_data(session)
+        total_processed += people_count
+        logger.info(f"People seeding completed: {people_count} records")
+        
+        # 2. Process physical profiles
+        physical_count = process_physical_data(session)
+        total_processed += physical_count
+        logger.info(f"Physical profiles seeding completed: {physical_count} records")
+        
+        # 3. Process favorite foods
+        foods_count = process_favorite_foods(session)
+        total_processed += foods_count
+        logger.info(f"Favorite foods seeding completed: {foods_count} records")
+        
+        # 4. Process hobbies
+        hobbies_count = process_hobbies(session)
+        total_processed += hobbies_count
+        logger.info(f"Hobbies seeding completed: {hobbies_count} records")
+        
+        # 5. Process family relations
+        family_count = process_family_relations(session)
+        total_processed += family_count
+        logger.info(f"Family relations seeding completed: {family_count} records")
+        
+        # 6. Process studies
+        studies_count = process_studies(session)
+        total_processed += studies_count
+        logger.info(f"Studies seeding completed: {studies_count} records")
+        
+        logger.info(f"Database seeding completed successfully! Total records processed: {total_processed}")
+        
+    except Exception as e:
+        logger.error(f"Error during database seeding: {str(e)}", exc_info=True)
+        raise
+    finally:
+        session.close()
+
+
+if __name__ == "__main__":
+    seed_all_data()
