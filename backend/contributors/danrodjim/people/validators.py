@@ -1,8 +1,10 @@
-from marshmallow import Schema, fields, validate
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, auto_field
-from app.models import Person, Food, Hobby, Family, Study
+from marshmallow import Schema, fields, EXCLUDE
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from app.models import Person
 
 class FindPersonRequestValidator(Schema):
+    class Meta:
+        unknown = EXCLUDE
     name = fields.Str(required=False)
     eye_color = fields.Str(required=False)
     hair_color = fields.Str(required=False)

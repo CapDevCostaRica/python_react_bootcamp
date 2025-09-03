@@ -1,6 +1,6 @@
 from database import get_session
 from sqlalchemy import select, func, desc
-from sqlalchemy.orm import selectinload, aliased
+from sqlalchemy.orm import aliased
 from app.models import Person, Food, Family, Hobby, Study
 import csv
 import heapq
