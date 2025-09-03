@@ -6,106 +6,125 @@ from .app.models import People, Favorite, Hobbies, Family, Studies
 
 people_bp = Blueprint("people", __name__, url_prefix="/people")
 
-def _coalesce_json():
-    j = request.get_json(silent=True)
-    return j if isinstance(j, dict) else {}
-
-def _filters_from_request():
-    q = {}
-    for src in (request.args, request.form):
-        for k in src:
-            vals = src.getlist(k)
-            q[k] = vals if len(vals) > 1 else vals[0]
-    j = _coalesce_json()
-    payload = j.get("filters") if isinstance(j.get("filters"), dict) else j
-    if isinstance(payload, dict):
-        for k, v in payload.items():
-            q[k] = v
-    return q
-
-def _to_list(v):
+def _as_list(v):
     if v is None:
         return []
-    return v if isinstance(v, list) else [v]
+    if isinstance(v, (list, tuple)):
+        return list(v)
+    return [v]
 
-def _nums(vs, as_int=True):
-    out = []
-    for x in _to_list(vs):
-        s = str(x).strip()
-        if s.replace(".", "", 1).lstrip("-").isdigit():
-            out.append(int(float(s)) if as_int else float(s))
+def _maybe_json_dict(v):
+    if not isinstance(v, str):
+        return None
+    s = v.strip()
+    if not (s.startswith("{") and s.endswith("}")):
+        return None
+    try:
+        import json
+        obj = json.loads(s)
+        return obj if isinstance(obj, dict) else None
+    except Exception:
+        return None
+
+def _filters_from_request():
+    out = {}
+    for k, vs in request.args.lists():
+        out[k] = vs if len(vs) > 1 else vs[0]
+    if request.form:
+        for k, vs in request.form.lists():
+            if k == "filters" and len(vs) == 1:
+                j = _maybe_json_dict(vs[0])
+                if isinstance(j, dict):
+                    for kk, vv in j.items():
+                        if kk not in out:
+                            out[kk] = vv
+                continue
+            if k not in out:
+                out[k] = vs if len(vs) > 1 else vs[0]
+    body = request.get_json(silent=True)
+    if isinstance(body, dict):
+        if isinstance(body.get("filters"), dict):
+            for kk, vv in body["filters"].items():
+                out[kk] = vv if kk not in out else out[kk]
+        for kk, vv in body.items():
+            if kk != "filters" and kk not in out:
+                out[kk] = vv
     return out
 
-def _lc_values(vs):
-    return [str(x).lower() for x in _to_list(vs) if x is not None and str(x) != ""]
+def _lc(s):
+    return (s or "").lower()
+
+def _ci_in(col, values):
+    vals = [_lc(v) for v in _as_list(values) if v is not None]
+    if not vals:
+        return None
+    return func.lower(col).in_(vals)
 
 @people_bp.route("/find", methods=["GET", "POST"])
 def people_find():
-    f = _filters_from_request()
+    q = _filters_from_request()
+    filters = []
 
-    join_food  = "food" in f
-    join_hobby = "hobby" in f
-    join_fam   = "family" in f
-    join_study = ("degree" in f) or ("institution" in f)
+    need_fav   = "food" in q
+    need_hobby = "hobby" in q
+    need_fam   = "family" in q
+    need_study = ("degree" in q) or ("institution" in q)
 
-    stmt = select(People.full_name).distinct()
-    if join_food:
+    stmt = select(People.full_name).select_from(People).distinct()
+
+    if "eye_color"   in q: filters.append(_ci_in(People.eye_color,   q["eye_color"]))
+    if "hair_color"  in q: filters.append(_ci_in(People.hair_color,  q["hair_color"]))
+    if "nationality" in q: filters.append(_ci_in(People.nationality, q["nationality"]))
+
+    if "age" in q:
+        nums = []
+        for v in _as_list(q["age"]):
+            try:
+                nums.append(int(str(v).strip()))
+            except Exception:
+                pass
+        if nums:
+            filters.append(People.age.in_(nums))
+
+    if "height_cm" in q:
+        nums = []
+        for v in _as_list(q["height_cm"]):
+            try:
+                nums.append(int(str(v).strip()))
+            except Exception:
+                pass
+        if nums:
+            filters.append(People.height_cm.in_(nums))
+
+    if "weight_kg" in q:
+        nums = []
+        for v in _as_list(q["weight_kg"]):
+            try:
+                nums.append(int(str(v).strip()))
+            except Exception:
+                pass
+        if nums:
+            filters.append(People.weight_kg.in_(nums))
+
+    if need_fav:
         stmt = stmt.join(Favorite, Favorite.person_id == People.id)
-    if join_hobby:
+        filters.append(_ci_in(Favorite.food, q.get("food")))
+    if need_hobby:
         stmt = stmt.join(Hobbies, Hobbies.person_id == People.id)
-    if join_fam:
+        filters.append(_ci_in(Hobbies.hobby, q.get("hobby")))
+    if need_fam:
         stmt = stmt.join(Family, Family.person_id == People.id)
-    if join_study:
+        filters.append(_ci_in(Family.relation, q.get("family")))
+    if need_study:
         stmt = stmt.join(Studies, Studies.person_id == People.id)
+        if "degree" in q:
+            filters.append(_ci_in(Studies.degree, q.get("degree")))
+        if "institution" in q:
+            filters.append(_ci_in(Studies.institution, q.get("institution")))
 
-    conds = []
-
-    eye_vals = _lc_values(f.get("eye_color"))
-    if eye_vals:
-        conds.append(func.lower(People.eye_color).in_(eye_vals))
-
-    hair_vals = _lc_values(f.get("hair_color"))
-    if hair_vals:
-        conds.append(func.lower(People.hair_color).in_(hair_vals))
-
-    nat_vals = _lc_values(f.get("nationality"))
-    if nat_vals:
-        conds.append(func.lower(People.nationality).in_(nat_vals))
-
-    ages = _nums(f.get("age"), as_int=True)
-    if ages:
-        conds.append(People.age.in_(ages))
-
-    heights = _nums(f.get("height_cm"), as_int=True)
-    if heights:
-        conds.append(People.height_cm.in_(heights))
-
-    weights = _nums(f.get("weight_kg"), as_int=True)
-    if weights:
-        conds.append(People.weight_kg.in_(weights))
-
-    food_vals = _lc_values(f.get("food"))
-    if food_vals:
-        conds.append(func.lower(Favorite.food).in_(food_vals))
-
-    hobby_vals = _lc_values(f.get("hobby"))
-    if hobby_vals:
-        conds.append(func.lower(Hobbies.hobby).in_(hobby_vals))
-
-    fam_vals = _lc_values(f.get("family"))
-    if fam_vals:
-        conds.append(func.lower(Family.relation).in_(fam_vals))
-
-    degree_vals = _lc_values(f.get("degree"))
-    if degree_vals:
-        conds.append(func.lower(Studies.degree).in_(degree_vals))
-
-    inst_vals = _lc_values(f.get("institution"))
-    if inst_vals:
-        conds.append(func.lower(Studies.institution).in_(inst_vals))
-
-    if conds:
-        stmt = stmt.where(and_(*conds))
+    filters = [f for f in filters if f is not None]
+    if filters:
+        stmt = stmt.where(and_(*filters))
 
     with SessionLocal() as db:
         results = db.execute(stmt).scalars().all()
@@ -114,21 +133,24 @@ def people_find():
 
 @people_bp.get("/sushi_ramen")
 def people_sushi_ramen():
-    sub = (
+    subq = (
         select(Favorite.person_id)
         .where(func.lower(Favorite.food).in_(["sushi", "ramen"]))
         .group_by(Favorite.person_id)
         .having(func.count(func.distinct(func.lower(Favorite.food))) == 2)
         .subquery()
     )
-    stmt = select(func.count()).select_from(sub)
+    stmt = select(func.count()).select_from(subq)
     with SessionLocal() as db:
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
 
 @people_bp.get("/sushi")
 def people_sushi():
-    stmt = select(func.count(func.distinct(Favorite.person_id))).where(func.lower(Favorite.food) == "sushi")
+    stmt = (
+        select(func.count(func.distinct(Favorite.person_id)))
+        .where(func.lower(Favorite.food) == "sushi")
+    )
     with SessionLocal() as db:
         total = db.execute(stmt).scalar() or 0
     return jsonify({"success": True, "data": int(total)})
@@ -136,7 +158,11 @@ def people_sushi():
 @people_bp.get("/avg_weight_above_70_hair")
 def avg_weight_above_70_hair():
     min_w = request.args.get("min", 70, type=int)
-    stmt = select(People.hair_color, func.avg(People.weight_kg)).where(People.weight_kg > min_w).group_by(People.hair_color)
+    stmt = (
+        select(People.hair_color, func.avg(People.weight_kg))
+        .where(People.weight_kg > min_w)
+        .group_by(People.hair_color)
+    )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
     data = {(hc or ""): int(round(avg or 0)) for hc, avg in rows}
@@ -144,17 +170,25 @@ def avg_weight_above_70_hair():
 
 @people_bp.get("/most_common_food_overall")
 def most_common_food_overall():
-    stmt = select(Favorite.food, func.count(Favorite.id)).group_by(Favorite.food).order_by(func.count(Favorite.id).desc()).limit(1)
+    stmt = (
+        select(Favorite.food, func.count(Favorite.id))
+        .group_by(Favorite.food)
+        .order_by(func.count(Favorite.id).desc())
+        .limit(1)
+    )
     with SessionLocal() as db:
         row = db.execute(stmt).first()
     return jsonify({"success": True, "data": (row.food if row else "")})
 
 @people_bp.get("/avg_weight_nationality_hair")
 def avg_weight_nationality_hair():
-    stmt = select(People.nationality, People.hair_color, func.avg(People.weight_kg)).group_by(People.nationality, People.hair_color)
+    stmt = (
+        select(People.nationality, People.hair_color, func.avg(People.weight_kg))
+        .group_by(People.nationality, People.hair_color)
+    )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
-    data = {f"{(nat or '').lower()}-{(hc or '').lower()}": int(round(avg or 0)) for nat, hc, avg in rows}
+    data = {f"{_lc(nat)}-{_lc(hc)}": int(round(avg or 0)) for nat, hc, avg in rows}
     return jsonify({"success": True, "data": data})
 
 @people_bp.get("/top_oldest_nationality")
@@ -163,15 +197,22 @@ def top_oldest_nationality():
         select(
             People.full_name.label("full_name"),
             func.coalesce(People.nationality, "").label("nat"),
-            func.row_number().over(partition_by=func.coalesce(People.nationality, ""), order_by=People.age.desc()).label("rk"),
+            func.row_number().over(
+                partition_by=func.coalesce(People.nationality, ""),
+                order_by=People.age.desc()
+            ).label("rk")
         ).subquery()
     )
-    stmt = select(subq.c.full_name, subq.c.nat).where(subq.c.rk <= 2).order_by(subq.c.nat.asc(), subq.c.rk.asc())
+    stmt = (
+        select(subq.c.full_name, subq.c.nat)
+        .where(subq.c.rk <= 2)
+        .order_by(subq.c.nat.asc(), subq.c.rk.asc())
+    )
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
     out = {}
     for full_name, nat in rows:
-        key = (nat or "").lower()
+        key = _lc(nat)
         out.setdefault(key, []).append(full_name)
     return jsonify({"success": True, "data": out})
 
@@ -193,6 +234,8 @@ def top_hobbies():
 def avg_height_nationality_general():
     with SessionLocal() as db:
         general = db.execute(select(func.avg(People.height_cm))).scalar()
-        rows = db.execute(select(People.nationality, func.avg(People.height_cm)).group_by(People.nationality)).all()
-    result = {"general": int(round(general or 0)), "nationalities": {str(nat or "").lower(): int(round(avg or 0)) for nat, avg in rows}}
+        rows = db.execute(
+            select(People.nationality, func.avg(People.height_cm)).group_by(People.nationality)
+        ).all()
+    result = {"general": int(round(general or 0)), "nationalities": {_lc(nat): int(round(avg or 0)) for nat, avg in rows}}
     return jsonify({"success": True, "data": result})
