@@ -44,10 +44,31 @@ def find_people():
 })
 
 @app.route('/people/sushi_ramen', methods=['GET'])
-def sushi_ramen_people():
-    result = db.find_sushi_ramen_people()
-
+def sushi_ramen():
+    result = db.find_sushi_ramen()
     return jsonify({"success": True, "data": len(result)})
+
+@app.route('/people/avg_weight_above_70_hair', methods=['GET'])
+def avg_weight_above_70_hair():
+    result = db.find_avg_weight_above_70_hair()
+    return jsonify({"success": True, "data": result})
+
+@app.route('/people/most_common_food_overall', methods=['GET'])
+def most_common_food_overall():
+    result = db.find_most_common_food()
+    # result = db.find_most_common_food_by_file()
+    return jsonify({"success": True, "data": result[0]})
+
+@app.route('/people/avg_weight_nationality_hair', methods=['GET'])
+def avg_weight_nationality_hair():
+    result = db.find_avg_weight_nationality_hair()
+    response = {}
+    for r in result:
+        key = r[0]+"-"+r[1]
+        value = round(float(r[2]), 2)
+        response[key] = value
+    print(response)
+    return jsonify({"success": True, "data": response})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
