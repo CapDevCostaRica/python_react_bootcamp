@@ -7,7 +7,7 @@ Base = declarative_base()
 class Person(Base):
     __tablename__ = 'danielmadriz_person'
     
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=False)  # Use CSV ID directly as primary key
     full_name = Column(String(255), nullable=False)
     
     # Relationships
@@ -92,9 +92,10 @@ class FamilyRelation(Base):
     # Relationships
     person = relationship("Person", back_populates="family_relations")
     
-    # Indexes
+    # Indexes and constraints
     __table_args__ = (
         Index('idx_family_relation_person_relation', 'person_id', 'relation'),
+        UniqueConstraint('person_id', 'relation', 'name', name='uq_family_relation_person_relation_name'),
     )
 
 
