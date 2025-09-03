@@ -179,11 +179,13 @@ def people_sushi():
 @people_bp.get("/avg_weight_above_70_hair")
 def avg_weight_above_70_hair():
     min_w = request.args.get("min", 70, type=int)
+
     stmt = (
         select(People.hair_color, func.avg(People.weight_kg))
         .where(People.weight_kg.isnot(None), People.weight_kg > min_w)
         .group_by(People.hair_color)
     )
+
     with SessionLocal() as db:
         rows = db.execute(stmt).all()
 
@@ -195,7 +197,8 @@ def avg_weight_above_70_hair():
     for hair, avg in rows:
         if avg is None:
             continue
-        data[(hair or "")] = to_num(avg)
+
+        data[(hair or "").lower()] = to_num(avg)
 
     return jsonify({"success": True, "data": data})
 
