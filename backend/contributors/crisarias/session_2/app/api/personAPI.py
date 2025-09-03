@@ -31,8 +31,8 @@ def getSushiAndRamenCountReport():
 
 def getMostCommonFoodReport():
     logger.info("Received getMostCommonFoodReport request.")
-    personsCount = getMostCommonFoodDL()
-    return personsCount
+    mostCommonFood = getMostCommonFoodDL()
+    return mostCommonFood
 
 def getAvgWeightAbove70HairReport():
     logger.info("Received getAvgWeightAbove70HairReport request.")

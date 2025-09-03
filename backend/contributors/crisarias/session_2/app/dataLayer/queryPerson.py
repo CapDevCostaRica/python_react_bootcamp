@@ -104,12 +104,12 @@ def getMostCommonFoodDL():
     session = None
     try:
         session = get_session()
-        query = session.query(FavoriteFood.food, func.count(FavoriteFood.food)).group_by(FavoriteFood.food).order_by(func.count(FavoriteFood.food).desc()).limit(1)        
+        query = session.query(FavoriteFood.food, func.count(FavoriteFood.food)).group_by(FavoriteFood.food).order_by(func.count(FavoriteFood.food).desc()).limit(1)
         foods = query.all()
         logger.info(f"Retrieved {len(foods)} rows for model {FavoriteFood.__name__}")
         if not foods:
             return []
-        return [f[0] for f in foods]
+        return foods[0][0] if len(foods) > 0 else ""
     except Exception as e:
         logger.error(f"Error retrieving cached resources for model {FavoriteFood.__name__}: {e}")
         raise e
@@ -131,7 +131,7 @@ def getAverageWeightByNationalityAndHairDL():
         
         data = {}
         for nationality, hair_color, avg_weight in results:
-            key = f"{nationality}-{hair_color}"
+            key = f"{nationality.lower()}-{hair_color}"
             rounded_weight = round(float(avg_weight), 2) if avg_weight else 0
             data[key] = int(rounded_weight) if rounded_weight == int(rounded_weight) else rounded_weight
         
