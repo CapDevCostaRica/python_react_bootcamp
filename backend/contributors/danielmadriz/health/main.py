@@ -1,4 +1,5 @@
-from flask import Flask, jsonify
+from flask import Flask
+from controllers.people_controller import PeopleController
 
 app = Flask(__name__)
 
@@ -8,11 +9,7 @@ def health():
 
 @app.route('/people/find', methods=['GET'])
 def find_people():
-    return jsonify({
-        'message': 'Not implemented',
-        'result_count': 0,
-        'names': []
-    }), 501
+    return PeopleController.find_people()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4000)
