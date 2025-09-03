@@ -18,6 +18,17 @@ def buildPersonList(people):
             result.append(p[0])
         return result
 
+def result_to_float(result):
+    if result is None:
+        return 0
+    float_val = float(result)
+    rounded_val = round(float_val, 2)
+    # If the rounded value has no decimal places, return as int
+    if rounded_val == int(rounded_val):
+        return int(rounded_val)
+    # Otherwise return with 2 decimal places
+    return rounded_val
+
 def getPersonsDL(filter_dict):
     session = None
     try:
@@ -91,7 +102,7 @@ def getAverageWeightAbove70ByHairDL():
         
         data = {}
         for hair_color, avg_weight in results:
-            data[hair_color] = round(float(avg_weight), 2) if avg_weight else 0
+            data[hair_color] = result_to_float(avg_weight)
         
         return data
     except Exception as e:
@@ -132,8 +143,7 @@ def getAverageWeightByNationalityAndHairDL():
         data = {}
         for nationality, hair_color, avg_weight in results:
             key = f"{nationality.lower()}-{hair_color}"
-            rounded_weight = round(float(avg_weight), 2) if avg_weight else 0
-            data[key] = int(rounded_weight) if rounded_weight == int(rounded_weight) else rounded_weight
+            data[key] =  result_to_float(avg_weight)
         
         return data
     except Exception as e:
@@ -214,13 +224,13 @@ def getAverageHeightByNationalityAndGeneralDL():
         logger.info(f"Retrieved average height for {len(nationality_results)} nationalities and general average")
         
         data = {
-            "general": round(float(general_result), 2) if general_result else 0,
+            "general": result_to_float(general_result),
             "nationalities": {}
         }
         
         for nationality, avg_height in nationality_results:
             key = nationality.lower() if nationality else 'unknown'
-            data["nationalities"][key] = round(float(avg_height), 2) if avg_height else 0
+            data["nationalities"][key] = result_to_float(avg_height)
 
         return data
     except Exception as e:
