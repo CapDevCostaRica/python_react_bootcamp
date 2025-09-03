@@ -1,5 +1,9 @@
 import os
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from sqlalchemy.engine import Engine
+
+_engine: Engine | None = None
 
 def db_url_from_env() -> str:
     user = os.environ["POSTGRES_USER"]
@@ -10,4 +14,10 @@ def db_url_from_env() -> str:
     return f"postgresql+psycopg://{user}:{pwd}@{host}:{port}/{db}"
 
 def get_engine():
-    return create_engine(db_url_from_env(), future=True)
+    global _engine
+    if _engine is None:
+        _engine = create_engine(db_url_from_env(), future=True)
+    return _engine
+
+def get_session():
+    return Session(get_engine())

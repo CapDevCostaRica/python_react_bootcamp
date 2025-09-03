@@ -1,6 +1,6 @@
 from collections import defaultdict
 from sqlalchemy import select, and_, func
-from sqlalchemy.orm import Session
+from config import get_session
 from app.models import (
     odkeyo_ex2Person as Person,
     odkeyo_ex2Physical as Physical,
@@ -81,8 +81,8 @@ def build_query(filters):
     return stmt
 
 
-def report_sushi_ramen(engine):
-    with Session(engine) as session:
+def report_sushi_ramen():
+    with get_session() as session:
         sub = (
             select(FavoriteFood.person_id, func.count(func.distinct(func.lower(FavoriteFood.food))).label("cnt"))
             .where(func.lower(FavoriteFood.food).in_(["sushi","ramen"]))
@@ -91,8 +91,8 @@ def report_sushi_ramen(engine):
         ).subquery()
         return session.execute(select(func.count()).select_from(sub)).scalar_one()
 
-def report_avg_weight_above_70_hair(engine):
-    with Session(engine) as session:
+def report_avg_weight_above_70_hair():
+    with get_session() as session:
         rows = session.execute(
             select(Physical.hair_color, func.avg(Physical.weight_kg))
             .where(Physical.weight_kg.isnot(None))
@@ -100,8 +100,8 @@ def report_avg_weight_above_70_hair(engine):
         ).all()
         return {hc: round(avg, 2) for hc, avg in rows if avg and avg > 70}
 
-def report_most_common_food_overall(engine):
-    with Session(engine) as session:
+def report_most_common_food_overall():
+    with get_session() as session:
         row = session.execute(
             select(FavoriteFood.food, func.count())
             .group_by(FavoriteFood.food)
@@ -110,8 +110,8 @@ def report_most_common_food_overall(engine):
         ).first()
         return row[0] if row else None
 
-def report_avg_weight_nationality_hair(engine):
-    with Session(engine) as session:
+def report_avg_weight_nationality_hair():
+    with get_session() as session:
         rows = session.execute(
             select(
                 (func.lower(Physical.nationality) + "-" + func.lower(Physical.hair_color)).label("key"),
@@ -122,8 +122,8 @@ def report_avg_weight_nationality_hair(engine):
         ).all()
         return {k: round(v, 2) for k, v in rows}
 
-def report_top_oldest_nationality(engine):
-    with Session(engine) as session:
+def report_top_oldest_nationality():
+    with get_session() as session:
         rows = session.execute(
             select(Physical.nationality, Person.full_name, Physical.age)
             .join(Person, Person.id == Physical.person_id)
@@ -137,8 +137,8 @@ def report_top_oldest_nationality(engine):
                 result[key].append(name)
         return dict(result)
 
-def report_top_hobbies(engine):
-    with Session(engine) as session:
+def report_top_hobbies():
+    with get_session() as session:
         sub = (
             select(Hobby.person_id, func.count(Hobby.hobby).label("cnt"))
             .group_by(Hobby.person_id)
@@ -152,8 +152,8 @@ def report_top_hobbies(engine):
         ).all()
         return [r[0] for r in rows]
 
-def report_avg_height_nationality_general(engine):
-    with Session(engine) as session:
+def report_avg_height_nationality_general():
+    with get_session() as session:
         general = session.execute(
             select(func.avg(Physical.height_cm)).where(Physical.height_cm.isnot(None))
         ).scalar()
