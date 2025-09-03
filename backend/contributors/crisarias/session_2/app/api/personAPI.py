@@ -2,7 +2,16 @@ from marshmallow import ValidationError
 from ..common import getFilterDictionary
 from ..telemetry import logger
 from .schemas import FilterSchema
-from ..dataLayer.queryPerson import getPersonsDL
+from ..dataLayer.queryPerson import (
+    getPersonsDL,
+    getPersonThatEatFoodsDL,
+    getMostCommonFoodDL,
+    getAverageWeightAbove70ByHairDL,
+    getAverageWeightByNationalityAndHairDL,
+    getTopOldestByNationalityDL,
+    getTopPeopleByHobbiesCountDL,
+    getAverageHeightByNationalityAndGeneralDL
+)
 
 def getPersons(request):
     try:
@@ -14,3 +23,38 @@ def getPersons(request):
     except ValidationError as e:
         logger.error(f"Bad request from {request.remote_addr}: {e.messages}")
         raise ValueError(e.messages)
+
+def getSuchiAndRamenCountReport():
+    logger.info("Received getSuchiAndRamenPersonReport request.")
+    personsCount = getPersonThatEatFoodsDL(["sushi", "ramen"])
+    return personsCount
+
+def getMostCommonFoodReport():
+    logger.info("Received getMostCommonFoodReport request.")
+    personsCount = getMostCommonFoodDL()
+    return personsCount
+
+def getAvgWeightAbove70HairReport():
+    logger.info("Received getAvgWeightAbove70HairReport request.")
+    avgWeightByHair = getAverageWeightAbove70ByHairDL()
+    return avgWeightByHair
+
+def getAverageWeightByNationalityAndHairReport():
+    logger.info("Received getAverageWeightByNationalityAndHairReport request.")
+    avgWeightByNationalityAndHair = getAverageWeightByNationalityAndHairDL()
+    return avgWeightByNationalityAndHair
+
+def getTopOldestByNationalityReport():
+    logger.info("Received getTopOldestByNationalityReport request.")
+    topOldestByNationality = getTopOldestByNationalityDL()
+    return topOldestByNationality
+
+def getTopPeopleByHobbiesCountReport():
+    logger.info("Received getTopPeopleByHobbiesCountReport request.")
+    topPeopleByHobbiesCount = getTopPeopleByHobbiesCountDL()
+    return topPeopleByHobbiesCount
+
+def getAverageHeightByNationalityAndGeneralReport():
+    logger.info("Received getAverageHeightByNationalityAndGeneralReport request.")
+    avgHeightByNationalityAndGeneral = getAverageHeightByNationalityAndGeneralDL()
+    return avgHeightByNationalityAndGeneral
