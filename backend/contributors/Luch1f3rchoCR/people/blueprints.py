@@ -27,45 +27,38 @@ def _maybe_json_dict(v):
         return None
 
 def _filters_from_request():
-    q = {}
-
-    for k, v in request.args.items():
+    out = {}
+    for k, vs in request.args.lists():
         if k.startswith("filters[") and k.endswith("]"):
-            q[k[8:-1]] = v
-        elif k not in q:
-            q[k] = v
-
+            kk = k[len("filters["):-1]
+            out[kk] = vs if len(vs) > 1 else vs[0]
+        else:
+            out[k] = vs if len(vs) > 1 else vs[0]
     if request.form:
-        for k, v in request.form.items():
-            if k.startswith("filters[") and k.endswith("]"):
-                q[k[8:-1]] = v
-            elif k == "filters":
-                j = _maybe_json_dict(v)
+        for k, vs in request.form.lists():
+            if k == "filters" and len(vs) == 1:
+                j = _maybe_json_dict(vs[0])
                 if isinstance(j, dict):
                     for kk, vv in j.items():
-                        if kk not in q:
-                            q[kk] = vv
-            elif k not in q:
-                q[k] = v
-
+                        if kk not in out:
+                            out[kk] = vv
+                continue
+            if k.startswith("filters[") and k.endswith("]"):
+                kk = k[len("filters["):-1]
+                if kk not in out:
+                    out[kk] = vs if len(vs) > 1 else vs[0]
+            elif k not in out:
+                out[k] = vs if len(vs) > 1 else vs[0]
     body = request.get_json(silent=True)
     if isinstance(body, dict):
-        f = body.get("filters")
-        if isinstance(f, dict):
-            for kk, vv in f.items():
-                if kk not in q:
-                    q[kk] = vv
-        elif isinstance(f, str):
-            j = _maybe_json_dict(f)
-            if isinstance(j, dict):
-                for kk, vv in j.items():
-                    if kk not in q:
-                        q[kk] = vv
+        if isinstance(body.get("filters"), dict):
+            for kk, vv in body["filters"].items():
+                if kk not in out:
+                    out[kk] = vv
         for kk, vv in body.items():
-            if kk != "filters" and kk not in q:
-                q[kk] = vv
-
-    return q
+            if kk != "filters" and kk not in out:
+                out[kk] = vv
+    return out
 
 def _lc(s):
     return (s or "").lower()
