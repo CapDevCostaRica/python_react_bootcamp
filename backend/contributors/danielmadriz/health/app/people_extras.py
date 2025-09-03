@@ -239,7 +239,8 @@ def get_top_people_by_hobbies(session: Session) -> List[str]:
         ).group_by(
             Person.id, Person.full_name
         ).order_by(
-            func.count(Hobby.hobby).desc()
+            func.count(Hobby.hobby).desc(),
+            Person.full_name.asc()
         ).limit(3).all()
         
         df = pd.DataFrame(results, columns=['name', 'hobby_count'])
