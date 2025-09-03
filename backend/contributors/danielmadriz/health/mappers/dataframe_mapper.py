@@ -56,40 +56,37 @@ class DataFrameMapper:
     def process_people_dataframe(self, df: pd.DataFrame) -> List[Person]:
         return [Person(full_name=self._convert_to_string(row['full_name'])) for _, row in df.iterrows()]
     
-    def process_physical_dataframe(self, df: pd.DataFrame, id_mapping: Dict[int, int]) -> List[PhysicalProfile]:
+    def process_physical_dataframe(self, df: pd.DataFrame) -> List[PhysicalProfile]:
         return self._process_related_dataframe(
-            df, id_mapping, 'physical_profile'
+            df, 'physical_profile'
         )
     
-    def process_favorite_food_dataframe(self, df: pd.DataFrame, id_mapping: Dict[int, int]) -> List[FavoriteFood]:
+    def process_favorite_food_dataframe(self, df: pd.DataFrame) -> List[FavoriteFood]:
         return self._process_related_dataframe(
-            df, id_mapping, 'favorite_food'
+            df, 'favorite_food'
         )
     
-    def process_hobby_dataframe(self, df: pd.DataFrame, id_mapping: Dict[int, int]) -> List[Hobby]:
+    def process_hobby_dataframe(self, df: pd.DataFrame) -> List[Hobby]:
         return self._process_related_dataframe(
-            df, id_mapping, 'hobby'
+            df, 'hobby'
         )
     
-    def process_family_relation_dataframe(self, df: pd.DataFrame, id_mapping: Dict[int, int]) -> List[FamilyRelation]:
+    def process_family_relation_dataframe(self, df: pd.DataFrame) -> List[FamilyRelation]:
         return self._process_related_dataframe(
-            df, id_mapping, 'family_relation'
+            df, 'family_relation'
         )
     
-    def process_study_dataframe(self, df: pd.DataFrame, id_mapping: Dict[int, int]) -> List[Study]:
+    def process_study_dataframe(self, df: pd.DataFrame) -> List[Study]:
         return self._process_related_dataframe(
-            df, id_mapping, 'study'
+            df, 'study'
         )
     
     def _process_related_dataframe(
         self, 
         df: pd.DataFrame, 
-        id_mapping: Dict[int, int], 
         entity_type: str
     ) -> List[Any]:
-        """
-        Generic function to process DataFrames with person_id relationships.
-        """
+        
         self._validate_entity_type(entity_type)
         
         field_mapping = self.field_mappings[entity_type]
@@ -97,16 +94,16 @@ class DataFrameMapper:
         
         objects = []
         for _, row in df.iterrows():
-            if self._should_process_row(row, id_mapping):
-                person_id = id_mapping[int(row['person_id'])]
-                
-                kwargs = {'person_id': person_id}
-                for df_column, model_attr in field_mapping.items():
-                    if df_column != 'person_id':
-                        value = row[df_column]
-                        kwargs[model_attr] = self._convert_field_value(value, model_attr)
-                
-                objects.append(model_class(**kwargs))
+            # Since CSV ID = Database ID, we can use the CSV person_id directly
+            person_id = int(row['person_id'])
+            
+            kwargs = {'person_id': person_id}
+            for df_column, model_attr in field_mapping.items():
+                if df_column != 'person_id':
+                    value = row[df_column]
+                    kwargs[model_attr] = self._convert_field_value(value, model_attr)
+            
+            objects.append(model_class(**kwargs))
         
         return objects
     
@@ -118,13 +115,6 @@ class DataFrameMapper:
                 f"Supported types: {supported_types}"
             )
     
-    def _should_process_row(self, row: pd.Series, id_mapping: Dict[int, int]) -> bool:
-        try:
-            csv_person_id = int(row['person_id'])
-            return csv_person_id in id_mapping
-        except (ValueError, KeyError):
-            return False
-    
     def _convert_field_value(self, value: Any, model_attr: str) -> Any:
         if model_attr in self.integer_fields:
             return self._convert_to_integer(value)
@@ -135,7 +125,7 @@ class DataFrameMapper:
         try:
             if value is None or pd.isna(value):
                 return None
-            # Handle float strings like "123.45" by converting to float first, then int
+            # Handle float strings like "123.45"
             if isinstance(value, str) and '.' in value:
                 return int(float(value))
             return int(value)
