@@ -14,13 +14,14 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def find_people(session: Session):
+def find_people(session: Session, filters: Dict[str, Any] = None):
 
     logger.info("Starting find_people function")
     
     try:
-        filters = _parse_filters()
-        logger.info(f"Parsed filters: {filters}")
+        if filters is None:
+            filters = _parse_filters()
+        logger.info(f"Using filters: {filters}")
         
         people = _query_people_with_filters(session, filters)
         logger.info(f"Found {len(people)} people matching filters")
