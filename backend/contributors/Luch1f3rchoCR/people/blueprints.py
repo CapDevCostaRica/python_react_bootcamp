@@ -26,14 +26,15 @@ def _maybe_json_dict(v):
     except Exception:
         return None
 
+
+import re
 def _filters_from_request():
     out = {}
     for k, vs in request.args.lists():
-        if k.startswith("filters[") and k.endswith("]"):
-            kk = k[len("filters["):-1]
-            out[kk] = vs if len(vs) > 1 else vs[0]
-        else:
-            out[k] = vs if len(vs) > 1 else vs[0]
+        m = re.match(r"^filters\[(.+)\]$", k)
+        key = m.group(1) if m else k
+        out[key] = vs if len(vs) > 1 else vs[0]
+
     if request.form:
         for k, vs in request.form.lists():
             if k == "filters" and len(vs) == 1:
@@ -43,12 +44,11 @@ def _filters_from_request():
                         if kk not in out:
                             out[kk] = vv
                 continue
-            if k.startswith("filters[") and k.endswith("]"):
-                kk = k[len("filters["):-1]
-                if kk not in out:
-                    out[kk] = vs if len(vs) > 1 else vs[0]
-            elif k not in out:
-                out[k] = vs if len(vs) > 1 else vs[0]
+            m = re.match(r"^filters\[(.+)\]$", k)
+            key = m.group(1) if m else k
+            if key not in out:
+                out[key] = vs if len(vs) > 1 else vs[0]
+
     body = request.get_json(silent=True)
     if isinstance(body, dict):
         if isinstance(body.get("filters"), dict):
@@ -58,6 +58,7 @@ def _filters_from_request():
         for kk, vv in body.items():
             if kk != "filters" and kk not in out:
                 out[kk] = vv
+
     return out
 
 def _lc(s):
