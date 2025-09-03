@@ -90,7 +90,6 @@ def read_family_data_heapq():
                 heapq.heappush(heap, (int(row['person_id']), counter, row))
                 counter += 1
         sorted_rows = [heapq.heappop(heap)[2] for _ in range(len(heap))]
-        # Renombrar las claves para coincidir con el modelo FamilyRelation
         renamed_rows = []
         for row in sorted_rows:
             renamed_rows.append({
