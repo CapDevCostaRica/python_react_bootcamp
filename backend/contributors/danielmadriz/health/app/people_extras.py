@@ -95,3 +95,33 @@ def get_avg_weight_above_70_by_hair_color(session: Session) -> Dict[str, float]:
     except Exception as e:
         logger.error(f"Error in get_avg_weight_above_70_by_hair_color: {str(e)}")
         raise
+
+
+def get_most_common_food_overall(session: Session) -> str:
+    """
+    Get the most common food overall.
+    """
+    try:
+        logger.info("Starting most_common_food_overall query")
+        
+        result = session.query(
+            FavoriteFood.food,
+            func.count(FavoriteFood.food).label('count')
+        ).group_by(
+            FavoriteFood.food
+        ).order_by(
+            func.count(FavoriteFood.food).desc()
+        ).first()
+        
+        if result:
+            most_common_food = result[0]
+            count = result[1]
+            logger.info(f"Most common food query completed, found '{most_common_food}' with {count} occurrences")
+            return most_common_food
+        else:
+            logger.info("No food data found in database")
+            return ""
+        
+    except Exception as e:
+        logger.error(f"Error in get_most_common_food_overall: {str(e)}")
+        raise
