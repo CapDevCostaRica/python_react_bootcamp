@@ -39,7 +39,7 @@ def getPersonsDL(filter_dict):
         if 'institution' in filter_dict:
             query = query.join(Study).filter(Study.institution == filter_dict['institution'])
 
-        people = query.all()
+        people = query.distinct().all()
         logger.info(f"Retrieved {len(people)} rows for model {Person.__name__}")
         result = []
         for p in people:
