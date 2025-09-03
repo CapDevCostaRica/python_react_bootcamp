@@ -81,9 +81,11 @@ def get_avg_weight_above_70_by_hair_color(session: Session) -> Dict[str, float]:
             PhysicalProfile.hair_color,
             func.avg(PhysicalProfile.weight_kg).label('avg_weight')
         ).filter(
-            PhysicalProfile.weight_kg > MIN_WEIGHT_THRESHOLD_KG
+            PhysicalProfile.weight_kg.isnot(None)
         ).group_by(
             PhysicalProfile.hair_color
+        ).having(
+            func.avg(PhysicalProfile.weight_kg) > MIN_WEIGHT_THRESHOLD_KG
         ).all()
         
         # Convert to integers if whole numbers, otherwise keep as floats with 2 decimals
@@ -210,7 +212,8 @@ def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[st
                 PhysicalProfile.nationality == nationality,
                 PhysicalProfile.age.isnot(None)
             ).order_by(
-                PhysicalProfile.age.desc()
+                PhysicalProfile.age.desc(),
+                Person.full_name.asc()
             ).limit(2).all()
             
             names = [person[0] for person in oldest_people]
