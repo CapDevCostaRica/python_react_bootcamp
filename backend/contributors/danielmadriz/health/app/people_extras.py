@@ -191,11 +191,10 @@ def get_avg_weight_by_nationality_hair_color(session: Session) -> Dict[str, floa
 
 
 def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[str]]:
-
     try:
         logger.info("Starting top_oldest_people_per_nationality query")
-     
-        all_people = session.query(
+        
+        results = session.query(
             PhysicalProfile.nationality,
             Person.full_name,
             PhysicalProfile.age
@@ -205,24 +204,17 @@ def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[st
             PhysicalProfile.age.isnot(None)
         ).order_by(
             PhysicalProfile.nationality,
-            PhysicalProfile.age.desc(),
-            Person.full_name.desc()
+            PhysicalProfile.age.desc()
         ).all()
         
-        logger.info(f"Found {len(all_people)} people with age data")
+        logger.info(f"Found {len(results)} people with age data")
         
         result_dict = {}
-        
-        nationality_groups = {}
-        for nationality, full_name, age in all_people:
-            if nationality not in nationality_groups:
-                nationality_groups[nationality] = []
-            nationality_groups[nationality].append((full_name, age))
-        
-        for nationality, people in nationality_groups.items():
-            people.sort(key=lambda x: (-x[1], x[0]))
-            top_2 = people[:2]
-            result_dict[nationality] = [name for name, age in top_2]
+        for nationality, full_name, age in results:
+            if nationality not in result_dict:
+                result_dict[nationality] = []
+            if len(result_dict[nationality]) < 2:
+                result_dict[nationality].append(full_name)
         
         logger.info(f"Top oldest people per nationality query completed, found {len(result_dict)} nationalities")
         logger.info(f"Results: {result_dict}")
