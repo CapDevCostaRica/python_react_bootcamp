@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import re, sys
 from pathlib import Path
-from typing import Dict, Any, Tuple, Set, Optional
+from typing import Any, Tuple, Set, Optional
 
 import pandas as pd
 from sqlalchemy import select, text
@@ -24,23 +24,6 @@ def int_or_none(v: Any) -> Optional[int]:
         return None
     m = re.search(r"-?\d+", str(v).strip())
     return int(m.group()) if m else None
-
-def _gentilic(nat_raw: Optional[str]) -> Optional[str]:
-    if not nat_raw or pd.isna(nat_raw):
-        return None
-    s = str(nat_raw).strip().lower()
-    table = {
-        "méxico":"Mexican","mexico":"Mexican","mexican":"Mexican",
-        "spain":"Spanish","españa":"Spanish","spanish":"Spanish",
-        "usa":"American","us":"American","united states":"American",
-        "united states of america":"American","america":"American","american":"American",
-        "brazil":"Brazilian","brasil":"Brazilian","brazilian":"Brazilian",
-        "germany":"German","german":"German",
-        "france":"French","french":"French",
-        "canada":"Canadian","canadian":"Canadian",
-        "nigeria":"Nigerian","nigerian":"Nigerian",
-    }
-    return table.get(s) or s.title()
 
 def _titlecase(s: str) -> str:
     parts = (s or "").split()
@@ -105,22 +88,24 @@ def load_physical(s: Session):
         if not p:
             p = People(id=pid)
             s.add(p)
-        if not pd.isna(row.get("eye_color")):
-            p.eye_color = row["eye_color"]
-        if not pd.isna(row.get("hair_color")):
-            p.hair_color = row["hair_color"]
-        age = int_or_none(row.get("age"))
-        if age is not None:
-            p.age = age
-        h = int_or_none(row.get("height_cm") or row.get("height"))
-        if h is not None:
-            p.height_cm = h
-        w = int_or_none(row.get("weight_kg") or row.get("weight"))
-        if w is not None:
-            p.weight_kg = w
-        nat = _gentilic(row.get("nationality"))
-        if nat:
-            p.nationality = nat
+        v = row.get("eye_color")
+        if not pd.isna(v):
+            p.eye_color = str(v).strip()
+        v = row.get("hair_color")
+        if not pd.isna(v):
+            p.hair_color = str(v).strip()
+        v = int_or_none(row.get("age"))
+        if v is not None:
+            p.age = v
+        v = int_or_none(row.get("height_cm") or row.get("height"))
+        if v is not None:
+            p.height_cm = v
+        v = int_or_none(row.get("weight_kg") or row.get("weight"))
+        if v is not None:
+            p.weight_kg = v
+        v = row.get("nationality")
+        if not pd.isna(v) and str(v).strip():
+            p.nationality = str(v).strip()
 
 def load_favorites(s: Session):
     seen: Set[Tuple[int,str]] = set()
@@ -136,9 +121,7 @@ def load_favorites(s: Session):
         if key in seen:
             continue
         seen.add(key)
-        exists = s.execute(
-            select(Favorite.id).where(Favorite.person_id == pid, Favorite.food == food)
-        ).first()
+        exists = s.execute(select(Favorite.id).where(Favorite.person_id == pid, Favorite.food == food)).first()
         if not exists:
             s.add(Favorite(person_id=pid, food=food))
 
@@ -156,9 +139,7 @@ def load_hobbies(s: Session):
         if key in seen:
             continue
         seen.add(key)
-        exists = s.execute(
-            select(Hobbies.id).where(Hobbies.person_id == pid, Hobbies.hobby == hobby)
-        ).first()
+        exists = s.execute(select(Hobbies.id).where(Hobbies.person_id == pid, Hobbies.hobby == hobby)).first()
         if not exists:
             s.add(Hobbies(person_id=pid, hobby=hobby))
 
