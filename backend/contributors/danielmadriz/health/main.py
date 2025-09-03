@@ -2,6 +2,7 @@ import os
 import sys
 from flask import Flask, jsonify
 from app.people_service import find_people
+from app.people_extras import get_sushi_ramen_count
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../framework')))
 from database import get_session
 from pathlib import Path
@@ -38,6 +39,27 @@ def find_people_endpoint():
                 "total": 0,
                 "results": []
             }
+        }
+        return jsonify(error_response), 500
+
+@app.route('/people/sushi_ramen', methods=['GET'])
+def people_sushi_ramen():
+    try:
+        session = get_session()
+        count = get_sushi_ramen_count(session)
+        
+        response_data = {
+            "success": True,
+            "data": count
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        error_response = {
+            "success": False,
+            "error": str(e),
+            "data": 0
         }
         return jsonify(error_response), 500
 
