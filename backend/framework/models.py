@@ -128,3 +128,20 @@ class MonstersListCrisarias(Base):
     url = Column(String, nullable=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class alfonsovso_MonsterIndex(Base):
+    __tablename__ = "alfonsovso_monsters_index"
+
+    index = Column(String, primary_key=True)
+    name = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+class alfonsovso_Monster(Base):
+    __tablename__ = "alfonsovso_monsters"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    index = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    payload = Column(JSONB, nullable=False)
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
