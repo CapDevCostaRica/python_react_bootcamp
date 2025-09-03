@@ -122,7 +122,7 @@ def read_favorite_foods_pathlib_bulk():
         session = get_session()
         session.bulk_insert_mappings(FavoriteFood, data)
         session.commit()
-        logger.info(f"🚀 Bulk insert realizado: {len(data)} favorite foods")
+        logger.info(f"🚀 Bulk insert completed: {len(data)} favorite foods")
     except Exception as e:
         logger.error(f"Error reading favorite_data.csv with pathlib or bulk insert: {str(e)}")
         if 'session' in locals():
@@ -149,7 +149,7 @@ def read_hobbies_pathlib_bulk():
         session = get_session()
         session.bulk_insert_mappings(Hobby, data)
         session.commit()
-        logger.info(f"🚀 Bulk insert realizado: {len(data)} hobbies")
+        logger.info(f"🚀 Bulk insert completed: {len(data)} hobbies")
     except Exception as e:
         logger.error(f"Error reading hobbies_data.csv with pathlib or bulk insert: {str(e)}")
         if 'session' in locals():
@@ -176,7 +176,7 @@ def read_studies_pathlib_bulk():
         session = get_session()
         session.bulk_insert_mappings(Education, data)
         session.commit()
-        logger.info(f"🚀 Bulk insert realizado: {len(data)} studies")
+        logger.info(f"🚀 Bulk insert completed: {len(data)} studies")
     except Exception as e:
         logger.error(f"Error reading studies_data.csv with pathlib or bulk insert: {str(e)}")
         if 'session' in locals():
@@ -192,7 +192,7 @@ def orchestrator():
     try:
         session.bulk_insert_mappings(Person, people_dic)
         session.commit()
-        logger.info(f"🚀 Bulk insert realizado: {len(people_dic)} registros")
+        logger.info(f"🚀 Bulk insert completed: {len(people_dic)} people")
     except Exception as e:
         logger.error(f"Error en bulk insert: {str(e)}")
         session.rollback()
@@ -209,9 +209,9 @@ def orchestrator():
     try:
         session.bulk_insert_mappings(FamilyRelation, family_data)
         session.commit()
-        logger.info(f"🚀 Bulk insert realizado: {len(family_data)} relaciones familiares")
+        logger.info(f"🚀 Bulk insert completed: {len(family_data)} family relations")
     except Exception as e:
-        logger.error(f"Error en bulk insert de relaciones familiares: {str(e)}")
+        logger.error(f"Error en bulk insert family relations: {str(e)}")
         session.rollback()
     finally:
         session.close()
@@ -227,7 +227,6 @@ def seed_database():
 
         logger.info("Seeding database...")
         orchestrator()
-        # Seed data here
         session.commit()
         logger.info("Database seeded successfully")
     except Exception as e:
