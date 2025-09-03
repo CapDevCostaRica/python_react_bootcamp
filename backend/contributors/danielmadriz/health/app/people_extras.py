@@ -195,31 +195,34 @@ def get_top_oldest_people_per_nationality(session: Session) -> Dict[str, List[st
     try:
         logger.info("Starting top_oldest_people_per_nationality query")
      
-        # Get all nationalities
-        nationalities = session.query(PhysicalProfile.nationality).distinct().all()
-        logger.info(f"Found nationalities: {[nat[0] for nat in nationalities]}")
+        all_people = session.query(
+            PhysicalProfile.nationality,
+            Person.full_name,
+            PhysicalProfile.age
+        ).join(
+            PhysicalProfile, Person.id == PhysicalProfile.person_id
+        ).filter(
+            PhysicalProfile.age.isnot(None)
+        ).order_by(
+            PhysicalProfile.nationality,
+            PhysicalProfile.age.desc(),
+            Person.full_name.desc()
+        ).all()
+        
+        logger.info(f"Found {len(all_people)} people with age data")
         
         result_dict = {}
         
-        for nationality_tuple in nationalities:
-            nationality = nationality_tuple[0]
-            
-            oldest_people = session.query(
-                Person.full_name
-            ).join(
-                PhysicalProfile, Person.id == PhysicalProfile.person_id
-            ).filter(
-                PhysicalProfile.nationality == nationality,
-                PhysicalProfile.age.isnot(None)
-            ).order_by(
-                PhysicalProfile.age.desc(),
-                Person.full_name.asc()
-            ).limit(2).all()
-            
-            names = [person[0] for person in oldest_people]
-            result_dict[nationality] = names
-            
-            logger.info(f"Nationality '{nationality}': found {len(names)} oldest people")
+        nationality_groups = {}
+        for nationality, full_name, age in all_people:
+            if nationality not in nationality_groups:
+                nationality_groups[nationality] = []
+            nationality_groups[nationality].append((full_name, age))
+        
+        for nationality, people in nationality_groups.items():
+            people.sort(key=lambda x: (-x[1], x[0]))
+            top_2 = people[:2]
+            result_dict[nationality] = [name for name, age in top_2]
         
         logger.info(f"Top oldest people per nationality query completed, found {len(result_dict)} nationalities")
         logger.info(f"Results: {result_dict}")
@@ -285,7 +288,6 @@ def get_avg_height_nationality_general(session: Session) -> Dict[str, Any]:
         df['weighted_height'] = df['avg_height'] * df['count']
         general_avg = df['weighted_height'].sum() / df['count'].sum() if df['count'].sum() > 0 else 0
         
-        # Convert to integers if whole numbers, otherwise keep as floats with 2 decimals
         def convert_to_int_or_float(val):
             rounded_val = round(float(val), 2)
             if rounded_val == int(rounded_val):
@@ -293,14 +295,12 @@ def get_avg_height_nationality_general(session: Session) -> Dict[str, Any]:
             else:
                 return rounded_val
         
-        # Create nationalities dict with lowercase keys and proper rounding
         nationalities_dict = {}
         for _, row in df.iterrows():
             nationality = row['nationality'].lower()
             avg_height = convert_to_int_or_float(row['avg_height'])
             nationalities_dict[nationality] = avg_height
         
-        # Round general average
         general_avg = convert_to_int_or_float(general_avg)
         
         logger.info(f"General average height calculated from nationality data: {general_avg}")
