@@ -164,7 +164,7 @@ def find_top_oldest_nationality():
 
         person_alias = aliased(subquery)
 
-        query = (
+        person_query = (
             select(
                 person_alias.c.nationality,
                 person_alias.c.name
@@ -172,14 +172,14 @@ def find_top_oldest_nationality():
             .where(person_alias.c.row_num <= 2)
         )
 
-        results = session.execute(query).all()
+        results = session.execute(person_query).all()
     return results
     
 def find_top_hobbies():
     with get_session() as session:
         hobby_count_column = func.count(Hobby.id).label("hobby_count")
 
-        query = (
+        person_query = (
             select(Person.name)
             .outerjoin(Hobby)
             .group_by(Person.id, Person.name)
@@ -187,7 +187,7 @@ def find_top_hobbies():
             .limit(3)
         )
 
-        results = session.scalars(query).all()
+        results = session.scalars(person_query).all()
     return results
 
 def find_avg_height_nationality_general():
