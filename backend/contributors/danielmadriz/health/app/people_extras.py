@@ -125,3 +125,43 @@ def get_most_common_food_overall(session: Session) -> str:
     except Exception as e:
         logger.error(f"Error in get_most_common_food_overall: {str(e)}")
         raise
+
+
+def get_avg_weight_by_nationality_hair_color(session: Session) -> Dict[str, float]:
+    """
+    Get average weight grouped by nationality and hair color.
+    """
+    try:
+        logger.info("Starting avg_weight_by_nationality_hair_color query")
+        
+        weight_count = session.query(PhysicalProfile).filter(PhysicalProfile.weight_kg.isnot(None)).count()
+        logger.info(f"Total weight entries: {weight_count}")
+        
+        if weight_count < 1:
+            logger.info("Early return: no weight data available")
+            return {}
+        
+        results = session.query(
+            PhysicalProfile.nationality,
+            PhysicalProfile.hair_color,
+            func.avg(PhysicalProfile.weight_kg).label('avg_weight')
+        ).filter(
+            PhysicalProfile.weight_kg.isnot(None)
+        ).group_by(
+            PhysicalProfile.nationality,
+            PhysicalProfile.hair_color
+        ).all()
+        
+        result_dict = {}
+        for nationality, hair_color, avg_weight in results:
+            key = f"{nationality}-{hair_color}"
+            result_dict[key] = float(avg_weight)
+        
+        logger.info(f"Avg weight by nationality-hair color query completed, found {len(result_dict)} combinations")
+        logger.info(f"Results: {result_dict}")
+        
+        return result_dict
+        
+    except Exception as e:
+        logger.error(f"Error in get_avg_weight_by_nationality_hair_color: {str(e)}")
+        raise
