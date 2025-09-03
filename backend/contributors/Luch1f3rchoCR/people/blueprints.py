@@ -6,32 +6,30 @@ from .app.models import People, Favorite, Hobbies, Family, Studies
 
 people_bp = Blueprint("people", __name__, url_prefix="/people")
 
-def _filters_from_request():
-    q = dict(request.args)
-    if request.form:
-        q.update(request.form.to_dict(flat=True))
+def _read_filters():
+    q = {}
+    args = dict(request.args or {})
+    if args:
+        q.update(args)
     body = request.get_json(silent=True) or {}
     if isinstance(body, dict):
         if isinstance(body.get("filters"), dict):
             q.update(body["filters"])
-        for k, v in body.items():
-            if k not in q and k != "filters":
-                q[k] = v
+        else:
+            q.update(body)
     return q
+
+def _as_list(v):
+    if v is None:
+        return []
+    return v if isinstance(v, list) else [v]
 
 def _lc(s):
     return (s or "").lower()
 
 @people_bp.route("/find", methods=["GET", "POST"])
 def people_find():
-    q = _filters_from_request()
-    filters = []
-    if "eye_color"   in q: filters.append(func.lower(People.eye_color)   == _lc(q["eye_color"]))
-    if "hair_color"  in q: filters.append(func.lower(People.hair_color)  == _lc(q["hair_color"]))
-    if "nationality" in q: filters.append(func.lower(People.nationality) == _lc(q["nationality"]))
-    if "age"        in q: filters.append(People.age       == int(q["age"]))
-    if "height_cm"  in q: filters.append(People.height_cm == int(q["height_cm"]))
-    if "weight_kg"  in q: filters.append(People.weight_kg == int(q["weight_kg"]))
+    q = _read_filters()
 
     join_fav   = "food" in q
     join_hobby = "hobby" in q
@@ -44,11 +42,43 @@ def people_find():
     if join_fam:   stmt = stmt.join(Family,   Family.person_id   == People.id)
     if join_study: stmt = stmt.join(Studies,  Studies.person_id  == People.id)
 
-    if "food"        in q: filters.append(func.lower(Favorite.food)       == _lc(q["food"]))
-    if "hobby"       in q: filters.append(func.lower(Hobbies.hobby)       == _lc(q["hobby"]))
-    if "family"      in q: filters.append(func.lower(Family.relation)     == _lc(q["family"]))
-    if "degree"      in q: filters.append(func.lower(Studies.degree)      == _lc(q["degree"]))
-    if "institution" in q: filters.append(func.lower(Studies.institution) == _lc(q["institution"]))
+    filters = []
+
+    if "eye_color"   in q:
+        vals = [_lc(v) for v in _as_list(q["eye_color"])]
+        if vals: filters.append(func.lower(People.eye_color).in_(vals))
+    if "hair_color"  in q:
+        vals = [_lc(v) for v in _as_list(q["hair_color"])]
+        if vals: filters.append(func.lower(People.hair_color).in_(vals))
+    if "nationality" in q:
+        vals = [_lc(v) for v in _as_list(q["nationality"])]
+        if vals: filters.append(func.lower(People.nationality).in_(vals))
+
+    if "age"        in q:
+        nums = [int(v) for v in _as_list(q["age"]) if f"{v}".isdigit()]
+        if nums: filters.append(People.age.in_(nums))
+    if "height_cm"  in q:
+        nums = [int(float(v)) for v in _as_list(q["height_cm"]) if f"{v}".replace(".","",1).isdigit()]
+        if nums: filters.append(People.height_cm.in_(nums))
+    if "weight_kg"  in q:
+        nums = [int(float(v)) for v in _as_list(q["weight_kg"]) if f"{v}".replace(".","",1).isdigit()]
+        if nums: filters.append(People.weight_kg.in_(nums))
+
+    if "food"        in q:
+        vals = [_lc(v) for v in _as_list(q["food"])]
+        if vals: filters.append(func.lower(Favorite.food).in_(vals))
+    if "hobby"       in q:
+        vals = [_lc(v) for v in _as_list(q["hobby"])]
+        if vals: filters.append(func.lower(Hobbies.hobby).in_(vals))
+    if "family"      in q:
+        vals = [_lc(v) for v in _as_list(q["family"])]
+        if vals: filters.append(func.lower(Family.relation).in_(vals))
+    if "degree"      in q:
+        vals = [_lc(v) for v in _as_list(q["degree"])]
+        if vals: filters.append(func.lower(Studies.degree).in_(vals))
+    if "institution" in q:
+        vals = [_lc(v) for v in _as_list(q["institution"])]
+        if vals: filters.append(func.lower(Studies.institution).in_(vals))
 
     if filters:
         stmt = stmt.where(and_(*filters))
