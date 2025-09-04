@@ -13,7 +13,9 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - flask_db        
+      - flask_db
+    networks: [local-dev]        
+  
   flask_db:
     image: postgres:12
     ports:
@@ -32,6 +34,28 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks: [local-dev]
+    
+  localstack:
+    image: localstack/localstack:3
+    networks: [local-dev]
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - DEBUG=1
+      - SERVICES=lambda,apigateway,apigatewayv2,logs,iam,sts,cloudwatch,s3
+      - AWS_DEFAULT_REGION=us-east-1
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_DOCKER_NETWORK=local-dev
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    profiles: [localstack]
 
 volumes:
   pgdata: {}
+
+networks:
+  local-dev:
+    name: local-dev
+    driver: bridge
