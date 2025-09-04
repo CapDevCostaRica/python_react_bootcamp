@@ -19,21 +19,10 @@ Health check endpoint.
 
 Find people based on multiple filter criteria.
 
-**Request Body:**
-```json
-{
-  "filters": {
-    "eye_color": "hazel",
-    "hair_color": "black",
-    "age": 25,
-    "nationality": "Spanish",
-    "family": "mother",
-    "food": "lasagna",
-    "hobby": "dancing",
-    "degree": "PhD",
-    "institution": "MIT"
-  }
-}
+**Request Format:**
+Query parameters using `filters[key]=value` format:
+```
+GET /people/find?filters[eye_color]=hazel&filters[hair_color]=black&filters[age]=39
 ```
 
 **Response:**
@@ -41,8 +30,8 @@ Find people based on multiple filter criteria.
 {
   "success": true,
   "data": {
-    "total": 2,
-    "results": ["Regina Fisher", "Emily Boyd"]
+    "total": 1,
+    "results": ["Regina Fisher"]
   }
 }
 ```

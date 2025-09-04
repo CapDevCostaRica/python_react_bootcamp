@@ -20,12 +20,19 @@ def health():
 def find_people():
     """
     Find people based on multiple filter criteria
-    Accepts filters as JSON in request body
+    Accepts filters as query parameters in format: filters[key]=value
     """
     try:
-        # Get filters from request
-        data = request.get_json() or {}
-        filters = data.get('filters', {})
+        # Get filters from query parameters
+        filters = {}
+        for key, value in request.args.items():
+            if key.startswith('filters[') and key.endswith(']'):
+                filter_key = key[8:-1]  # Remove 'filters[' and ']'
+                # Convert age to int if it's a numeric value
+                if filter_key == 'age' and value.isdigit():
+                    filters[filter_key] = int(value)
+                else:
+                    filters[filter_key] = value
 
         # Use service to find people
         result_names, total = find_people_by_filters(filters)
