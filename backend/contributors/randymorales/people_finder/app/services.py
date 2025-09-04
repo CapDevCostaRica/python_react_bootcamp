@@ -196,7 +196,7 @@ def get_avg_weight_by_nationality_hair():
 
         # Convert to dict with "nationality-haircolor" format
         return {
-            f"{nationality.lower()}-{hair_color}": round(avg_weight)
+            f"{nationality.lower()}-{hair_color.lower()}": round(avg_weight)
             for nationality, hair_color, avg_weight in results
         }
 
@@ -230,7 +230,7 @@ def get_top_oldest_by_nationality():
                 desc(RandymoralesPhysicalData.age)
             ).limit(2).all()
 
-            result[nationality.lower()] = [name for (name,) in oldest_people]
+            result[nationality] = [name for (name,) in oldest_people]
 
         return result
 
@@ -289,7 +289,7 @@ def get_avg_height_by_nationality_and_general():
 
         # Build response
         nationalities = {
-            nationality.lower(): round(avg_height)
+            nationality: round(avg_height)
             for nationality, avg_height in nationality_results
         }
 
