@@ -137,13 +137,13 @@ def find_people():
 @app.route('/people/sushi_ramen', methods=['GET'])
 def sushi_ramen_lovers():
     """
-    People who like both sushi and pasta
+    People who like both sushi and ramen
     """
     session = get_session()
     try:
 
         people_ids = session.query(FavoriteFood.person_id)\
-            .filter(FavoriteFood.food.in_(["sushi", "pasta"]))\
+            .filter(FavoriteFood.food.in_(["sushi", "ramen"]))\
             .group_by(FavoriteFood.person_id)\
             .having(func.count(func.distinct(FavoriteFood.food)) == 2)\
             .all()
