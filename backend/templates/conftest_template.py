@@ -1,5 +1,5 @@
-# conftest.py - Shared test fixtures for Testing Workshop
-# Copy this file to your test directory and customize as needed
+# conftest.py - Testing Workshop Student Template
+# 🎯 TASK: Build this file step-by-step following the STUDENT_WORKSHOP_GUIDE.md
 
 import pytest
 import sys
@@ -8,8 +8,14 @@ import sys
 sys.path.append('/app/framework')
 
 # Import actual framework components
-from database import get_session
 from models import MotivationalPhrase
+
+# TODO Step 6: Add Monster model imports here
+# sys.path.append('/app/examples')
+# from test_examples import Monster, Base
+
+# TODO Step 10: Add shared database session variable here
+# _shared_session = None
 
 
 @pytest.fixture
@@ -24,6 +30,23 @@ def app():
         'SECRET_KEY': 'test-secret-key'
     })
 
+    # TODO Step 11: Add Flask routes here
+    # @app.route('/monsters', methods=['POST'])
+    # def monsters_list():
+    #     """Mock monsters list endpoint."""
+    #     # Handle POST requests for monster lists
+    #     # Validate JSON: {"resource": "monsters"}
+    #     # Return monsters from database or fallback mock data
+    #     pass
+
+    # @app.route('/monster', methods=['POST'])
+    # def monster_get():
+    #     """Mock monster get endpoint."""
+    #     # Handle POST requests for single monsters
+    #     # Validate JSON: {"monster_index": "dragon"}
+    #     # Return monster from database or mock data
+    #     pass
+
     with app.app_context():
         yield app
 
@@ -36,7 +59,15 @@ def client(app):
 
 @pytest.fixture
 def db_session():
-    """Create a database session for tests using the actual framework."""
+    """Create a database session for tests using SQLAlchemy."""
+    # TODO Step 7-8: Replace this basic session with SQLAlchemy setup
+    # 1. Import SQLAlchemy components
+    # 2. Create in-memory SQLite engine
+    # 3. Create all tables using Base.metadata.create_all()
+    # 4. Create and return session
+    # 5. Set global _shared_session for Flask routes
+
+    from database import get_session
     session = get_session()
     yield session
     session.rollback()
@@ -52,211 +83,78 @@ def clean_db(db_session):
     yield db_session
 
 
-@pytest.fixture
-def sample_monster_data():
-    """Sample monster data for testing."""
-    return {
-        "index": "ancient-red-dragon",
-        "name": "Ancient Red Dragon",
-        "size": "Gargantuan",
-        "type": "dragon",
-        "subtype": "",
-        "alignment": "chaotic evil",
-        "armor_class": 22,
-        "hit_points": 546,
-        "hit_dice": "28d20+252",
-        "speed": {
-            "walk": "40 ft.",
-            "climb": "40 ft.",
-            "fly": "80 ft."
-        },
-        "strength": 30,
-        "dexterity": 14,
-        "constitution": 29,
-        "intelligence": 18,
-        "wisdom": 15,
-        "charisma": 23,
-        "challenge_rating": 24,
-        "proficiency_bonus": 7,
-        "xp": 62000,
-        "url": "/api/monsters/ancient-red-dragon"
-    }
+# TODO Step 15: Add sample test data fixtures
+# @pytest.fixture
+# def sample_monster_data():
+#     """Sample monster data for testing."""
+#     return {
+#         "index": "ancient-red-dragon",
+#         "name": "Ancient Red Dragon",
+#         # Add more realistic monster data...
+#     }
 
+# TODO Step 15: Add monster factory fixture
+# @pytest.fixture
+# def monster_factory():
+#     """Factory for creating test monster data."""
+#     def _create_monster(index=None, name=None, **kwargs):
+#         # Generate unique test monster data
+#         # Allow customization through kwargs
+#         pass
+#     return _create_monster
 
-@pytest.fixture
-def sample_monsters_list():
-    """Sample monsters list for testing."""
-    return {
-        "count": 3,
-        "results": [
-            {
-                "index": "dragon",
-                "name": "Dragon",
-                "url": "/api/monsters/dragon"
-            },
-            {
-                "index": "orc",
-                "name": "Orc",
-                "url": "/api/monsters/orc"
-            },
-            {
-                "index": "troll",
-                "name": "Troll",
-                "url": "/api/monsters/troll"
-            }
-        ]
-    }
+# TODO Step 16: Add external API mocking fixtures
+# @pytest.fixture
+# def mock_external_api_success(monkeypatch, external_api_monster_response):
+#     """Mock successful external API response."""
+#     # Use monkeypatch to replace requests.get
+#     # Return mock response object with .json() and .raise_for_status()
+#     pass
 
+# @pytest.fixture
+# def mock_external_api_failure(monkeypatch):
+#     """Mock external API failure."""
+#     # Simulate ConnectionError from requests
+#     pass
 
-@pytest.fixture
-def external_api_monster_response():
-    """Mock response from external D&D API for a single monster."""
-    return {
-        "index": "orc",
-        "name": "Orc",
-        "size": "Medium",
-        "type": "humanoid",
-        "subtype": "orc",
-        "alignment": "chaotic evil",
-        "armor_class": 13,
-        "hit_points": 15,
-        "hit_dice": "2d8+6",
-        "speed": {
-            "walk": "30 ft."
-        },
-        "strength": 16,
-        "dexterity": 12,
-        "constitution": 16,
-        "intelligence": 7,
-        "wisdom": 11,
-        "charisma": 10,
-        "challenge_rating": 0.5,
-        "proficiency_bonus": 2,
-        "xp": 100,
-        "url": "/api/monsters/orc"
-    }
+# @pytest.fixture
+# def mock_external_api_timeout(monkeypatch):
+#     """Mock external API timeout."""
+#     # Simulate Timeout from requests
+#     pass
 
+# @pytest.fixture
+# def mock_external_api_404(monkeypatch):
+#     """Mock external API 404 response."""
+#     # Simulate HTTPError 404 response
+#     pass
 
-@pytest.fixture
-def external_api_monsters_list_response():
-    """Mock response from external D&D API for monsters list."""
-    return {
-        "count": 332,
-        "results": [
-            {"index": "aboleth", "name": "Aboleth",
-             "url": "/api/monsters/aboleth"},
-            {"index": "acolyte", "name": "Acolyte",
-             "url": "/api/monsters/acolyte"},
-            {"index": "adult-black-dragon", "name": "Adult Black Dragon",
-             "url": "/api/monsters/adult-black-dragon"},
-            {"index": "adult-blue-dragon", "name": "Adult Blue Dragon",
-             "url": "/api/monsters/adult-blue-dragon"},
-            {"index": "adult-brass-dragon", "name": "Adult Brass Dragon",
-             "url": "/api/monsters/adult-brass-dragon"}
-        ]
-    }
+# TODO Step 18: Add performance monitoring
+# @pytest.fixture
+# def performance_monitor():
+#     """Monitor test performance and log slow tests."""
+#     # Track test execution time
+#     # Warn about slow tests (>1 second)
+#     pass
 
+# TODO Step 19: Add automatic test environment setup
+# @pytest.fixture(autouse=True)
+# def setup_test_environment(monkeypatch):
+#     """Automatically setup test environment for all tests."""
+#     # Set environment variables for testing
+#     # Configure timeouts and cache settings
+#     pass
 
-@pytest.fixture(autouse=True)
-def setup_test_environment(monkeypatch):
-    """Automatically setup test environment for all tests."""
-    # Set test environment variables
-    monkeypatch.setenv("FLASK_ENV", "testing")
-    monkeypatch.setenv("EXTERNAL_API_TIMEOUT", "1")  # Fast timeouts for tests
-    monkeypatch.setenv("CACHE_TTL", "300")  # 5 minutes cache for tests
+# 🎯 LEARNING GOALS:
+# By the end of this workshop, you'll understand:
+# ✅ How to create pytest fixtures for reusable test setup
+# ✅ How to mock external dependencies (APIs, databases)
+# ✅ How to test Flask applications with HTTP endpoints
+# ✅ How to use in-memory databases for fast, isolated tests
+# ✅ How to handle error scenarios in your tests
+# ✅ How to monitor test performance and optimize slow tests
 
-
-@pytest.fixture
-def mock_external_api_success(monkeypatch, external_api_monster_response):
-    """Mock successful external API response."""
-    from unittest.mock import Mock
-
-    mock_response = Mock()
-    mock_response.json.return_value = external_api_monster_response
-    mock_response.raise_for_status.return_value = None
-    mock_response.status_code = 200
-
-    monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_response)
-    return mock_response
-
-
-@pytest.fixture
-def mock_external_api_failure(monkeypatch):
-    """Mock external API failure."""
-    import requests
-
-    def mock_request_failure(*args, **kwargs):
-        raise requests.ConnectionError("External API is down")
-
-    monkeypatch.setattr("requests.get", mock_request_failure)
-
-
-@pytest.fixture
-def mock_external_api_timeout(monkeypatch):
-    """Mock external API timeout."""
-    import requests
-
-    def mock_request_timeout(*args, **kwargs):
-        raise requests.Timeout("Request timed out")
-
-    monkeypatch.setattr("requests.get", mock_request_timeout)
-
-
-@pytest.fixture
-def mock_external_api_404(monkeypatch):
-    """Mock external API 404 response."""
-    import requests
-    from unittest.mock import Mock
-
-    mock_response = Mock()
-    mock_response.status_code = 404
-    mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
-
-    monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_response)
-
-
-@pytest.fixture
-def monster_factory():
-    """Factory for creating test monster data."""
-    def _create_monster(index=None, name=None, **kwargs):
-        import uuid
-
-        default_index = index or f"test-monster-{uuid.uuid4().hex[:8]}"
-        default_name = name or f"Test Monster {default_index}"
-
-        defaults = {
-            "index": default_index,
-            "name": default_name,
-            "type": "beast",
-            "size": "Medium",
-            "alignment": "neutral",
-            "armor_class": 12,
-            "hit_points": 20,
-            "challenge_rating": 1,
-            "url": f"/api/monsters/{default_index}"
-        }
-        defaults.update(kwargs)
-        return defaults
-
-    return _create_monster
-
-
-@pytest.fixture
-def sample_motivational_phrase():
-    """Sample motivational phrase for testing the existing framework."""
-    return "You can do anything you set your mind to!"
-
-
-@pytest.fixture
-def performance_monitor():
-    """Monitor test performance and log slow tests."""
-    import time
-    import warnings
-
-    start_time = time.time()
-    yield
-    end_time = time.time()
-
-    duration = end_time - start_time
-    if duration > 1.0:  # Warn if test takes more than 1 second
-        warnings.warn(f"Slow test detected: {duration:.2f} seconds")
+# 📚 REFERENCE:
+# - Follow STUDENT_WORKSHOP_GUIDE.md for detailed step-by-step instructions
+# - Check INSTRUCTOR_CHECKLIST.md if you get stuck
+# - Your instructor has the complete solution for reference
