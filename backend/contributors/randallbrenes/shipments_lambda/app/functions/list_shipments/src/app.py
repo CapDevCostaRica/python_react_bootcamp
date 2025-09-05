@@ -87,7 +87,7 @@ def handler(event, context):
     user_data = event.get("user_data")
 
     if not user_data:
-        return send_response({ "error": "Invalid token 1" }, HTTPStatus.UNAUTHORIZED)
+        return send_response({ "error": "Invalid token" }, HTTPStatus.UNAUTHORIZED)
 
     try:
         body = ShippingListRequestSchema().load(json_body)

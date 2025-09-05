@@ -6,7 +6,7 @@ import os
 import time
 
 SECRET_KEY = os.getenv("SECRET_KEY", "not-secret-at-all")
-TTL = int(os.getenv("TOKEN_TTL_SECONDS", 900))  # Default to 15 minutes
+TTL = int(os.getenv("TOKEN_TTL_SECONDS", 9000))  # Default to 15 minutes
 
 
 def _b64_encode(b: bytes) -> str:

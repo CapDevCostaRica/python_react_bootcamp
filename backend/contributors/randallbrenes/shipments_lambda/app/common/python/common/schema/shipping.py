@@ -64,3 +64,30 @@ class ShipmentSchema(Schema):
 class ShippingListResponseSchema(Schema):
     results = fields.List(fields.Nested(ShipmentSchema), required=True)
     result_count = fields.Integer(required=True)
+
+class CreateShipmentSchema(Schema):
+    target_warehouse = fields.Integer(required=True)
+    carrier = fields.Integer(required=True)
+    class Meta:
+        unknown = "EXCLUDE"
+
+class UpdateShipmentSchema(Schema):
+    location = fields.String(required=False)
+    status = fields.Enum(
+        ShipmentStatus,
+        by_value=True,
+        required=False,
+        allow_none=True,
+    )
+    class Meta:
+        unknown = "EXCLUDE"
+        
+    @validates_schema
+    def validate_some(self, data, **kwargs):
+        location = data.get("location")
+        status = data.get("status")
+
+        if not location and not status:
+            raise ValidationError(
+                "Should provide a status or location to update"
+            )
