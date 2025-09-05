@@ -1,7 +1,6 @@
 import base64
 import json
 from http import HTTPStatus
-from collections import namedtuple
 
 from app.common.python.common.database.models import User
 from app.common.python.common.database.database import get_session
@@ -33,7 +32,7 @@ def handler(event, context):
             
             token = encode_jwt(to_dict(user))
         
-        return send_response({"token": token}, HTTPStatus.OK)
+        return send_response({"access_token": token, "token_type": "Bearer"}, HTTPStatus.OK)
 
     except Exception as e:
             return send_response({ "error": str(e) }, HTTPStatus.BAD_REQUEST)

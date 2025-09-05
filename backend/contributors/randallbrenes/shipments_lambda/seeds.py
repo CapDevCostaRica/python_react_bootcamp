@@ -58,7 +58,6 @@ def seed_users(session, warehouses):
     )
     session.add_all(users)
     session.flush()
-
     return users
 
 
@@ -144,8 +143,15 @@ def seed_shipments(session):
 
     return created
 
+def reset_db(session):
+    session.query(ShipmentLocation).delete()
+    session.query(Shipment).delete()
+    session.query(User).delete()
+    session.query(Warehouse).delete()
+    session.commit()
 
 if __name__ == "__main__":
     session = get_session()
+    reset_db(session)
     shipments = seed_shipments(session)
     session.close()
