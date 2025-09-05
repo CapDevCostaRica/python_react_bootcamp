@@ -10,3 +10,5 @@ __pycache__
 .DS_Store
 tests/tmp/*
 .DS_Store
+**/.terraform/
+**/*/build/_*/*
