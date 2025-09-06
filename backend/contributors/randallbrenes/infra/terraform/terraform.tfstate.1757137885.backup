@@ -1,0 +1,1019 @@
+{
+  "version": 4,
+  "terraform_version": "1.13.1",
+  "serial": 86,
+  "lineage": "256695d8-65ef-1af2-b5b4-1a5c90eab18a",
+  "outputs": {
+    "api_urls": {
+      "value": {
+        "login": "http://localhost:4566/restapis/x8vo9a0nn4/_user_request_/login",
+        "shipment_id": "http://localhost:4566/restapis/x8vo9a0nn4/_user_request_/shipment/{shipment_id}",
+        "shipment_list": "http://localhost:4566/restapis/x8vo9a0nn4/_user_request_/shipment/list",
+        "shipment_root": "http://localhost:4566/restapis/x8vo9a0nn4/_user_request_/shipment"
+      },
+      "type": [
+        "object",
+        {
+          "login": "string",
+          "shipment_id": "string",
+          "shipment_list": "string",
+          "shipment_root": "string"
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_deployment",
+      "name": "deployment",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "canary_settings": [],
+            "created_date": "2025-09-05T23:14:02Z",
+            "description": "",
+            "execution_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4/",
+            "id": "7hz7xup3dk",
+            "invoke_url": "https://x8vo9a0nn4.execute-api.us-east-1.amazonaws.com/",
+            "rest_api_id": "x8vo9a0nn4",
+            "stage_description": null,
+            "stage_name": null,
+            "triggers": null,
+            "variables": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_integration.integrations",
+            "aws_api_gateway_integration.shipment_id",
+            "aws_api_gateway_integration.shipment_list",
+            "aws_api_gateway_method.methods",
+            "aws_api_gateway_method.shipment_id",
+            "aws_api_gateway_method.shipment_list",
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_resource.shipment_id",
+            "aws_api_gateway_resource.shipment_list",
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "integrations",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "login",
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": [],
+            "cache_namespace": "6t3izbc8fc",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-x8vo9a0nn4-6t3izbc8fc-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": {},
+            "request_templates": {},
+            "resource_id": "6t3izbc8fc",
+            "rest_api_id": "x8vo9a0nn4",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS",
+            "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-login/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_method.methods",
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        },
+        {
+          "index_key": "shipment_root",
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": [],
+            "cache_namespace": "uhs6erwaep",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-x8vo9a0nn4-uhs6erwaep-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": {},
+            "request_templates": {},
+            "resource_id": "uhs6erwaep",
+            "rest_api_id": "x8vo9a0nn4",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS",
+            "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-create_shipment/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_method.methods",
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "shipment_id",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": [],
+            "cache_namespace": "8ykisxho67",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-x8vo9a0nn4-8ykisxho67-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": {},
+            "request_templates": {
+              "application/json": "{\n  \"body\": $input.json('$'),\n  \"shipment_id\": \"$input.params('shipment_id')\"\n}\n"
+            },
+            "resource_id": "8ykisxho67",
+            "rest_api_id": "x8vo9a0nn4",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS",
+            "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-update_shipment/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_method.shipment_id",
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_resource.shipment_id",
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "shipment_list",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": [],
+            "cache_namespace": "9nrqp3vu3f",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-x8vo9a0nn4-9nrqp3vu3f-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": {},
+            "request_templates": {},
+            "resource_id": "9nrqp3vu3f",
+            "rest_api_id": "x8vo9a0nn4",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS",
+            "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-list_shipments/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_method.shipment_list",
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_resource.shipment_list",
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "methods",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "login",
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-x8vo9a0nn4-6t3izbc8fc-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "6t3izbc8fc",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        },
+        {
+          "index_key": "shipment_root",
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-x8vo9a0nn4-uhs6erwaep-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "uhs6erwaep",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "shipment_id",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-x8vo9a0nn4-8ykisxho67-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "8ykisxho67",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_resource.shipment_id",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "shipment_list",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-x8vo9a0nn4-9nrqp3vu3f-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "9nrqp3vu3f",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_resource.shipment_list",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "resources",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "login",
+          "schema_version": 0,
+          "attributes": {
+            "id": "6t3izbc8fc",
+            "parent_id": "3oyh2iu4pg",
+            "path": "/login",
+            "path_part": "login",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        },
+        {
+          "index_key": "shipment_root",
+          "schema_version": 0,
+          "attributes": {
+            "id": "uhs6erwaep",
+            "parent_id": "3oyh2iu4pg",
+            "path": "/shipment",
+            "path_part": "shipment",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "shipment_id",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "8ykisxho67",
+            "parent_id": "uhs6erwaep",
+            "path": "/shipment/{shipment_id}",
+            "path_part": "{shipment_id}",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "shipment_list",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "9nrqp3vu3f",
+            "parent_id": "uhs6erwaep",
+            "path": "/shipment/list",
+            "path_part": "list",
+            "rest_api_id": "x8vo9a0nn4"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_resource.resources",
+            "aws_api_gateway_rest_api.rest_api"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_api_gateway_rest_api",
+      "name": "rest_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_source": "HEADER",
+            "arn": "arn:aws:apigateway:us-east-1::/restapis/x8vo9a0nn4",
+            "binary_media_types": [],
+            "body": null,
+            "created_date": "2025-09-05T22:35:20Z",
+            "description": "REST API para capdevcr-shipments",
+            "disable_execute_api_endpoint": false,
+            "endpoint_configuration": [
+              {
+                "ip_address_type": "",
+                "types": [
+                  "EDGE"
+                ],
+                "vpc_endpoint_ids": []
+              }
+            ],
+            "execution_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4",
+            "fail_on_warnings": null,
+            "id": "x8vo9a0nn4",
+            "minimum_compression_size": "",
+            "name": "capdevcr-shipments-rest",
+            "parameters": null,
+            "policy": "",
+            "put_rest_api_mode": null,
+            "root_resource_id": "3oyh2iu4pg",
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "lambda_exec",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::000000000000:role/capdevcr-shipments-lambda-exec",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2025-09-05T22:20:20Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "capdevcr-shipments-lambda-exec",
+            "inline_policy": [
+              {
+                "name": "capdevcr-shipments-lambda-logs",
+                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}]}"
+              }
+            ],
+            "managed_policy_arns": [],
+            "max_session_duration": 3600,
+            "name": "capdevcr-shipments-lambda-exec",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {},
+            "tags_all": {},
+            "unique_id": "AROAQAAAAAAAKZBV5AR66"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_iam_role_policy",
+      "name": "lambda_logs",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "capdevcr-shipments-lambda-exec:capdevcr-shipments-lambda-logs",
+            "name": "capdevcr-shipments-lambda-logs",
+            "name_prefix": "",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}]}",
+            "role": "capdevcr-shipments-lambda-exec"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_iam_role.lambda_exec"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_lambda_function",
+      "name": "fn",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "create_shipment",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-create_shipment",
+            "code_sha256": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "",
+            "environment": [
+              {
+                "variables": {
+                  "POSTGRES_DB": "shipments",
+                  "POSTGRES_HOST": "flask_db",
+                  "POSTGRES_PASSWORD": "postgres",
+                  "POSTGRES_PORT": "5432",
+                  "POSTGRES_USER": "postgres",
+                  "SECRET_KEY": "dev-secret",
+                  "TOKEN_TTL_SECONDS": "900"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "../build/create_shipment.zip",
+            "function_name": "capdevcr-shipments-create_shipment",
+            "handler": "app.functions.create_shipment.src.app.handler",
+            "id": "capdevcr-shipments-create_shipment",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-create_shipment/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2025-09-05T22:54:09.317375+0000",
+            "layers": [],
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/capdevcr-shipments-create_shipment",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 128,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-create_shipment:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-create_shipment:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/capdevcr-shipments-lambda-exec",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "source_code_size": 1775841,
+            "tags": {},
+            "tags_all": {},
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "aws_iam_role.lambda_exec"
+          ]
+        },
+        {
+          "index_key": "list_shipments",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-list_shipments",
+            "code_sha256": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "",
+            "environment": [
+              {
+                "variables": {
+                  "POSTGRES_DB": "shipments",
+                  "POSTGRES_HOST": "flask_db",
+                  "POSTGRES_PASSWORD": "postgres",
+                  "POSTGRES_PORT": "5432",
+                  "POSTGRES_USER": "postgres",
+                  "SECRET_KEY": "dev-secret",
+                  "TOKEN_TTL_SECONDS": "900"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "../build/list_shipments.zip",
+            "function_name": "capdevcr-shipments-list_shipments",
+            "handler": "app.functions.list_shipments.src.app.handler",
+            "id": "capdevcr-shipments-list_shipments",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-list_shipments/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2025-09-05T22:20:22.887912+0000",
+            "layers": [],
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/capdevcr-shipments-list_shipments",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 128,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-list_shipments:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-list_shipments:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/capdevcr-shipments-lambda-exec",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "source_code_size": 1775841,
+            "tags": {},
+            "tags_all": {},
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "aws_iam_role.lambda_exec"
+          ]
+        },
+        {
+          "index_key": "login",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-login",
+            "code_sha256": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "",
+            "environment": [
+              {
+                "variables": {
+                  "POSTGRES_DB": "shipments",
+                  "POSTGRES_HOST": "flask_db",
+                  "POSTGRES_PASSWORD": "postgres",
+                  "POSTGRES_PORT": "5432",
+                  "POSTGRES_USER": "postgres",
+                  "SECRET_KEY": "dev-secret",
+                  "TOKEN_TTL_SECONDS": "900"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "../build/login.zip",
+            "function_name": "capdevcr-shipments-login",
+            "handler": "app.functions.login.src.app.handler",
+            "id": "capdevcr-shipments-login",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-login/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2025-09-05T22:21:23.303781+0000",
+            "layers": [],
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/capdevcr-shipments-login",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 128,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-login:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-login:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/capdevcr-shipments-lambda-exec",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "source_code_size": 1775841,
+            "tags": {},
+            "tags_all": {},
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "aws_iam_role.lambda_exec"
+          ]
+        },
+        {
+          "index_key": "update_shipment",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-update_shipment",
+            "code_sha256": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "",
+            "environment": [
+              {
+                "variables": {
+                  "POSTGRES_DB": "shipments",
+                  "POSTGRES_HOST": "flask_db",
+                  "POSTGRES_PASSWORD": "postgres",
+                  "POSTGRES_PORT": "5432",
+                  "POSTGRES_USER": "postgres",
+                  "SECRET_KEY": "dev-secret",
+                  "TOKEN_TTL_SECONDS": "900"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "../build/update_shipment.zip",
+            "function_name": "capdevcr-shipments-update_shipment",
+            "handler": "app.functions.update_shipment.src.app.handler",
+            "id": "capdevcr-shipments-update_shipment",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-update_shipment/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2025-09-05T22:54:03.789836+0000",
+            "layers": [],
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/capdevcr-shipments-update_shipment",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 128,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-update_shipment:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:capdevcr-shipments-update_shipment:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/capdevcr-shipments-lambda-exec",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "rZ375sWtSYi6aEA0wGgTOx/u5KIXpjgdaQBJq+dUyQc=",
+            "source_code_size": 1775841,
+            "tags": {},
+            "tags_all": {},
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "aws_iam_role.lambda_exec"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_lambda_permission",
+      "name": "apigw",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "create_shipment",
+          "schema_version": 0,
+          "attributes": {
+            "action": "lambda:InvokeFunction",
+            "event_source_token": null,
+            "function_name": "capdevcr-shipments-create_shipment",
+            "function_url_auth_type": null,
+            "id": "AllowAPIGatewayInvoke-create_shipment",
+            "principal": "apigateway.amazonaws.com",
+            "principal_org_id": null,
+            "qualifier": "",
+            "source_account": null,
+            "source_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4/*/*",
+            "statement_id": "AllowAPIGatewayInvoke-create_shipment",
+            "statement_id_prefix": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        },
+        {
+          "index_key": "list_shipments",
+          "schema_version": 0,
+          "attributes": {
+            "action": "lambda:InvokeFunction",
+            "event_source_token": null,
+            "function_name": "capdevcr-shipments-list_shipments",
+            "function_url_auth_type": null,
+            "id": "AllowAPIGatewayInvoke-list_shipments",
+            "principal": "apigateway.amazonaws.com",
+            "principal_org_id": null,
+            "qualifier": "",
+            "source_account": null,
+            "source_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4/*/*",
+            "statement_id": "AllowAPIGatewayInvoke-list_shipments",
+            "statement_id_prefix": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        },
+        {
+          "index_key": "login",
+          "schema_version": 0,
+          "attributes": {
+            "action": "lambda:InvokeFunction",
+            "event_source_token": null,
+            "function_name": "capdevcr-shipments-login",
+            "function_url_auth_type": null,
+            "id": "AllowAPIGatewayInvoke-login",
+            "principal": "apigateway.amazonaws.com",
+            "principal_org_id": null,
+            "qualifier": "",
+            "source_account": null,
+            "source_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4/*/*",
+            "statement_id": "AllowAPIGatewayInvoke-login",
+            "statement_id_prefix": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        },
+        {
+          "index_key": "update_shipment",
+          "schema_version": 0,
+          "attributes": {
+            "action": "lambda:InvokeFunction",
+            "event_source_token": null,
+            "function_name": "capdevcr-shipments-update_shipment",
+            "function_url_auth_type": null,
+            "id": "AllowAPIGatewayInvoke-update_shipment",
+            "principal": "apigateway.amazonaws.com",
+            "principal_org_id": null,
+            "qualifier": "",
+            "source_account": null,
+            "source_arn": "arn:aws:execute-api:us-east-1::x8vo9a0nn4/*/*",
+            "statement_id": "AllowAPIGatewayInvoke-update_shipment",
+            "statement_id_prefix": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "aws_api_gateway_rest_api.rest_api",
+            "aws_iam_role.lambda_exec",
+            "aws_lambda_function.fn"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
