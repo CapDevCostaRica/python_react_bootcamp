@@ -1,3 +1,8 @@
+networks:
+  local-dev:
+    name: local-dev
+    driver: bridge
+
 services:
   flask_app:
     build: 
@@ -13,11 +18,10 @@ services:
     volumes:
       - ./backend:/app
     depends_on:
-      - flask_db
-    networks: [local-dev]        
-  
+      - flask_db        
   flask_db:
     image: postgres:12
+    networks: [local-dev]
     ports:
       - "5432:5432"
     environment:
@@ -34,8 +38,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    networks: [local-dev]
-    
   localstack:
     image: localstack/localstack:3
     networks: [local-dev]
@@ -50,12 +52,7 @@ services:
       - LAMBDA_DOCKER_NETWORK=local-dev
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-    profiles: [localstack]
+
 
 volumes:
   pgdata: {}
-
-networks:
-  local-dev:
-    name: local-dev
-    driver: bridge
