@@ -1,8 +1,25 @@
+import os
+os.environ["TESTING"] = "1"
+os.environ["RUN_SEEDS_ON_BOOT"] = "0"
+os.environ["TEST_DATABASE_URL"] = "sqlite:///test_ex03.db"
+
 import pytest
 from backend.contributors.Luch1f3rchoCR.ex03_shipping.main import app
+from backend.contributors.Luch1f3rchoCR.ex03_shipping.database import init_db, SessionLocal
+from backend.contributors.Luch1f3rchoCR.ex03_shipping.models import User
+
+def _ensure_admin():
+    init_db()
+    with SessionLocal() as db:
+        u = db.query(User).filter(User.username == "admin").one_or_none()
+        if not u:
+            u = User(username="admin", password="admin", role="admin")
+            db.add(u)
+            db.commit()
 
 @pytest.fixture
 def client():
+    _ensure_admin()
     app.config["TESTING"] = True
     with app.test_client() as c:
         yield c
