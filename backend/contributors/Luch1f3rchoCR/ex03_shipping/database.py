@@ -21,7 +21,16 @@ def _pg_url():
 
 DB_URL = os.getenv("DATABASE_URL", _pg_url())
 
-engine = create_engine(DB_URL, echo=False, future=True)
+if os.getenv("TEST_DATABASE_URL"):
+    DB_URL = os.getenv("TEST_DATABASE_URL")
+elif os.getenv("TESTING") == "1":
+    DB_URL = "sqlite:///:memory:"
+
+connect_args = {}
+if DB_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(DB_URL, echo=False, future=True, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 def init_db():
