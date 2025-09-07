@@ -2,8 +2,8 @@ try:
     from .database import SessionLocal, init_db
     from .models import User, Shipment
 except ImportError:
-    import os, sys
-    sys.path.append(os.path.dirname(__file__))
+    import sys, os
+    sys.path.insert(0, os.path.dirname(__file__))
     from database import SessionLocal, init_db
     from models import User, Shipment
 

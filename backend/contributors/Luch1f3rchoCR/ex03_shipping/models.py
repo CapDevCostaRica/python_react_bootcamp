@@ -1,26 +1,31 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy.orm import declarative_base
 
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(128), nullable=False)  # demo only
-    role: Mapped[str] = mapped_column(String(32), nullable=False)
-    store_id: Mapped[str | None] = mapped_column(String(20))
-    carrier_id: Mapped[str | None] = mapped_column(String(20))
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    role = Column(String, nullable=False)          # global_manager | store_manager | warehouse_staff | carrier
+    store_id = Column(String, nullable=True)
+    carrier_id = Column(String, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
+
 
 class Shipment(Base):
     __tablename__ = "shipments"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    origin_store: Mapped[str] = mapped_column(String(20), nullable=False)
-    destination_store: Mapped[str] = mapped_column(String(20), nullable=False)
-    carrier_id: Mapped[str | None] = mapped_column(String(20))
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="created")
-    location: Mapped[str | None] = mapped_column(String(40))
-    created_at: Mapped[str] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[str] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+
+    id = Column(Integer, primary_key=True)
+    origin_store = Column(String, nullable=False)
+    destination_store = Column(String, nullable=False)
+    carrier_id = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    location = Column(String, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())

@@ -1,7 +1,15 @@
-import os
+import os, sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .models import Base
+
+try:
+    from .models import Base
+except ImportError:
+    here = os.path.dirname(__file__)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    from models import Base
+
 
 def _pg_url():
     host = os.getenv("POSTGRES_HOST", "localhost")

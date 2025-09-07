@@ -1,10 +1,13 @@
 import os, json
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, Blueprint
 from sqlalchemy import select
+from marshmallow import ValidationError
 from .database import SessionLocal
 from .models import User, Shipment
 from .auth import make_token, decode_token
 from .seeds import run as seed_run
+from .schemas import UserSchema, ShipmentSchema, ShipmentCreateSchema, ShipmentUpdateSchema
 
 bp = Blueprint("ex03", __name__)
 
@@ -31,8 +34,23 @@ def can_view(payload, s: Shipment):
 
 def allowed_transition(role, current, target):
     if role == "warehouse_staff":
-        return (current, target) in {("created","in_transit"), ("in_transit","delivered")}
+        return (current, target) in {("created","in_transit"),("in_transit","delivered")}
     return False
+
+def parse_dt(s, end_of_day=False):
+    if not isinstance(s, str) or not s.strip():
+        return None
+    s = s.strip()
+    if len(s) == 10 and s[4] == "-" and s[7] == "-":
+        d = datetime.fromisoformat(s)
+        if end_of_day:
+            d = d + timedelta(days=1) - timedelta(seconds=1)
+        return d
+    s = s.replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(s)
+    except Exception:
+        return None
 
 @bp.get("/health")
 def health():
@@ -47,9 +65,8 @@ def login():
     if not user or user.password != password:
         return jsonify({"error": "invalid_credentials"}), 401
     token = make_token(user.id, user.role, user.store_id, user.carrier_id)
-    return jsonify({"token": token, "user": {
-        "id": user.id, "role": user.role, "store_id": user.store_id, "carrier_id": user.carrier_id
-    }}), 200
+    payload = UserSchema().dump(user)
+    return jsonify({"token": token, "user": payload}), 200
 
 @bp.post("/shipment/list")
 def list_shipments():
@@ -57,36 +74,59 @@ def list_shipments():
     db = get_db()
     filters = request.get_json(force=True) or {}
     q = select(Shipment)
-    if "status" in filters:  q = q.where(Shipment.status == filters["status"])
-    if "carrier" in filters: q = q.where(Shipment.carrier_id == filters["carrier"])
-    if "id" in filters:      q = q.where(Shipment.id == filters["id"])
+    if "status" in filters and filters["status"]:
+        q = q.where(Shipment.status == filters["status"])
+    if "carrier" in filters and filters["carrier"]:
+        q = q.where(Shipment.carrier_id == filters["carrier"])
+    if "id" in filters and filters["id"]:
+        q = q.where(Shipment.id == filters["id"])
+    cf = parse_dt(filters.get("created_from"))
+    ct = parse_dt(filters.get("created_to"), end_of_day=True)
+    if cf:
+        q = q.where(Shipment.created_at >= cf)
+    if ct:
+        q = q.where(Shipment.created_at <= ct)
+    try:
+        limit = int(filters.get("limit")) if filters.get("limit") is not None else None
+    except Exception:
+        limit = None
+    try:
+        offset = int(filters.get("offset")) if filters.get("offset") is not None else None
+    except Exception:
+        offset = None
+    if offset and offset > 0:
+        q = q.offset(offset)
+    if limit and limit > 0:
+        q = q.limit(limit)
     results = db.execute(q).scalars().all()
     visible = [s for s in results if can_view(payload, s)]
-    return jsonify([{
-        "id": s.id, "origin_store": s.origin_store, "destination_store": s.destination_store,
-        "carrier_id": s.carrier_id, "status": s.status, "location": s.location
-    } for s in visible]), 200
+    return jsonify(ShipmentSchema(many=True).dump(visible)), 200
 
 @bp.post("/shipment")
 def create_shipment():
     payload = require_auth(request)
-    if payload.get("role") != "warehouse_staff":
+    role = payload.get("role")
+    if role == "carrier":
         return jsonify({"error": "forbidden"}), 403
-    data = request.get_json(force=True) or {}
-    for k in ("origin_store","destination_store","carrier_id"):
-        if not data.get(k):
-            return jsonify({"error": "missing_fields",
-                            "required": ["origin_store","destination_store","carrier_id"]}), 400
+    try:
+        data = ShipmentCreateSchema().load(request.get_json(force=True) or {})
+    except ValidationError as err:
+        return jsonify({"error": "validation_error", "details": err.messages}), 400
+    if role in ("store_manager", "warehouse_staff"):
+        if data["origin_store"] != payload.get("store_id"):
+            return jsonify({"error": "forbidden"}), 403
     db = get_db()
     s = Shipment(
         origin_store=data["origin_store"],
         destination_store=data["destination_store"],
         carrier_id=data["carrier_id"],
         status="created",
-        location=data.get("location")
+        location=data.get("location"),
     )
-    db.add(s); db.commit(); db.refresh(s)
-    return jsonify({"id": s.id, "status": s.status}), 201
+    db.add(s)
+    db.commit()
+    db.refresh(s)
+    return jsonify(ShipmentSchema().dump(s)), 201
 
 @bp.post("/shipment/<int:shipment_id>")
 def update_shipment(shipment_id: int):
@@ -98,11 +138,12 @@ def update_shipment(shipment_id: int):
         return jsonify({"error": "not_found"}), 404
     if not can_view(payload, s):
         return jsonify({"error": "forbidden"}), 403
-
-    data = request.get_json(force=True) or {}
+    try:
+        data = ShipmentUpdateSchema().load(request.get_json(force=True) or {}, partial=True)
+    except ValidationError as err:
+        return jsonify({"error": "validation_error", "details": err.messages}), 400
     new_status = data.get("status")
     new_location = data.get("location")
-
     if role == "carrier":
         if new_status and new_status != s.status:
             return jsonify({"error": "carrier_cannot_change_status"}), 403
@@ -111,17 +152,18 @@ def update_shipment(shipment_id: int):
         if not new_location:
             return jsonify({"error": "no_location_provided"}), 400
         s.location = new_location
-        db.commit(); db.refresh(s)
+        db.commit()
+        db.refresh(s)
         return jsonify({"ok": True, "id": s.id, "status": s.status, "location": s.location}), 200
-
     if role == "warehouse_staff" and new_status:
         if not allowed_transition(role, s.status, new_status):
             return jsonify({"error": "invalid_transition"}), 400
         s.status = new_status
-        if new_location: s.location = new_location
-        db.commit(); db.refresh(s)
+        if new_location:
+            s.location = new_location
+        db.commit()
+        db.refresh(s)
         return jsonify({"ok": True, "id": s.id, "status": s.status, "location": s.location}), 200
-
     return jsonify({"error": "no_update_permission"}), 403
 
 def create_app():
@@ -140,7 +182,8 @@ if os.environ.get("RUN_SEEDS_ON_BOOT", "1") == "1":
 def handler(event, context):
     body = event.get("body") or ""
     if event.get("isBase64Encoded"):
-        import base64; body = base64.b64decode(body).decode("utf-8")
+        import base64
+        body = base64.b64decode(body).decode("utf-8")
     try:
         data = json.loads(body) if body else {}
     except Exception:
@@ -148,21 +191,20 @@ def handler(event, context):
     headers = event.get("headers") or {}
     method = event.get("requestContext", {}).get("http", {}).get("method", "POST")
     path = event.get("rawPath", "")
-
     with app.test_request_context(path=path, method=method, headers=headers, json=data):
-        if path == "/login" and method == "POST": resp = login()
-        elif path == "/shipment/list" and method == "POST": resp = list_shipments()
-        elif path == "/shipment" and method == "POST": resp = create_shipment()
+        if path == "/login" and method == "POST":
+            resp = login()
+        elif path == "/shipment/list" and method == "POST":
+            resp = list_shipments()
+        elif path == "/shipment" and method == "POST":
+            resp = create_shipment()
         elif path.startswith("/shipment/") and method == "POST":
-            try: sid = int(path.rsplit("/", 1)[1])
+            try:
+                sid = int(path.rsplit("/", 1)[1])
             except Exception:
-                return {"statusCode": 400, "headers": {"Content-Type":"application/json"},
-                        "body": json.dumps({"error":"bad_path"})}
+                return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "bad_path"})}
             resp = update_shipment.__wrapped__(sid)
         else:
-            return {"statusCode": 404, "headers": {"Content-Type":"application/json"},
-                    "body": json.dumps({"error":"not_found"})}
-
-        data_out, status = resp
-        return {"statusCode": status, "headers": {"Content-Type":"application/json"},
-                "body": json.dumps(data_out)}
+            return {"statusCode": 404, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "not_found"})}
+        response = app.make_response(resp)
+        return {"statusCode": response.status_code, "headers": {"Content-Type": "application/json"}, "body": response.get_data(as_text=True)}
