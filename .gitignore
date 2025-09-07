@@ -10,3 +10,4 @@ __pycache__
 .DS_Store
 tests/tmp/*
 .DS_Storebackend/contributors/capdevcr/shipments_lambdas/
+test_ex03.db
