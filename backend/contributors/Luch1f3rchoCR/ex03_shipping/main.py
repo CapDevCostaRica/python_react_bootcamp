@@ -1,13 +1,20 @@
 import os, json
 from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, Blueprint
+from flask import Flask, jsonify, request, Blueprint, abort
 from sqlalchemy import select
 from marshmallow import ValidationError
+from jwt import ExpiredSignatureError, InvalidTokenError
+
 from .database import SessionLocal
 from .models import User, Shipment
 from .auth import make_token, decode_token
 from .seeds import run as seed_run
-from .schemas import UserSchema, ShipmentSchema, ShipmentCreateSchema, ShipmentUpdateSchema
+from .schemas import (
+    UserSchema,
+    ShipmentSchema,
+    ShipmentCreateSchema,
+    ShipmentUpdateSchema,
+)
 
 bp = Blueprint("ex03", __name__)
 
@@ -17,9 +24,14 @@ def get_db():
 def require_auth(req):
     auth = req.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
-        raise PermissionError("Missing or invalid Authorization header")
+        abort(401, description="missing_bearer")
     token = auth.split(" ", 1)[1].strip()
-    return decode_token(token)
+    try:
+        return decode_token(token)
+    except ExpiredSignatureError:
+        abort(401, description="token_expired")
+    except InvalidTokenError:
+        abort(401, description="invalid_token")
 
 def can_view(payload, s: Shipment):
     role = payload.get("role")
@@ -34,7 +46,7 @@ def can_view(payload, s: Shipment):
 
 def allowed_transition(role, current, target):
     if role == "warehouse_staff":
-        return (current, target) in {("created","in_transit"),("in_transit","delivered")}
+        return (current, target) in {("created", "in_transit"), ("in_transit", "delivered")}
     return False
 
 def parse_dt(s, end_of_day=False):
@@ -73,6 +85,7 @@ def list_shipments():
     payload = require_auth(request)
     db = get_db()
     filters = request.get_json(force=True) or {}
+
     q = select(Shipment)
     if "status" in filters and filters["status"]:
         q = q.where(Shipment.status == filters["status"])
@@ -80,12 +93,14 @@ def list_shipments():
         q = q.where(Shipment.carrier_id == filters["carrier"])
     if "id" in filters and filters["id"]:
         q = q.where(Shipment.id == filters["id"])
+
     cf = parse_dt(filters.get("created_from"))
     ct = parse_dt(filters.get("created_to"), end_of_day=True)
     if cf:
         q = q.where(Shipment.created_at >= cf)
     if ct:
         q = q.where(Shipment.created_at <= ct)
+
     try:
         limit = int(filters.get("limit")) if filters.get("limit") is not None else None
     except Exception:
@@ -98,6 +113,7 @@ def list_shipments():
         q = q.offset(offset)
     if limit and limit > 0:
         q = q.limit(limit)
+
     results = db.execute(q).scalars().all()
     visible = [s for s in results if can_view(payload, s)]
     return jsonify(ShipmentSchema(many=True).dump(visible)), 200
@@ -108,13 +124,16 @@ def create_shipment():
     role = payload.get("role")
     if role == "carrier":
         return jsonify({"error": "forbidden"}), 403
+
     try:
         data = ShipmentCreateSchema().load(request.get_json(force=True) or {})
     except ValidationError as err:
         return jsonify({"error": "validation_error", "details": err.messages}), 400
+
     if role in ("store_manager", "warehouse_staff"):
         if data["origin_store"] != payload.get("store_id"):
             return jsonify({"error": "forbidden"}), 403
+
     db = get_db()
     s = Shipment(
         origin_store=data["origin_store"],
@@ -138,12 +157,15 @@ def update_shipment(shipment_id: int):
         return jsonify({"error": "not_found"}), 404
     if not can_view(payload, s):
         return jsonify({"error": "forbidden"}), 403
+
     try:
         data = ShipmentUpdateSchema().load(request.get_json(force=True) or {}, partial=True)
     except ValidationError as err:
         return jsonify({"error": "validation_error", "details": err.messages}), 400
+
     new_status = data.get("status")
     new_location = data.get("location")
+
     if role == "carrier":
         if new_status and new_status != s.status:
             return jsonify({"error": "carrier_cannot_change_status"}), 403
@@ -155,6 +177,7 @@ def update_shipment(shipment_id: int):
         db.commit()
         db.refresh(s)
         return jsonify({"ok": True, "id": s.id, "status": s.status, "location": s.location}), 200
+
     if role == "warehouse_staff" and new_status:
         if not allowed_transition(role, s.status, new_status):
             return jsonify({"error": "invalid_transition"}), 400
@@ -164,6 +187,7 @@ def update_shipment(shipment_id: int):
         db.commit()
         db.refresh(s)
         return jsonify({"ok": True, "id": s.id, "status": s.status, "location": s.location}), 200
+
     return jsonify({"error": "no_update_permission"}), 403
 
 def create_app():
@@ -188,9 +212,11 @@ def handler(event, context):
         data = json.loads(body) if body else {}
     except Exception:
         data = {}
+
     headers = event.get("headers") or {}
     method = event.get("requestContext", {}).get("http", {}).get("method", "POST")
     path = event.get("rawPath", "")
+
     with app.test_request_context(path=path, method=method, headers=headers, json=data):
         if path == "/login" and method == "POST":
             resp = login()
@@ -202,9 +228,22 @@ def handler(event, context):
             try:
                 sid = int(path.rsplit("/", 1)[1])
             except Exception:
-                return {"statusCode": 400, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "bad_path"})}
+                return {
+                    "statusCode": 400,
+                    "headers": {"Content-Type": "application/json"},
+                    "body": json.dumps({"error": "bad_path"}),
+                }
             resp = update_shipment.__wrapped__(sid)
         else:
-            return {"statusCode": 404, "headers": {"Content-Type": "application/json"}, "body": json.dumps({"error": "not_found"})}
+            return {
+                "statusCode": 404,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "not_found"}),
+            }
+
         response = app.make_response(resp)
-        return {"statusCode": response.status_code, "headers": {"Content-Type": "application/json"}, "body": response.get_data(as_text=True)}
+        return {
+            "statusCode": response.status_code,
+            "headers": {"Content-Type": "application/json"},
+            "body": response.get_data(as_text=True),
+        }
