@@ -10,7 +10,8 @@ def client():
 def test_login_and_list_shipments(client):
     r = client.post("/login", json={"username": "admin", "password": "admin"})
     assert r.status_code == 200
-    token = r.get_json().get("access_token")
+    data = r.get_json()
+    token = data.get("token") or data.get("access_token")
     assert token
 
     r2 = client.post(
