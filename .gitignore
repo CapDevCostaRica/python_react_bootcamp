@@ -9,4 +9,4 @@ __pycache__
 .idea
 .DS_Store
 tests/tmp/*
-.DS_Store
+.DS_Storebackend/contributors/capdevcr/shipments_lambdas/
