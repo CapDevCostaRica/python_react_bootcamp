@@ -35,6 +35,8 @@ def require_role(*expected_roles: list[str]):
                     HTTPStatus.FORBIDDEN
                 )
             
+            event["claims"] = claims
+
             return func(event, context, *args, **kwargs)
         
         return wrapper

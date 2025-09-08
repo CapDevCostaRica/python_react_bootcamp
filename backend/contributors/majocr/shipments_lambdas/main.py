@@ -13,12 +13,12 @@ def no_function_defined(*args, **kwargs):
 
 try:
     from app.functions.shipment_list.src.app import handler as list_shipments_handler
-    print("shipment_list handler importado correctamente")
+    print("shipment_list handler imported successfully.")
 except ImportError as error:
     print("error: ", error)
     list_shipments_handler = no_function_defined
 except Exception as error:
-    logger.error("❌ Error inesperado al importar handler: %s", error)
+    logger.error("Unexpected error importing handler: %s", error)
 
 try:
     from app.functions.login.src.app import handler as login_handler
@@ -29,10 +29,13 @@ except ImportError:
 
 try:
     from app.functions.create_shipement.src.app import handler as create_shipment
-
-except ImportError:
+    print("create_shipment handler imported successfully.")
+except ImportError as error:
+    print("error: ", error)
     create_shipment = no_function_defined
-
+except Exception as error:
+    logger.error("Unexpected error importing handler: %s", error)
+    
 try:
     from app.functions.update_shipment.src.app import handler as update_shipment
 

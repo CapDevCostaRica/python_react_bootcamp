@@ -103,6 +103,9 @@ class InvoiceListResponseSchema(Schema):
     count = fields.Integer(required=True)
 
 class ShipmentCreateRequestSchema(Schema):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     origin_warehouse_id = fields.Int(required=True)
     destination_warehouse_id = fields.Int(required=True)
     assigned_carrier_id = fields.Int(required=True)
@@ -111,4 +114,14 @@ class ShipmentCreateRequestSchema(Schema):
     @validates_schema
     def validate_ids(self, data, **kwargs):
         if data["origin_warehouse_id"] == data["destination_warehouse_id"]:
-            raise ValidationError("Origin and destination must be different", field_name="destination_warehouse_id")
+            raise ValidationError(
+                "Origin and destination must be different.",
+                field_name="destination_warehouse_id"
+            )
+
+        expected_origin = self.context.get("origin_warehouse_id")
+        if expected_origin is not None and data["origin_warehouse_id"] != expected_origin:
+            raise ValidationError(
+                "You are only authorized to create shipments from your assigned warehouse.",
+                field_name="origin_warehouse_id"
+            )
