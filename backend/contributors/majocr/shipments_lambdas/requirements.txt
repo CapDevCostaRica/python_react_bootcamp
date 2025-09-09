@@ -1,5 +1,6 @@
 Flask
 pytest
+pytest-mock
 marshmallow
 SQLAlchemy
 psycopg

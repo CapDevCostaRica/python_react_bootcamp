@@ -1,31 +1,8 @@
-import json
 import pytest
-from http import HTTPStatus, client
-from main import app
-from app.functions.login.src.app import handler as login_handler
-from unittest.mock import patch, MagicMock
-
-
-@pytest.fixture
-def client():
-    app.config["TESTING"] = True
-    with app.test_client() as c:
-        yield c
-
-@pytest.fixture
-def mock_session():
-    with patch("app.functions.login.src.app.get_session") as mock_get_session:
-        mock_db = MagicMock()
-        mock_user = MagicMock()
-        mock_user.id = 1
-        mock_user.role = "carrier"
-        mock_user.warehouse_id = 42
-        mock_db.query().filter().first.return_value = mock_user
-        mock_get_session.return_value.__enter__.return_value = mock_db
-        yield mock_get_session
+from app.common.python.common.authentication.jwt import decode_jwt
 
 # 1. Successful login with valid username
-def test_successful_login_with_valid_username(client, mock_session):
+def test_successful_login_with_valid_username(client, mock_context_session):
     response = client.post("/login", json={"username": "Carrier1"})
     assert response.status_code == 200
     data = response.get_json()
@@ -33,15 +10,16 @@ def test_successful_login_with_valid_username(client, mock_session):
     assert data["token_type"] == "Bearer"
 
 # 2. Failed login with invalid username
-@pytest.fixture
-def mock_invalid_user():
-    with patch("app.functions.login.src.app.get_session") as mock_get_session:
-        mock_db = MagicMock()
-        mock_db.query().filter().first.return_value = None
-        mock_get_session.return_value.__enter__.return_value = mock_db
-        yield mock_get_session
+def test_failed_login_with_invalid_username(client, mocker):
+    mock_session = mocker.Mock()
+    mock_session.query().filter().first.return_value = None
+    
+    mock_context = mocker.MagicMock()
+    mock_context.__enter__.return_value = mock_session
+    mock_context.__exit__.return_value = None
 
-def test_failed_login_with_invalid_username(client, mock_invalid_user):
+    mocker.patch("app.functions.login.src.app.get_session", return_value=mock_context)
+
     response = client.post("/login", json={"username": "NoSuchUser"})
     assert response.status_code == 400
     data = response.get_json()
