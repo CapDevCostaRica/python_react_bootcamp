@@ -5,7 +5,7 @@ from app.common.python.common.database.models import Warehouse, User, Shipment, 
 from app.common.python.common.schema.shipping import ShippingListRequestSchema, ShippingListResponseSchema
 from app.common.python.common.database.database import get_session
 from http import HTTPStatus
-from sqlalchemy import and_, or_, cast, func, literal
+from sqlalchemy import and_, or_, cast, func, literal, true
 from sqlalchemy.dialects.postgresql import JSON, aggregate_order_by
 from sqlalchemy.orm import aliased
 
@@ -32,7 +32,7 @@ def base_query(session):
         .correlate(Shipment)
         .scalar_subquery()
     )
-    # I need to add the ShippingLocations to the query below
+
     origin_warehouse = aliased(Warehouse)
     target_warehouse = aliased(Warehouse)
     created_by_user = aliased(User)
@@ -93,7 +93,7 @@ def handler(event, context):
         body = ShippingListRequestSchema().load(json_body)
 
     except Exception as e:
-        return send_response({ "error": str(e) }, HTTPStatus.UNAUTHORIZED)
+        return send_response({ "error": str(e) }, HTTPStatus.BAD_REQUEST)
 
     role = user_data.get("role", "")
     logged_user_id = user_data.get("id", 0)
@@ -136,9 +136,9 @@ def handler(event, context):
             # A Global Manager can view all shipments across the state
             pass
         else:
-            return send_response({ "error": "Invalid role" }, HTTPStatus.UNAUTHORIZED)
+            return send_response({ "error": "Invalid role" }, HTTPStatus.FORBIDDEN)
 
-        query = query.where(and_(*filters))       
+        query = query.where(and_(true(), *filters))
         list_response["results"] = [
                         {
                             "id": row.id,

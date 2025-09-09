@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import request
 from app.common.python.common.decorators.require_role import require_role
 from app.common.python.common.response.response import send_response
@@ -45,7 +45,7 @@ def handler(event, context):
             new_shipment_location = ShipmentLocation(
                 shipment_id = shipment.id,
                 postal_code = new_location,
-                noted_at = datetime.utcnow()
+                noted_at = datetime.now(UTC)
             )
             db.add(new_shipment_location)
 
@@ -54,13 +54,13 @@ def handler(event, context):
                 if shipment.status != ShipmentStatus.created:
                     return send_response({"error": "Can only set to In Transit from Created"}, HTTPStatus.FORBIDDEN)
                 shipment.status = ShipmentStatus.in_transit
-                shipment.in_transit_at = datetime.utcnow()
+                shipment.in_transit_at = datetime.now(UTC)
                 shipment.in_transit_by_id = logged_user_id
             elif new_status == ShipmentStatus.delivered:
                 if shipment.status != ShipmentStatus.in_transit:
                     return send_response({"error": "Can only deliver a shipment In Transit"}, HTTPStatus.FORBIDDEN)
                 shipment.status = ShipmentStatus.delivered
-                shipment.delivered_at = datetime.utcnow()
+                shipment.delivered_at = datetime.now(UTC)
                 shipment.delivered_by_id = logged_user_id
 
         db.commit()
@@ -68,4 +68,4 @@ def handler(event, context):
 
         return send_response({"update": "ok"}, HTTPStatus.OK)
     
-    return send_response({}, HTTPStatus.FORBIDDEN)
+    return send_response({}, HTTPStatus.NOT_MODIFIED)

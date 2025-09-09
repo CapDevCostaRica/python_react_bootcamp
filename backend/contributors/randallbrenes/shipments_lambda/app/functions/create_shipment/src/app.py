@@ -18,14 +18,14 @@ def handler(event, context):
     try:
         body = CreateShipmentSchema().load(json_body)
     except Exception as e:
-        return send_response({ "error": str(e) }, HTTPStatus.UNAUTHORIZED)
+        return send_response({ "error": str(e) }, HTTPStatus.BAD_REQUEST)
 
     logged_user_id = user_data.get("id", 0)
     logged_user_warehouse = user_data.get("warehouse_id", 0)
     destination_warehouse_id = body.get("target_warehouse", None)
 
     if logged_user_warehouse == destination_warehouse_id:
-        return send_response({ "error": "Could not create a shipment to the same origin and target" }, HTTPStatus.FORBIDDEN)
+        return send_response({ "error": "Could not create a shipment to the same origin and target" }, HTTPStatus.BAD_REQUEST)
 
     try:
         with get_session() as db:
@@ -47,11 +47,11 @@ def handler(event, context):
         db.rollback()
         msg = str(e.orig)  # mensaje de la base de datos
         if "destination_warehouse_id" in msg:
-            return send_response({"error": "Invalid warehouse destination"}, HTTPStatus.FORBIDDEN)
+            return send_response({"error": "Invalid warehouse destination"}, HTTPStatus.BAD_REQUEST)
         elif "assigned_carrier_id" in msg:
-            return send_response({"error": "Invalid carrier"}, HTTPStatus.FORBIDDEN)
+            return send_response({"error": "Invalid carrier"}, HTTPStatus.BAD_REQUEST)
         else:
-            return send_response({"error": msg}, HTTPStatus.FORBIDDEN)
+            return send_response({"error": msg}, HTTPStatus.BAD_REQUEST)
 
     except Exception as e:
         return send_response({ "error": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR)

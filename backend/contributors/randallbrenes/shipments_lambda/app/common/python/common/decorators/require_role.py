@@ -19,7 +19,7 @@ def require_role(expected_roles: list[str]):
 
             except JWTError as e:
                 logger.warning("JWT error: %s ", str(e))
-                return send_response({"error": str(e)}, HTTPStatus.INTERNAL_SERVER_ERROR)
+                return send_response({"error": str(e)}, HTTPStatus.UNAUTHORIZED)
 
             if(claims.get("role") not in expected_roles):
                 return send_response({"error": "Unauthorized"}, HTTPStatus.UNAUTHORIZED)

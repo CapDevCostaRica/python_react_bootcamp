@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 user = os.environ.get("POSTGRES_USER", "postgres")
 password = os.environ.get("POSTGRES_PASSWORD", "postgres")
-host = os.environ.get("POSTGRES_HOST", "localhost")
+host = os.environ.get("POSTGRES_HOST", "flask_db")
 port = os.environ.get("POSTGRES_PORT", "5432")
 db = os.environ.get("POSTGRES_DB", "postgres")
 

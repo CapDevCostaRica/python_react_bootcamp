@@ -2,7 +2,7 @@ import enum
 
 import sqlalchemy as sa
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
@@ -11,7 +11,6 @@ class UserRole(str, enum.Enum):
     store_manager = "store_manager"
     warehouse_staff = "warehouse_staff"
     carrier = "carrier"
-
 
 class ShipmentStatus(str, enum.Enum):
     created = "created"

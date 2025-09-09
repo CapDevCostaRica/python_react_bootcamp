@@ -1,1 +1,13 @@
+alembic
+greenlet
+Mako
+MarkupSafe
+marshmallow
+psycopg
+psycopg-binary
+psycopg-pool
+SQLAlchemy
+typing_extensions
+pytest
+requests
 Flask

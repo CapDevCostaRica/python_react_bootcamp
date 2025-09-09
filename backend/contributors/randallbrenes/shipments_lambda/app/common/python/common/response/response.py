@@ -7,5 +7,5 @@ def send_response(data, status = HTTPStatus.OK):
         "headers": {
             "Content-Type": "application/json"
         },
-        "body": json.dumps(data)
+        "body": data
     }
