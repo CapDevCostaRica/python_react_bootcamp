@@ -2,3 +2,7 @@ Flask
 pytest
 marshmallow
 SQLAlchemy
+psycopg
+alembic
+requests
+psycopg2-binary
