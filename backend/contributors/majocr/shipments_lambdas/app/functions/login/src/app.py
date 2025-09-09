@@ -2,6 +2,8 @@ import base64
 import json
 from http import HTTPStatus
 
+from marshmallow import ValidationError
+
 from app.common.python.common.authentication.jwt import encode_jwt
 from app.common.python.common.database.models import User
 from app.common.python.common.response.make_response import make_response
@@ -24,7 +26,15 @@ def handler(event, context):
             {"error": "Invalid JSON body"},
             HTTPStatus.BAD_REQUEST
         )
-    body = LoginRequestSchema().load(json_body)
+        
+    try:
+        body = LoginRequestSchema().load(json_body)
+    except ValidationError as error:
+        return make_response(
+            {"error": error.messages},
+            HTTPStatus.BAD_REQUEST
+        )
+
     username = body.get("username")
     
     with get_session() as session:
