@@ -1,2 +1,4 @@
 Flask
 pytest
+marshmallow
+SQLAlchemy
