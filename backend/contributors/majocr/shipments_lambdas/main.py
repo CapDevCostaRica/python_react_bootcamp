@@ -38,10 +38,13 @@ except Exception as error:
     
 try:
     from app.functions.update_shipment.src.app import handler as update_shipment
-
-except ImportError:
+    print("update_shipment handler imported successfully.")
+except ImportError as error:
+    print("error: ", error)
     update_shipment = no_function_defined
-
+except Exception as error:
+    logger.error("Unexpected error importing handler: %s", error)
+    
 app = Flask(__name__)
 
 

@@ -125,3 +125,44 @@ class ShipmentCreateRequestSchema(Schema):
                 "You are only authorized to create shipments from your assigned warehouse.",
                 field_name="origin_warehouse_id"
             )
+
+class ShipmentUpdateRequestSchema(Schema):
+    def __init__(self, *args, context=None, **kwargs):
+        self.user_role = context.get("role") if context else None
+        self.current_status = context.get("current_status") if context else None
+        super().__init__(*args, **kwargs)
+
+    status = fields.Str(required=False)
+    location = fields.Str(required=False)
+
+    @validates_schema
+    def validate_status_transition(self, data, **kwargs):
+        new_status = data.get("status")
+        location = data.get("location")
+
+        if self.user_role == "carrier" and self.current_status == "in_transit":
+            if not new_status and location:
+                return
+            if new_status == "in_transit":
+                return
+
+        if not new_status:
+            raise ValidationError("Missing data for required field.", field_name="status")
+
+        if new_status not in ["in_transit", "delivered"]:
+            raise ValidationError("Invalid status value", field_name="status")
+
+        if self.user_role == "carrier":
+            if new_status != "in_transit":
+                raise ValidationError("Carriers can only mark shipments as 'in_transit'", field_name="status")
+            if self.current_status != "created":
+                raise ValidationError("Shipment must be in 'created' state to mark as 'in_transit'", field_name="status")
+
+        elif self.user_role == "warehouse_staff":
+            if new_status != "delivered":
+                raise ValidationError("Warehouse staff can only mark shipments as 'delivered'", field_name="status")
+            if self.current_status != "in_transit":
+                raise ValidationError("Shipment must be 'in_transit' to mark as 'delivered'", field_name="status")
+
+        else:
+            raise ValidationError("Unauthorized role for shipment update", field_name="status")

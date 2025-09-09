@@ -9,8 +9,6 @@ from app.common.python.common.database.database import get_session
 from app.common.python.common.database import models
 from app.common.python.common.schema.schema import ShipmentCreateRequestSchema
 
-
-
 @require_role("warehouse_staff")
 def handler(event, context):
     claims = event.get("claims") or {}

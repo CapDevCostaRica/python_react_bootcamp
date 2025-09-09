@@ -1,7 +1,7 @@
 import random
 from datetime import timedelta
 
-from sqlalchemy import true
+from sqlalchemy import text, true
 
 from app.database import get_session
 from app.models import (
@@ -146,10 +146,22 @@ def seed_shipments(session):
 
     return created
 
+def reset_db(session):
+    session.execute(text("DELETE FROM shipment_locations"))
+    session.execute(text("DELETE FROM shipments"))
+    session.execute(text("DELETE FROM users"))
+    session.execute(text("DELETE FROM warehouses"))
+    
+    session.execute(text("ALTER SEQUENCE shipment_locations_id_seq RESTART WITH 1"))
+    session.execute(text("ALTER SEQUENCE shipments_id_seq RESTART WITH 1"))
+    session.execute(text("ALTER SEQUENCE warehouses_id_seq RESTART WITH 1"))
+    session.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1"))
+
+    session.commit()
+
 
 if __name__ == "__main__":
     session = get_session()
-    SKIP_SEED = true
-    if not SKIP_SEED:
-        shipments = seed_shipments(session)
+    reset_db(session)
+    shipments = seed_shipments(session)
     session.close()
