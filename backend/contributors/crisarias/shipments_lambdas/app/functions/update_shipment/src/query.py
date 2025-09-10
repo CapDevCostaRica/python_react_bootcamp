@@ -5,7 +5,7 @@ from app.common.python.shared.infrastructure.telemetry import logger
 from app.common.python.shared.domain.models import Shipment, Warehouse
 from app.common.python.shared.infrastructure.response import make_response
 
-from sqlalchemy import func
+from sqlalchemy import func, and_
 
 def validatesShipmentAccess(user: User, shipmentID: int, status: str) -> tuple[bool, dict]:
     session = None
@@ -33,7 +33,13 @@ def validatesShipmentAccess(user: User, shipmentID: int, status: str) -> tuple[b
             return (False, make_response({"error": unauthorizedMessage}, 403))
         # Validate shipment location before allowing status update
         if isWarehouseStaff and status == ShipmentStatus.delivered:
-            validLocation = session.query(Warehouse).filter(Warehouse.id == shipment.destination_warehouse_id and Warehouse.postal_code == currentLocation.postal_code).first()
+            currentLocation = session.query(ShipmentLocation).filter(ShipmentLocation.shipment_id == shipmentID).order_by(ShipmentLocation.noted_at.desc()).first()
+            validLocation = session.query(Warehouse).filter(
+                and_(
+                    Warehouse.id == shipment.destination_warehouse_id,
+                    Warehouse.postal_code == currentLocation.postal_code
+                ) 
+            ).first()
             locationErrorMessage = f"The shipment {shipmentID} cannot be marked as {status.value} from the current location {currentLocation.postal_code if currentLocation else 'unknown'}"
             if not validLocation:
                 logger.error(locationErrorMessage)
