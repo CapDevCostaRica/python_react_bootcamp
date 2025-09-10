@@ -34,7 +34,7 @@ class ShipmentSchema(Schema):
     carrier = fields.Nested(UserSchema, required=True)
     created_by = fields.Nested(UserSchema, required=True)
     in_transit_by = fields.Nested(UserSchema, required=True)
-    delivered_by = fields.Nested(UserSchema, required=True)
+    delivered_by = fields.Nested(UserSchema, allow_none=True)
     shipment_locations = fields.List(
         fields.Nested(ShipmentLocationSchema), required=True
     )
