@@ -12,12 +12,13 @@ class UpdateShipmentRequestSchema(Schema):
         if status and status not in ["created", "in_transit", "delivered"]:
             raise ValidationError("Invalid status. Must be one of: created, in_transit, delivered")
         
-        role = self.context.get("role")
-        if role == "carrier" and status:
-            raise ValidationError("Carriers cannot update shipment status")
-        
-        if role == "warehouse_staff" and data.get("location"):
-            raise ValidationError("Warehouse staff cannot update location")
+        if hasattr(self, 'context') and self.context:
+            role = self.context.get("role")
+            if role == "carrier" and status:
+                raise ValidationError("Carriers cannot update shipment status")
+            
+            if role == "warehouse_staff" and data.get("location"):
+                raise ValidationError("Warehouse staff cannot update location")
 
 
 class UpdateShipmentResponseSchema(Schema):

@@ -5,7 +5,7 @@ from app.common.python.common.response import make_response
 from http import HTTPStatus
 from .schema import UpdateShipmentRequestSchema, UpdateShipmentResponseSchema, ErrorSchema
 from marshmallow import ValidationError
-from datetime import datetime
+from datetime import datetime, timezone
 
 import json
 import logging
@@ -174,10 +174,10 @@ def _handle_status_transition(session, shipment, new_status, user_id):
     shipment.status = new_status_enum
     
     if new_status == "in_transit":
-        shipment.in_transit_at = datetime.utcnow()
+        shipment.in_transit_at = datetime.now(timezone.utc)
         shipment.in_transit_by_id = user_id
     elif new_status == "delivered":
-        shipment.delivered_at = datetime.utcnow()
+        shipment.delivered_at = datetime.now(timezone.utc)
         shipment.delivered_by_id = user_id
     
     return None
@@ -190,7 +190,7 @@ def _handle_location_update(session, shipment, location):
     new_location = models.ShipmentLocation(
         shipment_id=shipment.id,
         postal_code=location,
-        noted_at=datetime.now(datetime.UTC)
+        noted_at=datetime.now(timezone.utc)
     )
     session.add(new_location)
     
