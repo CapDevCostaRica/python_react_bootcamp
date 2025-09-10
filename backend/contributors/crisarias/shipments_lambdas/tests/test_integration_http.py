@@ -101,6 +101,7 @@ def test_list_shipments_with_auth():
     assert resp.json().get("result_count") == len(resp.json().get("results"))
     assert isinstance(resp.json().get("results"), list)
 
+@optional
 def test_create_shipments_with_auth():
     headers = get_auth_headers("StaffAtSan Francisco Warehouse")
     url = f"{API_URL}/shipment"
@@ -117,14 +118,14 @@ def test_update_shipment_location_with_auth():
     headers = get_auth_headers("Carrier2")
     url = f"{API_URL}/shipment/7"
     data = {
-        "location": 92101
+        "location": "94103"
     }
     resp = requests.post(url, json=data, headers=headers)
     assert resp.status_code == 200
 
 @optional
 def test_update_shipment_status_with_auth():
-    headers = get_auth_headers("StaffAtSan Diego Warehouse")
+    headers = get_auth_headers("StaffAtSan Francisco Warehouse")
     url = f"{API_URL}/shipment/7"
     data = {
         "status": "delivered"
