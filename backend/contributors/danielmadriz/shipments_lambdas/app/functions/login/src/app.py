@@ -4,6 +4,7 @@ from app.common.python.common.database import models
 from app.common.python.common.response import make_response
 from http import HTTPStatus
 from .schema import LoginRequestSchema
+from marshmallow.exceptions import ValidationError
 
 import base64
 import json
@@ -23,7 +24,14 @@ def handler(event, context):
             HTTPStatus.BAD_REQUEST
             )
 
-    body  = LoginRequestSchema().load(json_body)
+    try:
+        body = LoginRequestSchema().load(json_body)
+    except ValidationError as err:
+        return make_response(
+            {"error": err.messages},
+            HTTPStatus.BAD_REQUEST
+        )
+    
     username = body.get("username")
 
     with get_session() as session:

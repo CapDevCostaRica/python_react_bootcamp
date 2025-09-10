@@ -33,7 +33,6 @@ def require_role(*expected_roles: list[str]):
                     HTTPStatus.FORBIDDEN
                 )
             
-            # Add claims to event for the handler to use
             event["claims"] = claims
  
             return func(event, context, *args, **kwargs)

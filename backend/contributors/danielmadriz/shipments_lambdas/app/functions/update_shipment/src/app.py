@@ -42,14 +42,14 @@ def handler(event, context):
     except:
         return make_response({"error": "Invalid JSON body"}, HTTPStatus.BAD_REQUEST)
 
+    error_response = _validate_claims(role, user_id, warehouse_id)
+    if error_response:
+        return error_response
+
     try:
         update_data = UpdateShipmentRequestSchema().load(json_body)
     except ValidationError as err:
         return make_response({"error": err.messages}, HTTPStatus.BAD_REQUEST)
-
-    error_response = _validate_claims(role, user_id, warehouse_id)
-    if error_response:
-        return error_response
 
     try:
         with get_session() as session:
