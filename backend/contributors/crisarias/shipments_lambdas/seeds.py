@@ -20,45 +20,49 @@ warehouses = [
 
 
 def seed_warehouses(session):
-    new_warehouses = [
-        Warehouse(name=name, postal_code=postal_code)
-        for name, postal_code in warehouses
-    ]
-    session.add_all(new_warehouses)
+    existing = {w.name: w for w in session.query(Warehouse).all()}
+    new_warehouses = []
+    for name, postal_code in warehouses:
+        if name not in existing:
+            warehouse = Warehouse(name=name, postal_code=postal_code)
+            session.add(warehouse)
+            new_warehouses.append(warehouse)
+        else:
+            new_warehouses.append(existing[name])
     session.flush()
-
     return new_warehouses
 
 
 def seed_users(session, warehouses):
-    store_managers = [
-        User(
-            username=f"ManagerAt{warehouse.name}",
-            role=UserRole.store_manager,
-            warehouse_id=warehouse.id,
-        )
-        for warehouse in warehouses
-    ]
-    warehouse_staff = [
-        User(
-            username=f"StaffAt{warehouse.name}",
-            role=UserRole.warehouse_staff,
-            warehouse_id=warehouse.id,
-        )
-        for warehouse in warehouses
-    ]
-    users = (
-        store_managers
-        + warehouse_staff
-        + [
-            User(username="GlobalManager", role=UserRole.global_manager),
-            User(username="Carrier1", role=UserRole.carrier),
-            User(username="Carrier2", role=UserRole.carrier),
-        ]
-    )
-    session.add_all(users)
+    existing = {u.username: u for u in session.query(User).all()}
+    users = []
+    # Store managers
+    for warehouse in warehouses:
+        username = f"ManagerAt{warehouse.name}"
+        if username not in existing:
+            user = User(username=username, role=UserRole.store_manager, warehouse_id=warehouse.id)
+            session.add(user)
+            users.append(user)
+        else:
+            users.append(existing[username])
+    # Warehouse staff
+    for warehouse in warehouses:
+        username = f"StaffAt{warehouse.name}"
+        if username not in existing:
+            user = User(username=username, role=UserRole.warehouse_staff, warehouse_id=warehouse.id)
+            session.add(user)
+            users.append(user)
+        else:
+            users.append(existing[username])
+    # GlobalManager and Carriers
+    for username, role in [("GlobalManager", UserRole.global_manager), ("Carrier1", UserRole.carrier), ("Carrier2", UserRole.carrier)]:
+        if username not in existing:
+            user = User(username=username, role=role)
+            session.add(user)
+            users.append(user)
+        else:
+            users.append(existing[username])
     session.flush()
-
     return users
 
 
@@ -68,6 +72,7 @@ def seed_shipments(session):
     carriers = [u for u in users if u.role == UserRole.carrier]
 
     created = []
+    existing_shipments = {(s.origin_warehouse_id, s.destination_warehouse_id, s.assigned_carrier_id): s for s in session.query(Shipment).all()}
 
     for _ in range(8):
         origin, dest = random.sample(warehouses, 2)
@@ -77,17 +82,19 @@ def seed_shipments(session):
             .filter_by(role=UserRole.warehouse_staff, warehouse_id=origin.id)
             .first()
         )
-
-        shipment = Shipment(
-            origin_warehouse_id=origin.id,
-            destination_warehouse_id=dest.id,
-            assigned_carrier_id=carrier.id,
-            status=ShipmentStatus.created,
-            created_by_id=created_by.id,
-        )
-        created.append(shipment)
-
-    session.add_all(created)
+        key = (origin.id, dest.id, carrier.id)
+        if key not in existing_shipments:
+            shipment = Shipment(
+                origin_warehouse_id=origin.id,
+                destination_warehouse_id=dest.id,
+                assigned_carrier_id=carrier.id,
+                status=ShipmentStatus.created,
+                created_by_id=created_by.id,
+            )
+            created.append(shipment)
+            session.add(shipment)
+        else:
+            created.append(existing_shipments[key])
     session.flush()
 
     # Promote some shipments to in_transit / delivered and add location history
@@ -147,5 +154,5 @@ def seed_shipments(session):
 
 if __name__ == "__main__":
     session = get_session()
-    # shipments = seed_shipments(session)
+    shipments = seed_shipments(session)
     session.close()
