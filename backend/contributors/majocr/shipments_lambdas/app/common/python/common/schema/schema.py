@@ -139,24 +139,26 @@ class ShipmentUpdateRequestSchema(Schema):
     def validate_status_transition(self, data, **kwargs):
         new_status = data.get("status")
         location = data.get("location")
-
-        if self.user_role == "carrier" and self.current_status == "in_transit":
-            if not new_status and location:
-                return
-            if new_status == "in_transit":
-                return
-
+        
         if not new_status:
             raise ValidationError("Missing data for required field.", field_name="status")
 
         if new_status not in ["in_transit", "delivered"]:
             raise ValidationError("Invalid status value", field_name="status")
-
+        
         if self.user_role == "carrier":
             if new_status != "in_transit":
                 raise ValidationError("Carriers can only mark shipments as 'in_transit'", field_name="status")
-            if self.current_status != "created":
-                raise ValidationError("Shipment must be in 'created' state to mark as 'in_transit'", field_name="status")
+
+            if self.current_status == "in_transit":
+                if location:
+                    return
+                raise ValidationError("Shipment is already in 'in_transit'. Provide location to update tracking.", field_name="status")
+
+            if self.current_status == "created":
+                return
+
+            raise ValidationError("Shipment must be in 'created' state to mark as 'in_transit'", field_name="status")
 
         elif self.user_role == "warehouse_staff":
             if new_status != "delivered":
