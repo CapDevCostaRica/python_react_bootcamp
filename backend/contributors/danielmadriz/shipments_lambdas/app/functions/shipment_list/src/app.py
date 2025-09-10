@@ -16,8 +16,11 @@ import json
 def handler(event, context):
     claims = event.get("claims") or {}
     role = claims.get("role")
-    user_id = claims.get("sub")
-    warehouse_id = claims.get("warehouse_id")
+    user_id = int(claims.get("sub")) if claims.get("sub") else None
+    warehouse_id = int(claims.get("warehouse_id")) if claims.get("warehouse_id") else None
+
+    print(f"🔍 HANDLER DEBUG: claims={claims}")
+    print(f"🔍 HANDLER DEBUG: role={role}, user_id={user_id}, warehouse_id={warehouse_id}")
 
     filters, error_response = _parse_request_body(event)
     if error_response:
