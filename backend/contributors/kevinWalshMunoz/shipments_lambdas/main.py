@@ -10,11 +10,11 @@ def no_function_defined(*args, **kwargs):
     }
 
 
-# try:
-#     from app.functions.list_shipments.src.app import handler as list_shipments_handler
+try:
+    from app.functions.shipment_list.src.app import handler as list_shipments_handler
 
-# except ImportError:
-#     list_shipments_handler = no_function_defined
+except ImportError:
+    list_shipments_handler = no_function_defined
 try:
     from app.functions.login.src.app import handler as login_handler
 
@@ -43,14 +43,14 @@ def health():
 
 
 @app.post("/login", endpoint="login")
-# @app.post("/shipment/list", endpoint="shipments_list")
+@app.post("/shipment/list", endpoint="shipments_list")
 # @app.post("/shipment/", endpoint="shipments")
 # @app.post("/shipment/<int:shipment_id>", endpoint="shipment")
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
     handlers = {
         "login": login_handler,
-        # "shipments_list": list_shipments_handler,
+        "shipments_list": list_shipments_handler,
         # "shipments": create_shipment,
         # "shipment": update_shipment,
     }
