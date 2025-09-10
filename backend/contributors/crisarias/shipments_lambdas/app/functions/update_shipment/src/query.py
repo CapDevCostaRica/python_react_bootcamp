@@ -32,12 +32,8 @@ def validatesShipmentAccess(user: User, shipmentID: int, status: str) -> tuple[b
             logger.error(unauthorizedMessage)
             return (False, make_response({"error": unauthorizedMessage}, 403))
         # Validate shipment location before allowing status update
-        if isWarehouseStaff:
-            currentLocation = session.query(ShipmentLocation).filter(ShipmentLocation.shipment_id == shipmentID).order_by(ShipmentLocation.noted_at.desc()).first()
-            if status == ShipmentStatus.created:
-                validLocation = session.query(Warehouse).filter(Warehouse.id == shipment.origin_warehouse_id and Warehouse.postal_code == currentLocation.postal_code).first()
-            elif status == ShipmentStatus.delivered:
-                validLocation = session.query(Warehouse).filter(Warehouse.id == shipment.destination_warehouse_id and Warehouse.postal_code == currentLocation.postal_code).first()
+        if isWarehouseStaff and status == ShipmentStatus.delivered:
+            validLocation = session.query(Warehouse).filter(Warehouse.id == shipment.destination_warehouse_id and Warehouse.postal_code == currentLocation.postal_code).first()
             locationErrorMessage = f"The shipment {shipmentID} cannot be marked as {status.value} from the current location {currentLocation.postal_code if currentLocation else 'unknown'}"
             if not validLocation:
                 logger.error(locationErrorMessage)
