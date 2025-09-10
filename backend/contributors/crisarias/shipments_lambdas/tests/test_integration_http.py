@@ -94,8 +94,9 @@ def test_update_shipments_invalid_roles():
 
 def test_list_shipments_with_auth():
     headers = get_auth_headers("GlobalManager")
+    data = {}
     url = f"{API_URL}/shipment/list"
-    resp = requests.get(url, headers=headers)
+    resp = requests.post(url, json=data, headers=headers)
     assert resp.status_code == 200
     assert resp.json().get("result_count") == len(resp.json().get("results"))
     assert isinstance(resp.json().get("results"), list)
