@@ -34,7 +34,7 @@ def handler(event, context):
 		if not user:
 			return make_response(
 				{"error": "Invalid credentials"},
-				HTTPStatus.NotFound,
+				HTTPStatus.NOT_FOUND,
 			)
 
 		payload = {
