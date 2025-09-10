@@ -147,5 +147,5 @@ def seed_shipments(session):
 
 if __name__ == "__main__":
     session = get_session()
-    shipments = seed_shipments(session)
+    # shipments = seed_shipments(session)
     session.close()

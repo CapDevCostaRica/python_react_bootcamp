@@ -1,5 +1,5 @@
 from http import HTTPStatus
-
+from app.common.python.shared.infrastructure.telemetry import logger
 from flask import Flask, jsonify, request
 
 
@@ -12,26 +12,27 @@ def no_function_defined(*args, **kwargs):
 
 try:
     from app.functions.list_shipments.src.app import handler as list_shipments_handler
-
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import list shipments handler: {e}")
     list_shipments_handler = no_function_defined
+
 try:
     from app.functions.login.src.app import handler as login_handler
-
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import login handler: {e}")
     login_handler = no_function_defined
 
 
 try:
     from app.functions.create_shipment.src.app import handler as create_shipment
-
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import create shipment handler: {e}")
     create_shipment = no_function_defined
 
 try:
     from app.functions.update_shipment.src.app import handler as update_shipment
-
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import update shipment handler: {e}")
     update_shipment = no_function_defined
 
 app = Flask(__name__)
@@ -48,6 +49,8 @@ def health():
 @app.post("/shipment/<int:shipment_id>", endpoint="shipment")
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
+    logger.info(f"Received {endpoint} request from {request.remote_addr}")
+    logger.info(f"Shipment list handler: {list_shipments_handler.__name__}")
     handlers = {
         "login": login_handler,
         "shipments_list": list_shipments_handler,
@@ -55,7 +58,12 @@ def shipments_handler(shipment_id: str | None = None):
         "shipment": update_shipment,
     }
 
-    if not endpoint or not (handler := handlers.get(endpoint)):
+
+    logger.info(f"Handling {endpoint} request")
+    logger.debug(f"Request headers: {dict(request.headers)}")
+    logger.debug(f"Request body: {request.get_data(as_text=True)}")
+
+    if not endpoint or not (handler := handlers.get(endpoint)):        
         handler = no_function_defined
 
     event = {
@@ -66,6 +74,8 @@ def shipments_handler(shipment_id: str | None = None):
     context = {
         "agent": "Internal Lambda Executor 1.0",
     }
+
+    logger.info(f"Invoking handler for handler {handler.__name__}")
 
     response = handler(
         event=event,

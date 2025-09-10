@@ -1,12 +1,13 @@
-from infrastructure.response import make_response
-from infrastructure.telemetry import logger
-from jwt import decode_jwt, JWTError
+from app.common.python.shared.infrastructure.response import make_response
+from app.common.python.shared.infrastructure.telemetry import logger
+from app.common.python.shared.security.jwt import decode_jwt, JWTError
 
 from http import HTTPStatus
 
 def require_role(*expected_roles: list[str]):
     def decorator(func):
         def wrapper(event, context, *args, **kwargs):
+            logger.info(f"Checking roles: {expected_roles}")
             headers = event.get("headers", {})
             auth_header = headers.get("Authorization", "")
 
@@ -32,6 +33,8 @@ def require_role(*expected_roles: list[str]):
                     "error": "Forbidden: You do not have the required role."
                 }, HTTPStatus.FORBIDDEN)
 
+            context["user_claims"] = claims
+            logger.info(f"User authorized: {claims}")
             return func(event, context, *args, **kwargs)
         return wrapper
     return decorator

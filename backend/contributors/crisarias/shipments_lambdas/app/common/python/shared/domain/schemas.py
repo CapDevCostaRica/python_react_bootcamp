@@ -5,24 +5,9 @@ from marshmallow import Schema, ValidationError, fields, validates_schema
 class ErrorSchema(Schema):
     error = fields.String(required=True)
 
-
-class LoginRequestSchema(Schema):
-    username = fields.String(required=True)
-
-
 class LoginResponseSchema(Schema):
     access_token = fields.String(required=True)
     token_type = fields.String(required=True)
-
-
-class ShippingListRequestSchema(Schema):
-    status = fields.Enum(
-        ShipmentStatus,
-        by_value=True,
-        required=False,
-        allow_none=True,
-    )
-
 
 class UserSchema(Schema):
     username = fields.String(required=True)
