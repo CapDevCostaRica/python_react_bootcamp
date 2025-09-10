@@ -50,7 +50,7 @@ def health():
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
     logger.info(f"Received {endpoint} request from {request.remote_addr}")
-    logger.info(f"Shipment list handler: {list_shipments_handler.__name__}")
+    logger.info(f"update_shipment list handler: {update_shipment.__name__}")
     handlers = {
         "login": login_handler,
         "shipments_list": list_shipments_handler,
