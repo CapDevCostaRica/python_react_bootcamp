@@ -44,7 +44,7 @@ def test_login_invalid_user():
     assert resp.json().get("error") == "Invalid username"
 
 def test_list_shipments_no_auth():
-    url = f"{API_URL}/list_shipments"
+    url = f"{API_URL}/shipment/list"
     data = {}
     resp = requests.post(url, json=data)
     assert resp.status_code == 401
@@ -94,7 +94,7 @@ def test_update_shipments_invalid_roles():
 
 def test_list_shipments_with_auth():
     headers = get_auth_headers("GlobalManager")
-    url = f"{API_URL}/list_shipments"
+    url = f"{API_URL}/shipment/list"
     resp = requests.get(url, headers=headers)
     assert resp.status_code == 200
     assert resp.json().get("result_count") == len(resp.json().get("results"))
