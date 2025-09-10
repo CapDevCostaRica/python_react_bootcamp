@@ -11,7 +11,7 @@ def no_function_defined(*args, **kwargs):
 
 
 try:
-    from app.functions.list_shipments.src.app import handler as list_shipments_handler
+    from app.functions.shipment_list.src.app import handler as list_shipments_handler
 
 except ImportError:
     list_shipments_handler = no_function_defined
