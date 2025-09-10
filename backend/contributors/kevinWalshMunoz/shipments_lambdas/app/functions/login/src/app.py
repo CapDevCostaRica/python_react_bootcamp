@@ -1,14 +1,14 @@
 from app.common.python.common.authentication.jwt import encode_jwt
 from app.common.python.common.database import models
 
-from app.common.python.common.response import make_response
-from app.common.python.common.database import get_session
-from .schema import LoginResponseSchema
+from app.common.python.common.response.make_response import make_response
+from app.common.python.common.database.database import get_session
+from .schema import LoginRequestSchema
 
 
 import json
 import base64
-import http as HTTPStatus
+from http import HTTPStatus
 
 def handler(event, context):
 	try:
@@ -25,7 +25,7 @@ def handler(event, context):
 			HTTPStatus.BadRequest,
 		)
 	
-	body = LoginResponseSchema().load(json_body)
+	body = LoginRequestSchema().load(json_body)
 	username = body.get("username")
 
 	with get_session() as session:
@@ -37,7 +37,12 @@ def handler(event, context):
 				HTTPStatus.NotFound,
 			)
 
-		token = encode_jwt(user._asdict())
+		payload = {
+			"userId": user.id,
+			"role": user.role,
+		}
+
+		token = encode_jwt(payload)
 		
 		return make_response(
 			{"access_token": token, "token_type": "bearer"},
