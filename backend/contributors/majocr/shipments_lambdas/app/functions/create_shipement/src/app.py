@@ -42,6 +42,21 @@ def handler(event, context):
     )
 
     with get_session() as session:
+        origin = session.query(models.Warehouse).get(payload["origin_warehouse_id"])
+        destination = session.query(models.Warehouse).get(payload["destination_warehouse_id"])
+
+        if not origin:
+            return make_response(
+                {"error": {"origin_warehouse_id": ["Origin warehouse not found."]}},
+                HTTPStatus.BAD_REQUEST
+            )
+
+        if not destination:
+            return make_response(
+                {"error": {"destination_warehouse_id": ["Destination warehouse not found."]}},
+                HTTPStatus.BAD_REQUEST
+            )
+
         carrier = session.query(models.User).get(payload["assigned_carrier_id"])
         if not carrier or carrier.role != "carrier":
             return make_response({"error": "Assigned carrier is invalid."}, HTTPStatus.BAD_REQUEST)
