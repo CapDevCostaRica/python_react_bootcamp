@@ -25,7 +25,7 @@ def location_dict(loc):
     }
 
 
-def shipment_list_by_role_and_status(user: User, status: str) -> list[Shipment]:
+def shipment_list_by_role_and_status(user: User, statusFilter: str, carrierFilter: int, idFilter: int, startDate: str = None, endDate: str = None) -> list[Shipment]:
     session = None
     try:
         session = get_session()
@@ -73,15 +73,21 @@ def shipment_list_by_role_and_status(user: User, status: str) -> list[Shipment]:
                     target_warehouse.id == warehouse_id
                 )
                 base_query = base_query.filter(warehouse_filter)
-            if status:
-                base_query = base_query.filter(Shipment.status == status)
             rows = base_query.all()
         elif isCarrier:
             carrier_id = user.get("id", "")
             if carrier_id:
                 base_query = base_query.filter(Shipment.assigned_carrier_id == carrier_id)
-        if status:
-            base_query = base_query.filter(Shipment.status == status)
+        if statusFilter:
+            base_query = base_query.filter(Shipment.status == statusFilter)
+        if carrierFilter:
+            base_query = base_query.filter(Shipment.assigned_carrier_id == carrierFilter)
+        if idFilter:
+            base_query = base_query.filter(Shipment.id == idFilter)
+        if startDate:
+            base_query = base_query.filter(Shipment.created_at >= startDate)
+        if endDate:
+            base_query = base_query.filter(Shipment.created_at <= endDate)
 
         rows = base_query.all()
 

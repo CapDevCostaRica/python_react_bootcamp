@@ -28,13 +28,25 @@ def handler(event, context):
     
     try:
         body = ShippingListRequestSchema().load(body)
-        status = body.get("status", "")
+        # Extract all possible filters from body
+        status = body.get("status", None)
+        carrier = body.get("carrier", None)
+        id = body.get("id", None)
+        startDate = body.get("startDate", None)
+        endDate = body.get("endDate", None)
     except ValidationError as e:
         logger.error(f"Validation error: {e.messages}")
         return make_response({"error": str(e)}, HTTPStatus.BAD_REQUEST)
-    
+
     try:
-        shipments = shipment_list_by_role_and_status(context.get("user_claims"), status)
+        shipments = shipment_list_by_role_and_status(
+            context.get("user_claims"),
+            status,
+            carrier,
+            id,
+            startDate,
+            endDate
+        )
         return make_response({
             "results": shipments,
             "result_count": len(shipments)
