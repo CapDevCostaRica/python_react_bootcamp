@@ -38,8 +38,9 @@ def handler(event, context):
 			)
 
 		payload = {
-			"userId": user.id,
+			"user_id": user.id,
 			"role": user.role,
+			"warehouse_id": user.warehouse_id,
 		}
 
 		token = encode_jwt(payload)

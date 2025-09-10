@@ -7,16 +7,24 @@ from http import HTTPStatus
 from app.common.python.common.database import models
 from app.common.python.common.authentication.require_role import require_role
 from app.common.python.common.database.database import get_session
+from app.common.python.common.authentication.jwt import decode_jwt
 from .schema import (
     ErrorSchema,
     ShippingListRequestSchema,
     ShippingListResponseSchema,
 )
 
-@require_role("store_manager", "warehouse_staff")
+@require_role("global_manager", "store_manager", "warehouse_staff", "carrier")
 def handler(event, context):
     json_body = request.get_json(silent=True) or {}
     body = ShippingListRequestSchema().load(json_body)
+    
+    auth_header = event.get("headers", {}).get("Authorization", "")
+    token = auth_header.split(" ", 1)[1].strip() if auth_header else ""
+    user_claims = decode_jwt(token) if token else {}
+    user_role = user_claims.get("role", "")
+    user_id = user_claims.get("user_id")
+    user_warehouse_id = user_claims.get("warehouse_id")
 
     with get_session() as session:
         locations_subquery = (
@@ -87,6 +95,24 @@ def handler(event, context):
                 models.Shipment.delivered_by_id == delivered_by_user.id,
             )
         )
+        
+        # Apply filters based on user role
+        # Global Manager - Can see all shipments (no filter needed)
+        if user_role == models.UserRole.store_manager:
+            # Store Manager can see shipments related to their warehouse
+            query = query.filter(
+                (models.Shipment.origin_warehouse_id == user_warehouse_id) |
+                (models.Shipment.destination_warehouse_id == user_warehouse_id)
+            )
+        elif user_role == models.UserRole.warehouse_staff:
+            # Warehouse staff can only see shipments for their warehouse
+            query = query.filter(
+                (models.Shipment.origin_warehouse_id == user_warehouse_id) |
+                (models.Shipment.destination_warehouse_id == user_warehouse_id)
+            )
+        elif user_role == models.UserRole.carrier:
+            # Carriers can only see shipments assigned to them
+            query = query.filter(models.Shipment.assigned_carrier_id == user_id)
 
         if status := body.get("status"):
             query = query.filter(
