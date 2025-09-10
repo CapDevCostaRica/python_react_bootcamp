@@ -119,6 +119,7 @@ def test_update_shipment_location_with_auth():
         "location": 92101
     }
     resp = requests.post(url, json=data, headers=headers)
+    print(f"Response: {resp.json()}")
     assert resp.status_code == 200
 
 def test_update_shipment_status_with_auth():
@@ -128,4 +129,5 @@ def test_update_shipment_status_with_auth():
         "status": "delivered"
     }
     resp = requests.post(url, json=data, headers=headers)
+    print(f"Response: {resp.json()}")
     assert resp.status_code == 200
