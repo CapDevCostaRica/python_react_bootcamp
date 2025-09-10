@@ -33,7 +33,7 @@ def validatesShipmentAccess(user: User, shipmentID: int, status: str) -> tuple[b
             return (False, make_response({"error": unauthorizedMessage}, 403))
         # Validate shipment location before allowing status update
         if isWarehouseStaff and status == ShipmentStatus.delivered:
-            currentLocation = session.query(ShipmentLocation).filter(ShipmentLocation.shipment_id == shipmentID).order_by(ShipmentLocation.noted_at.desc()).first()
+            currentLocation = session.query(ShipmentLocation).filter(ShipmentLocation.shipment_id == shipmentID).order_by(ShipmentLocation.id.desc()).first()
             validLocation = session.query(Warehouse).filter(
                 and_(
                     Warehouse.id == shipment.destination_warehouse_id,

@@ -45,7 +45,7 @@ def handler(event, context):
         return make_response({"error": str(e)}, HTTPStatus.BAD_REQUEST)
     
     try:
-        validationResponse = validatesShipmentAccess(user, shipmentID, status, location)
+        validationResponse = validatesShipmentAccess(user, shipmentID, status)
         if not validationResponse[0]:
             return validationResponse[1]
         updateResponse = UpdateShipment(user, validationResponse[1].get("shipment"), status, location)
