@@ -5,9 +5,17 @@ import os
 from unittest.mock import MagicMock, patch
 
 # Add the parent directory to sys.path to allow importing from the app package
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# This ensures that the app module can be found regardless of how pytest is run
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, root_path)
 
-from app.common.python.common.database import models
+# Try to import, but provide helpful error if dependencies are missing
+try:
+    from app.common.python.common.database import models
+except ImportError as e:
+    print(f"Error importing dependencies: {e}")
+    print("Make sure to run 'pip install -r requirements.txt' before running tests")
+    raise
 
 @pytest.fixture
 def client():
