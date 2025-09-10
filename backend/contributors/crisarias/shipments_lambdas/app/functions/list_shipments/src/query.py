@@ -60,14 +60,11 @@ def shipment_list_by_role_and_status(user: User, status: str) -> list[Shipment]:
         base_query = base_query.outerjoin(delivered_by, Shipment.delivered_by_id == delivered_by.id)
 
         isStoreManager = user.get("role") == UserRole.store_manager
-        isGlobalManager = user.get("role") == UserRole.global_manager
+        isWarehouseStaff = user.get("role") == UserRole.warehouse_staff
+        isCarrier = user.get("role") == UserRole.carrier
 
         # Role and status logic
-        if isGlobalManager:
-            if status:
-                base_query = base_query.filter(Shipment.status == status)
-            rows = base_query.all()
-        elif isStoreManager:
+        if isStoreManager or isWarehouseStaff:
             # Assuming Warehouse has store_id and user has store_id
             warehouse_id =  user.get("warehouse_id", "")
             if warehouse_id:
@@ -79,9 +76,14 @@ def shipment_list_by_role_and_status(user: User, status: str) -> list[Shipment]:
             if status:
                 base_query = base_query.filter(Shipment.status == status)
             rows = base_query.all()
-        else:
-            # Other roles: return empty or handle as needed
-            rows = []
+        elif isCarrier:
+            carrier_id = user.get("id", "")
+            if carrier_id:
+                base_query = base_query.filter(Shipment.assigned_carrier_id == carrier_id)
+        if status:
+            base_query = base_query.filter(Shipment.status == status)
+
+        rows = base_query.all()
 
         # Get shipment locations for each shipment
         shipment_ids = [row.id for row in rows]

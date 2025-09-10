@@ -12,7 +12,7 @@ import json
 from http import HTTPStatus
 from marshmallow import ValidationError
 
-@require_role("global_manager", "store_manager", "warehouse_manager", "carrier")
+@require_role("global_manager", "store_manager", "warehouse_staff", "carrier")
 def handler(event, context):
     # Extract username and password from the event
     try:
