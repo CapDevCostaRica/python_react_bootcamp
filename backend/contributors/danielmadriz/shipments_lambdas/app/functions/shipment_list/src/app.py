@@ -29,12 +29,16 @@ def handler(event, context):
 
     try:
         with get_session() as session:
+            
             locations_subquery = _build_locations_subquery(session)
             query = _build_base_query(session, locations_subquery)
             
             query, filters_applied = _apply_filters(query, role, user_id, warehouse_id, filters)
             
-            total_count = _get_total_count(session, filters_applied)
+            count_query = session.query(func.count(models.Shipment.id))
+            if filters_applied:
+                count_query = count_query.filter(*filters_applied)
+            total_count = count_query.scalar()
             query_results = query.all()
             
             results = _format_results(query_results)
@@ -147,12 +151,17 @@ def _build_base_query(session, locations_subquery):
 def _apply_filters(query, role, user_id, warehouse_id, filters):
     filters_applied = []
     
+    print(f"🔍 FILTER DEBUG: role={role}, user_id={user_id}, warehouse_id={warehouse_id}")
+    print(f"🔍 FILTER DEBUG: filters={filters}")
+    
     if role in ("store_manager", "warehouse_staff"):
+        print(f"🔍 FILTER DEBUG: Applying store_manager/warehouse_staff filter for warehouse_id={warehouse_id}")
         filters_applied.append(
             (models.Shipment.origin_warehouse_id == warehouse_id) |
             (models.Shipment.destination_warehouse_id == warehouse_id)
         )
     elif role == "carrier":
+        print(f"🔍 FILTER DEBUG: Applying carrier role filter for user_id={user_id}")
         filters_applied.append(models.Shipment.assigned_carrier_id == user_id)
 
     status_filter = filters.get("status")
@@ -163,29 +172,33 @@ def _apply_filters(query, role, user_id, warehouse_id, filters):
     end_date = date_range.get("to_date")
 
     if status_filter:
-        filters_applied.append(models.Shipment.status == models.ShipmentStatus(status_filter))
+        print(f"🔍 FILTER DEBUG: Applying status filter: {status_filter}")
+        filters_applied.append(models.Shipment.status == status_filter)
     if shipment_id:
+        print(f"🔍 FILTER DEBUG: Applying shipment_id filter: {shipment_id}")
         filters_applied.append(models.Shipment.id == shipment_id)
-    if carrier_filter:
+    if carrier_filter and role != "carrier":  # Only apply carrier filter if user is not a carrier
+        print(f"🔍 FILTER DEBUG: Applying carrier filter: {carrier_filter} (user is not a carrier)")
         filters_applied.append(models.Shipment.assigned_carrier_id == carrier_filter)
+    elif carrier_filter and role == "carrier":
+        print(f"🔍 FILTER DEBUG: Ignoring carrier filter: {carrier_filter} (user is a carrier, using role-based filter instead)")
     if start_date and end_date:
+        print(f"🔍 FILTER DEBUG: Applying date range filter: {start_date} to {end_date}")
         filters_applied.append(models.Shipment.created_at.between(start_date, end_date))
     elif start_date:
+        print(f"🔍 FILTER DEBUG: Applying start_date filter: {start_date}")
         filters_applied.append(models.Shipment.created_at >= start_date)
     elif end_date:
+        print(f"🔍 FILTER DEBUG: Applying end_date filter: {end_date}")
         filters_applied.append(models.Shipment.created_at <= end_date)
     
+    print(f"🔍 FILTER DEBUG: Total filters applied: {len(filters_applied)}")
     if filters_applied:
         query = query.filter(*filters_applied)
     
     return query, filters_applied
 
 
-def _get_total_count(session, filters_applied):
-    count_query = session.query(func.count(models.Shipment.id))
-    if filters_applied:
-        count_query = count_query.filter(*filters_applied)
-    return count_query.scalar()
 
 
 def _format_results(query_results):
@@ -194,9 +207,9 @@ def _format_results(query_results):
         results.append({
             "id": row.id,
             "status": row.status,
-            "created_at": row.created_at,
-            "in_transit_at": row.in_transit_at,
-            "delivered_at": row.delivered_at,
+            "created_at": row.created_at.isoformat(),
+            "in_transit_at": row.in_transit_at.isoformat() if row.in_transit_at else None,
+            "delivered_at": row.delivered_at.isoformat() if row.delivered_at else None,
             "origin_warehouse": {
                 "name": row.origin_warehouse_name,
                 "postal_code": row.origin_warehouse_postal_code,

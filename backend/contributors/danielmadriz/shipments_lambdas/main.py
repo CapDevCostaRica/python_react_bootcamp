@@ -43,19 +43,36 @@ def health():
 
 
 @app.post("/login", endpoint="login")
+def login_handler_route():
+    event = {
+        "headers": dict(request.headers),
+        "body": request.get_data(as_text=True) or "",
+        "pathParameters": {},
+    }
+    context = {
+        "agent": "Internal Lambda Executor 1.0",
+    }
+
+    response = login_handler(
+        event=event,
+        context=context,
+    )
+    return jsonify(response.get("body")), response.get("statusCode", 200)
+
 @app.post("/shipment/list", endpoint="shipments_list")
-@app.post("/shipment/", endpoint="shipments")
 @app.post("/shipment/<int:shipment_id>", endpoint="shipment")
+@app.post("/shipment/", endpoint="shipments")
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
+    print(f"DEBUG: endpoint = {endpoint}, shipment_id = {shipment_id}")
     handlers = {
-        "login": login_handler,
         "shipments_list": list_shipments_handler,
         "shipments": create_shipment,
         "shipment": update_shipment,
     }
 
     if not endpoint or not (handler := handlers.get(endpoint)):
+        print(f"DEBUG: Using no_function_defined for endpoint: {endpoint}")
         handler = no_function_defined
 
     event = {

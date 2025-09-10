@@ -35,7 +35,13 @@ def handler(event, context):
                 HTTPStatus.NOT_FOUND
             )
 
-        token = encode_jwt(user._asdict())
+        user_dict = {
+            "sub": str(user.id),
+            "role": user.role.value,
+            "warehouse_id": user.warehouse_id,
+            "username": user.username
+        }
+        token = encode_jwt(user_dict)
 
         return make_response(
             {"access_token": token, "token_type": "bearer"},
