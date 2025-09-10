@@ -1,6 +1,12 @@
 import pytest
 import json
+import sys
+import os
 from unittest.mock import MagicMock, patch
+
+# Add the parent directory to sys.path to allow importing from the app package
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app.common.python.common.database import models
 
 @pytest.fixture
