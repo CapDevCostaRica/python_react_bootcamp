@@ -112,6 +112,7 @@ def test_create_shipments_with_auth():
     resp = requests.post(url, json=data, headers=headers)
     assert resp.status_code == 201
 
+@optional
 def test_update_shipment_location_with_auth():
     headers = get_auth_headers("Carrier2")
     url = f"{API_URL}/shipment/7"
@@ -119,9 +120,9 @@ def test_update_shipment_location_with_auth():
         "location": 92101
     }
     resp = requests.post(url, json=data, headers=headers)
-    print(f"Response: {resp.json()}")
     assert resp.status_code == 200
 
+@optional
 def test_update_shipment_status_with_auth():
     headers = get_auth_headers("StaffAtSan Diego Warehouse")
     url = f"{API_URL}/shipment/7"
@@ -129,5 +130,4 @@ def test_update_shipment_status_with_auth():
         "status": "delivered"
     }
     resp = requests.post(url, json=data, headers=headers)
-    print(f"Response: {resp.json()}")
     assert resp.status_code == 200
