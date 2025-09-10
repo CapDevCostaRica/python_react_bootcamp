@@ -6,7 +6,7 @@ optional = pytest.mark.xfail(reason="optional test", strict=False)
 
 API_URL = os.environ.get("API_URL", "http://127.0.0.1:4000")
 
-# TODO Add Tests for login and lists shipments
+# TODO Add lists shipments, create shipment and update shipment status and location
 
 def test_login():
     url = f"{API_URL}/login"
