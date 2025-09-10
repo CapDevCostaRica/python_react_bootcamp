@@ -5,7 +5,7 @@ from app.common.python.shared.infrastructure.telemetry import logger
 from app.common.python.shared.domain.models import Shipment, Warehouse
 from app.common.python.shared.infrastructure.response import make_response
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 
 def createShipment(user: User, originWarehouseID: int, destinationWarehouseID: int, carrierID: int) -> tuple[bool, dict]:
@@ -28,7 +28,12 @@ def createShipment(user: User, originWarehouseID: int, destinationWarehouseID: i
             errorMessage = "Origin warehouse not found" if originWareHouse is None else "Destination warehouse not found"
             logger.error(errorMessage)
             return (False, make_response({"error": errorMessage}, 400))
-        carrier = session.query(User).filter(User.id == carrierID and User.role == UserRole.carrier).first()
+        carrier = session.query(User).filter(
+            and_(
+                User.id == carrierID,
+                User.role == UserRole.carrier
+            )
+        ).first()
         if not carrier:
             errorMessage = "Invalid carrier: not found or user is not a carrier"
             logger.error(errorMessage)

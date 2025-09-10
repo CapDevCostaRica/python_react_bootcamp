@@ -73,7 +73,6 @@ def shipment_list_by_role_and_status(user: User, statusFilter: str, carrierFilte
                     target_warehouse.id == warehouse_id
                 )
                 base_query = base_query.filter(warehouse_filter)
-            rows = base_query.all()
         elif isCarrier:
             carrier_id = user.get("id", "")
             if carrier_id:
