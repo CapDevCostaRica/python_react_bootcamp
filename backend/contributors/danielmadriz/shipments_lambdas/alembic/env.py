@@ -32,7 +32,7 @@ password = os.environ.get("POSTGRES_PASSWORD", "postgres")
 host = os.environ.get("POSTGRES_HOST", "localhost")
 port = os.environ.get("POSTGRES_PORT", "5432")
 db = os.environ.get("POSTGRES_DB", "postgres")
-SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
+SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
 config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
 # ... etc.
 
