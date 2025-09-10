@@ -1,6 +1,13 @@
 from http import HTTPStatus
 
 from flask import Flask, jsonify, request
+import logging
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
 
 def no_function_defined(*args, **kwargs):
@@ -64,7 +71,6 @@ def login_handler_route():
 @app.post("/shipment/", endpoint="shipments")
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
-    print(f"DEBUG: endpoint = {endpoint}, shipment_id = {shipment_id}")
     handlers = {
         "shipments_list": list_shipments_handler,
         "shipments": create_shipment,
@@ -72,7 +78,6 @@ def shipments_handler(shipment_id: str | None = None):
     }
 
     if not endpoint or not (handler := handlers.get(endpoint)):
-        print(f"DEBUG: Using no_function_defined for endpoint: {endpoint}")
         handler = no_function_defined
 
     event = {

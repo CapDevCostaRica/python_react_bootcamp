@@ -10,6 +10,9 @@ from sqlalchemy.dialects.postgresql import aggregate_order_by
 from marshmallow import ValidationError
 
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @require_role("global_manager", "store_manager", "warehouse_staff", "carrier")
@@ -19,8 +22,8 @@ def handler(event, context):
     user_id = int(claims.get("sub")) if claims.get("sub") else None
     warehouse_id = int(claims.get("warehouse_id")) if claims.get("warehouse_id") else None
 
-    print(f"🔍 HANDLER DEBUG: claims={claims}")
-    print(f"🔍 HANDLER DEBUG: role={role}, user_id={user_id}, warehouse_id={warehouse_id}")
+    logger.info(f"Handler called with claims: {claims}")
+    logger.info(f"User role: {role}, user_id: {user_id}, warehouse_id: {warehouse_id}")
 
     filters, error_response = _parse_request_body(event)
     if error_response:
@@ -46,6 +49,8 @@ def handler(event, context):
             
             results = _format_results(query_results)
 
+            logger.info(f"Successfully retrieved {len(results)} shipments for user {user_id} with role {role}")
+
             response_data = {
                 "results": results,
                 "result_count": total_count,
@@ -57,6 +62,7 @@ def handler(event, context):
             )
 
     except Exception as e:
+        logger.error(f"Error retrieving shipments: {str(e)}", exc_info=True)
         return make_response(
             {"error": "Internal server error"},
             HTTPStatus.INTERNAL_SERVER_ERROR
@@ -154,17 +160,17 @@ def _build_base_query(session, locations_subquery):
 def _apply_filters(query, role, user_id, warehouse_id, filters):
     filters_applied = []
     
-    print(f"🔍 FILTER DEBUG: role={role}, user_id={user_id}, warehouse_id={warehouse_id}")
-    print(f"🔍 FILTER DEBUG: filters={filters}")
+    logger.debug(f"Applying filters - role: {role}, user_id: {user_id}, warehouse_id: {warehouse_id}")
+    logger.debug(f"Request filters: {filters}")
     
     if role in ("store_manager", "warehouse_staff"):
-        print(f"🔍 FILTER DEBUG: Applying store_manager/warehouse_staff filter for warehouse_id={warehouse_id}")
+        logger.debug(f"Applying store_manager/warehouse_staff filter for warehouse_id: {warehouse_id}")
         filters_applied.append(
             (models.Shipment.origin_warehouse_id == warehouse_id) |
             (models.Shipment.destination_warehouse_id == warehouse_id)
         )
     elif role == "carrier":
-        print(f"🔍 FILTER DEBUG: Applying carrier role filter for user_id={user_id}")
+        logger.debug(f"Applying carrier role filter for user_id: {user_id}")
         filters_applied.append(models.Shipment.assigned_carrier_id == user_id)
 
     status_filter = filters.get("status")
@@ -175,27 +181,27 @@ def _apply_filters(query, role, user_id, warehouse_id, filters):
     end_date = date_range.get("to_date")
 
     if status_filter:
-        print(f"🔍 FILTER DEBUG: Applying status filter: {status_filter}")
+        logger.debug(f"Applying status filter: {status_filter}")
         filters_applied.append(models.Shipment.status == status_filter)
     if shipment_id:
-        print(f"🔍 FILTER DEBUG: Applying shipment_id filter: {shipment_id}")
+        logger.debug(f"Applying shipment_id filter: {shipment_id}")
         filters_applied.append(models.Shipment.id == shipment_id)
     if carrier_filter and role != "carrier":  # Only apply carrier filter if user is not a carrier
-        print(f"🔍 FILTER DEBUG: Applying carrier filter: {carrier_filter} (user is not a carrier)")
+        logger.debug(f"Applying carrier filter: {carrier_filter} (user is not a carrier)")
         filters_applied.append(models.Shipment.assigned_carrier_id == carrier_filter)
     elif carrier_filter and role == "carrier":
-        print(f"🔍 FILTER DEBUG: Ignoring carrier filter: {carrier_filter} (user is a carrier, using role-based filter instead)")
+        logger.debug(f"Ignoring carrier filter: {carrier_filter} (user is a carrier, using role-based filter instead)")
     if start_date and end_date:
-        print(f"🔍 FILTER DEBUG: Applying date range filter: {start_date} to {end_date}")
+        logger.debug(f"Applying date range filter: {start_date} to {end_date}")
         filters_applied.append(models.Shipment.created_at.between(start_date, end_date))
     elif start_date:
-        print(f"🔍 FILTER DEBUG: Applying start_date filter: {start_date}")
+        logger.debug(f"Applying start_date filter: {start_date}")
         filters_applied.append(models.Shipment.created_at >= start_date)
     elif end_date:
-        print(f"🔍 FILTER DEBUG: Applying end_date filter: {end_date}")
+        logger.debug(f"Applying end_date filter: {end_date}")
         filters_applied.append(models.Shipment.created_at <= end_date)
     
-    print(f"🔍 FILTER DEBUG: Total filters applied: {len(filters_applied)}")
+    logger.debug(f"Total filters applied: {len(filters_applied)}")
     if filters_applied:
         query = query.filter(*filters_applied)
     
