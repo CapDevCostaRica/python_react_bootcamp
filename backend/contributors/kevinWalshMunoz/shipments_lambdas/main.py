@@ -28,11 +28,11 @@ try:
 except ImportError:
     create_shipment = no_function_defined
 
-# try:
-#     from app.functions.update_shipment.src.app import handler as update_shipment
+try:
+    from app.functions.update_shipment.src.app import handler as update_shipment
 
-# except ImportError:
-#     update_shipment = no_function_defined
+except ImportError:
+    update_shipment = no_function_defined
 
 app = Flask(__name__)
 
@@ -45,14 +45,14 @@ def health():
 @app.post("/login", endpoint="login")
 @app.post("/shipment/list", endpoint="shipments_list")
 @app.post("/shipment/", endpoint="shipments")
-# @app.post("/shipment/<int:shipment_id>", endpoint="shipment")
+@app.post("/shipment/<int:shipment_id>", endpoint="shipment")
 def shipments_handler(shipment_id: str | None = None):
     endpoint = request.endpoint
     handlers = {
         "login": login_handler,
         "shipments_list": list_shipments_handler,
         "shipments": create_shipment,
-        # "shipment": update_shipment,
+        "shipment": update_shipment,
     }
 
     if not endpoint or not (handler := handlers.get(endpoint)):
