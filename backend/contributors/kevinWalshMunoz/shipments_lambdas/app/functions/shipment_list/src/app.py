@@ -97,21 +97,17 @@ def handler(event, context):
         )
         
         # Apply filters based on user role
-        # Global Manager - Can see all shipments (no filter needed)
         if user_role == models.UserRole.store_manager:
-            # Store Manager can see shipments related to their warehouse
             query = query.filter(
                 (models.Shipment.origin_warehouse_id == user_warehouse_id) |
                 (models.Shipment.destination_warehouse_id == user_warehouse_id)
             )
         elif user_role == models.UserRole.warehouse_staff:
-            # Warehouse staff can only see shipments for their warehouse
             query = query.filter(
                 (models.Shipment.origin_warehouse_id == user_warehouse_id) |
                 (models.Shipment.destination_warehouse_id == user_warehouse_id)
             )
         elif user_role == models.UserRole.carrier:
-            # Carriers can only see shipments assigned to them
             query = query.filter(models.Shipment.assigned_carrier_id == user_id)
 
         if status := body.get("status"):
