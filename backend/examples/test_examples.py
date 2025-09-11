@@ -37,6 +37,12 @@ class Monster(Base):
     def __init__(self, index=None, name=None, data=None):
         # TODO: Add validation for required fields
         # HINT: Check if index and name are provided, raise ValueError if missing
+        if not index:
+            raise ValueError("index is required")
+
+        if not name:
+            raise ValueError("name is required")
+
         self.index = index
         self.name = name
         self.data = data or {}
@@ -44,7 +50,7 @@ class Monster(Base):
     def __str__(self):
         # TODO: Implement string representation
         # HINT: Should return "Name (index)" format
-        return "Monster object"  # This needs to be fixed!
+        return f"{self.name} ({self.index})"  # This needs to be fixed!
 
 
 # Mock Schema classes for demonstration
@@ -54,6 +60,12 @@ class MonsterListRequestSchema:
         # TODO: Add validation for monster list requests
         # HINT: Check for "resource" field and validate it equals "monsters"
         # HINT: Raise ValidationError for missing or invalid resource
+        if not "resource" in data:
+            raise ValidationError("resource is missing")
+        
+        if data.get("resource", "") != "monsters":
+            raise ValidationError("Must be one of: monsters")
+
         return data  # This needs validation!
 
 
@@ -62,8 +74,16 @@ class MonsterGetRequestSchema:
     def load(self, data):
         # TODO: Add validation for monster get requests
         # HINT: Check for "monster_index" field
+        if not data or not "monster_index" in data:
+            raise ValidationError({"monster_index": "is missing"})
+
         # HINT: Validate monster_index is not empty and not too long
-        # HINT: Raise ValidationError with proper field-specific messages
+        if len(data["monster_index"].strip()) == 0:
+            raise ValidationError("monster_index is empty")
+
+        if len(data["monster_index"]) > 100:
+            raise ValidationError("monster_index is too long")
+
         return data  # This needs validation!
 
 
@@ -341,6 +361,7 @@ class TestMonsterAPI:
         # Assert
         assert response.status_code == 200
         data = response.get_json()
+
         assert data["count"] == 1
         assert len(data["results"]) == 1
         assert data["results"][0]["name"] == sample_monster_data["name"]
@@ -386,6 +407,10 @@ class TestMonsterAPI:
         # Assert
         assert response.status_code == 200
         data = response.get_json()
+
+        print("RESPONSE!!!")
+        print(data)
+
         assert data["count"] == 2
         assert len(data["results"]) == 2
         assert data["results"][0]["name"] == "Dragon"
@@ -424,6 +449,7 @@ class TestMonsterAPI:
         # Assert
         assert response.status_code == 200
         data = response.get_json()
+        
         assert data["name"] == sample_monster_data["name"]
         assert data["index"] == sample_monster_data["index"]
         assert data["challenge_rating"] == sample_monster_data["challenge_rating"]
