@@ -1,6 +1,6 @@
 # 🎯 Testing Workshop: Complete Step-by-Step Student Guide
 
-**Workshop Goal:** Transform 30 failing tests into 30 passing tests by building a complete testing environment step by step.
+**Workshop Goal:** Transform 14 failing tests into 14 passing tests by building a complete testing environment step by step.
 
 ---
 
@@ -23,19 +23,17 @@ You'll learn to:
 
 ```bash
 # Start Docker and enter the container
-docker-compose up -d
-docker-compose exec backend bash
+docker compose up -d
+docker ps -a
+docker exec -it python_react_bootcamp-flask_app-1 bash
 
 # Navigate to workshop directory
-cd /app/examples
+cd examples
 
-# Check current test status
-pytest -v
 ```
 
-**Expected Output:** You should see approximately 27 failing tests and 3 passing tests.
-
-**What's happening:** The tests are failing because we haven't set up the testing infrastructure yet.
+**Expected Output:** You should see `test_examples.py` and `STUDENT_WORKSHOP_GUIDE.md` but NO `conftest.py` yet.
+**What's happening:** The tests need fixtures (test setup code) that we haven't created yet.
 
 ---
 
@@ -82,7 +80,7 @@ def clean_db(db_session):
 ### **Step 4: Test Your Foundation**
 
 ```bash
-pytest -v -x
+pytest -v
 ```
 
 **Expected:** Some tests should start passing, but most will still fail because we need more fixtures.
@@ -544,7 +542,7 @@ pytest -v -k "performance"
 pytest -v
 ```
 
-**Expected Result:** All 30 tests should now pass! 🎉
+**Expected Result:** All 14 tests should now pass! 🎉
 
 ### **Step 22: Analyze What You Built**
 
@@ -559,44 +557,28 @@ Look at your `conftest.py` file. You've created:
 
 ### **Step 23: Understanding Test Categories**
 
-Your 30 tests cover:
+Your 14 tests cover:
 
-**TestMonsterModel** (5 tests)
+**TestMonsterModel** (4 tests)
 
 - ✅ `test_create_monster_success` - Basic object creation
 - ✅ `test_monster_unique_constraint` - Database constraints
 - ✅ `test_monster_required_fields` - Field validation
 - ✅ `test_monster_string_representation` - Object display
 
-**TestMonsterSchemas** (8 tests)
+**TestMonsterSchemas** (7 tests)
 
-- ✅ Schema validation for API requests
-- ✅ Error handling for invalid data
-- ✅ Parametrized tests for different inputs
+- ✅ `test_monster_list_request_schema_valid` - Valid schema requests
+- ✅ `test_monster_list_request_schema_invalid_resource` - Error handling
+- ✅ `test_monster_get_request_schema_valid` - Valid get requests
+- ✅ `test_monster_get_request_schema_missing_index` - Missing field validation
+- ✅ `test_monster_get_request_schema_invalid_index` - Invalid data validation (3 parametrized cases)
 
-**TestMonsterAPI** (8 tests)
+**TestMonsterAPI** (3 tests)
 
-- ✅ HTTP endpoint testing
-- ✅ JSON request/response handling
-- ✅ Database integration with API
-
-**TestErrorHandling** (4 tests)
-
-- ✅ Network failures
-- ✅ Invalid JSON
-- ✅ 404 responses
-- ✅ Timeout scenarios
-
-**TestPerformance** (3 tests)
-
-- ✅ Concurrent request handling
-- ✅ Performance monitoring
-- ✅ Thread safety
-
-**TestCacheStrategy** (2 tests)
-
-- ✅ Caching behavior
-- ✅ Cache invalidation
+- ✅ `test_monsters_list_from_cache` - Database integration with API
+- ✅ `test_monsters_list_from_external_api` - External API mocking
+- ✅ `test_monster_get_from_cache` - Single monster retrieval
 
 ---
 
@@ -673,7 +655,7 @@ You've successfully:
 - 🧪 Created 13 different pytest fixtures
 - 🌐 Mocked external API calls and database interactions
 - ⚡ Implemented performance monitoring and error handling
-- 🎯 Made 30 tests pass by understanding and fixing each failure
+- 🎯 Made 14 tests pass by understanding and fixing each failure
 
 **This hands-on experience gives you the foundation to test any Python application professionally!**
 
