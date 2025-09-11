@@ -184,7 +184,6 @@ def db_session():
 def clean_db(db_session):
     """Ensure clean database state for each test."""
     # Clear motivational phrases for clean tests
-    db_session.query(MotivationalPhrase).delete()
     db_session.commit()
     yield db_session
 
@@ -316,16 +315,3 @@ def setup_test_environment(monkeypatch):
     monkeypatch.setenv("EXTERNAL_API_TIMEOUT", "1")  # Fast timeouts for tests
     monkeypatch.setenv("CACHE_TTL", "300")  # 5 minutes cache for tests
 
-# 🎯 LEARNING GOALS:
-# By the end of this workshop, you'll understand:
-# ✅ How to create pytest fixtures for reusable test setup
-# ✅ How to mock external dependencies (APIs, databases)
-# ✅ How to test Flask applications with HTTP endpoints
-# ✅ How to use in-memory databases for fast, isolated tests
-# ✅ How to handle error scenarios in your tests
-# ✅ How to monitor test performance and optimize slow tests
-
-# 📚 REFERENCE:
-# - Follow STUDENT_WORKSHOP_GUIDE.md for detailed step-by-step instructions
-# - Check INSTRUCTOR_CHECKLIST.md if you get stuck
-# - Your instructor has the complete solution for reference
