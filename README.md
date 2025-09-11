@@ -14,7 +14,7 @@ If you added a new module or a new dependency remember to run
 docker-compose up --build
 ```
 
-On the first run, and if you haven't changed anything in the .env file, you can visit http://localhost:4000 and receive a random motivational phrase; your setup is working. 
+On the first run, and if you haven't changed anything in the .env file, you can visit http://localhost:4000 and receive a random motivational phrase; your setup is working.
 
 If you need to reset your DB maybe you switching apps, then run
 
@@ -23,26 +23,71 @@ docker-compose run flask_app bash /app/run_local.sh reset_db
 ```
 
 If you created a local environment and installed the requirements, you can reset the DB from your host as well
+
 ```
-python backend/framework/scripts/reset_db.py 
+python backend/framework/scripts/reset_db.py
 ```
 
-## Doing exercises 
+## Building Your Own Flask Application
 
-Please create a folder under contributors with your username. In there, you can make a new folder to create a new module, and inside that folder, create two files.
+**For regular bootcamp participants who want to build their own apps:**
+
+Create a folder under contributors with your username. In there, you can make a new folder to create a new module, and inside that folder, create two files:
 
 ```
 main.py
 requirements.txt
 ```
 
-Then, go to .env and change APPLICATION_FOLDER to your module, e.g., "capdevcr/health". Now, restart your Docker and your application should be running. 
+Then, go to .env and change APPLICATION_FOLDER to your module, e.g., "capdevcr/health". Now, restart your Docker and your application should be running.
 
 If you plan to use Alembic, ensure that your alembic.ini file and folder are located in the root of your module. Additionally, you can create a seeds.py file that will run when Docker starts to populate your database. You can check framework/seeds.py as an example.
 
-You should use a centralized database.py config file as we do on the framework for your app. 
+You should use a centralized database.py config file as we do on the framework for your app.
 
-## Accesing bash
+## Running Tests
+
+### For Testing Workshop Participants (Comprehensive Testing Strategy Session)
+
+**No contributor folder needed!** Workshop materials are ready to use in the Docker container:
+
+```bash
+# 1. Set up environment
+cp .env.example .env
+
+# 2. Start Docker environment
+docker-compose up --build -d
+
+# 3. Access the container
+docker exec -it python_react_bootcamp-flask_app-1 bash
+
+# 4. Inside container, run workshop test examples
+pytest examples/test_examples.py -v
+
+# 5. Explore workshop materials
+ls examples/     # Test examples with intentional failures
+ls exercises/    # Hands-on D&D monster service exercise
+ls templates/    # Ready-to-use fixture templates
+```
+
+### For Regular Bootcamp Development (Building Your Own App)
+
+When building your own Flask application (not the testing workshop):
+
+```bash
+# Access container
+docker exec -it python_react_bootcamp-flask_app-1 bash
+
+# Navigate to your module (requires contributor folder setup)
+cd contributors/your_username/your_module
+
+# Create and run your app-specific tests
+mkdir -p tests
+cd tests
+pytest . -v --cov=.. --cov-report=html
+```
+
+## Accessing bash
 
 If you need to access bash to run any commands, just use:
 
@@ -93,5 +138,3 @@ COMPOSE_PROFILES=None
 This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.  
 See the [LICENSE.txt](./LICENSE.txt) file for details or visit:  
 https://creativecommons.org/licenses/by-nc/4.0/legalcode.txt
-
-
