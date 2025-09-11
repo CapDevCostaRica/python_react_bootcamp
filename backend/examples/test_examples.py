@@ -35,39 +35,36 @@ class Monster(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __init__(self, index=None, name=None, data=None):
-        if index is None:
-            raise ValueError("index is required")
-        if name is None:
-            raise ValueError("name is required")
+        # TODO: Add validation for required fields
+        # HINT: Check if index and name are provided, raise ValueError if missing
         self.index = index
         self.name = name
         self.data = data or {}
 
     def __str__(self):
-        return f"{self.name} ({self.index})"
+        # TODO: Implement string representation
+        # HINT: Should return "Name (index)" format
+        return "Monster object"  # This needs to be fixed!
 
 
 # Mock Schema classes for demonstration
 class MonsterListRequestSchema:
     """Mock schema for monster list requests."""
     def load(self, data):
-        if "resource" not in data:
-            raise ValidationError({"resource": ["Missing required field: resource"]})
-        if data["resource"] != "monsters":
-            raise ValidationError({"resource": ["Must be one of: monsters"]})
-        return data
+        # TODO: Add validation for monster list requests
+        # HINT: Check for "resource" field and validate it equals "monsters"
+        # HINT: Raise ValidationError for missing or invalid resource
+        return data  # This needs validation!
 
 
 class MonsterGetRequestSchema:
     """Mock schema for monster get requests."""
     def load(self, data):
-        if "monster_index" not in data:
-            raise ValidationError({"monster_index": ["Missing required field: monster_index"]})
-        if not data["monster_index"].strip():
-            raise ValidationError({"monster_index": ["Empty monster_index"]})
-        if len(data["monster_index"]) > 100:
-            raise ValidationError({"monster_index": ["monster_index too long"]})
-        return data
+        # TODO: Add validation for monster get requests
+        # HINT: Check for "monster_index" field
+        # HINT: Validate monster_index is not empty and not too long
+        # HINT: Raise ValidationError with proper field-specific messages
+        return data  # This needs validation!
 
 
 class TestMonsterModel:
@@ -141,17 +138,18 @@ class TestMonsterModel:
 
     def test_monster_required_fields(self):
         """
-        🎯 TASK: Make this test pass by validating required fields
+        🎯 TASK: Make this test pass by adding validation to Monster.__init__
 
         WHAT THIS TEST DOES:
-        - Tries to create Monster without required fields
-        - Expects ValueError with specific messages
+        - Tries to create Monster without index or name
+        - Expects ValueError with specific error messages
 
         WHAT YOU NEED TO FIX:
-        - Monster.__init__ should validate required fields
-        - Raise ValueError with descriptive messages
+        - Go to Monster.__init__ method (line ~36)
+        - Add validation: if index is None: raise ValueError("index is required")
+        - Add validation: if name is None: raise ValueError("name is required")
 
-        HINT: Check the Monster.__init__ method above
+        HINT: Replace the TODO comment in Monster.__init__ with proper validation
         """
         # Test missing index
         with pytest.raises(ValueError, match="index is required"):
@@ -163,17 +161,17 @@ class TestMonsterModel:
 
     def test_monster_string_representation(self):
         """
-        🎯 TASK: Make this test pass by implementing __str__ method
+        🎯 TASK: Make this test pass by fixing Monster.__str__ method
 
         WHAT THIS TEST DOES:
         - Creates a Monster object
-        - Checks str(monster) returns expected format
+        - Calls str(monster) and expects "Ancient Red Dragon (dragon)"
 
         WHAT YOU NEED TO FIX:
-        - Monster class needs __str__ method
-        - Should return "Name (index)" format
+        - Go to Monster.__str__ method (line ~45)
+        - Replace "Monster object" with f"{self.name} ({self.index})"
 
-        HINT: Check the Monster.__str__ method above
+        HINT: Use f-string formatting to combine name and index
         """
         monster = Monster(
             index="dragon",
@@ -190,17 +188,19 @@ class TestMonsterSchemas:
 
     def test_monster_list_request_schema_valid(self):
         """
-        🎯 TASK: Make this test pass by implementing schema validation
+        🎯 TASK: Fix MonsterListRequestSchema to validate properly
 
         WHAT THIS TEST DOES:
-        - Uses MonsterListRequestSchema to validate request data
-        - Expects valid data to pass through unchanged
+        - Calls schema.load({"resource": "monsters"})
+        - Expects the data to be returned unchanged
 
         WHAT YOU NEED TO FIX:
-        - Schema should accept {"resource": "monsters"}
-        - Return the data unchanged if valid
+        - Go to MonsterListRequestSchema.load() method (line ~53)
+        - Add validation: check if "resource" field exists
+        - Add validation: check if resource equals "monsters"
+        - Return data if valid, raise ValidationError if not
 
-        HINT: Check MonsterListRequestSchema.load() method above
+        HINT: Replace the TODO comments with proper validation logic
         """
         schema = MonsterListRequestSchema()
         data = {"resource": "monsters"}
