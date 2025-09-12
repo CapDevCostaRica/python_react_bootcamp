@@ -136,9 +136,7 @@ def app(sample_monster_data, db_session):
 
             # Return mock data if not found in database
             return jsonify(sample_monster_data)
-        except Exception as e:
-            print("ERROR!!! ")
-            print(str(e))
+        except Exception as e:           
             return jsonify({"error": "Invalid JSON"}), 400
 
     with app.app_context():

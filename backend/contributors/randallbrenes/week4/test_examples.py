@@ -23,7 +23,6 @@ from datetime import datetime, timezone
 
 Base = declarative_base()
 
-
 class Monster(Base):
     """Mock Monster model for testing workshop - now SQLAlchemy compatible."""
     __tablename__ = 'monsters'
@@ -407,9 +406,6 @@ class TestMonsterAPI:
         # Assert
         assert response.status_code == 200
         data = response.get_json()
-
-        print("RESPONSE!!!")
-        print(data)
 
         assert data["count"] == 2
         assert len(data["results"]) == 2
