@@ -21,20 +21,16 @@ def handler(event, context):
 
         json_body = json.loads(body)
 
-        headers = event.get("headers") or {}
-        auth_header = headers.get("Authorization", "")
-            
-        user = decode_jwt(auth_header.split(" ", 1)[1].strip())
-
-        role = user.get("role")
-
+        body = ShippingListRequestSchema().load(json_body)
     except:
         return make_response(
             {"error": "Invalid JSON body"},
             HTTPStatus.BAD_REQUEST
         )
-    
-    body = ShippingListRequestSchema().load(json_body)
+
+    user = event.get("claims")
+    role = user.get("role")
+
     with get_session() as session:
         locations_subquery = (
             session.query(
@@ -126,6 +122,12 @@ def handler(event, context):
                         Shipment.in_transit_at == None
                     )
                 )
+            )
+
+        shipment_id = body.get("id")
+        if shipment_id:
+            query = query.filter(
+                Shipment.id == shipment_id
             )
 
         status = body.get("status")

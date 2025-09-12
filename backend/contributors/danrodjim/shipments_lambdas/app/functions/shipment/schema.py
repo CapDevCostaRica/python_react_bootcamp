@@ -8,8 +8,9 @@ class ShippingListRequestSchema(Schema):
         required=False,
         allow_none=True,
     )
+    id = fields.Integer(required=False)
     carrier = fields.Integer(required=False)
-    date = fields.Date(format='%Y-%m-%d')
+    date = fields.Date(format='%Y-%m-%d', required=False)
 
 class UserSchema(Schema):
     id = fields.Integer(required=True)

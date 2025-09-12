@@ -22,7 +22,14 @@ def handler(event, context):
             HTTPStatus.BAD_REQUEST
         )
     
-    body = LoginRequestSchema().load(json_body)
+    try:
+        body = LoginRequestSchema().load(json_body)
+    except:
+        return make_response(
+            {"error": "Invalid JSON body"},
+            HTTPStatus.BAD_REQUEST
+        )
+    
     username = body.get("username")
 
     with get_session() as session:

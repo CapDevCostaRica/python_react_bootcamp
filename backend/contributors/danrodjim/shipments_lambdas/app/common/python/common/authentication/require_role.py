@@ -45,9 +45,7 @@ def require_role(*expected_roles: list[str]):
                 )
             else:
                 with get_session() as session:
-                    user = {
-                        session.query(User).filter(User.id==identifier).first()
-                    }
+                    user = session.query(User).filter(User.id == identifier).first()
 
                 if not user:
                     return make_response(
