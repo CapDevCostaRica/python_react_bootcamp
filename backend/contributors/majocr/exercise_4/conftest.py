@@ -8,8 +8,6 @@ import sys
 sys.path.append('/app/framework')
 
 # Import actual framework components
-from framework import MotivationalPhrase
-
 # Step 6: Add Monster model imports here
 sys.path.append('/app/examples')
 from test_examples import Monster, Base
@@ -168,7 +166,7 @@ def db_session():
 def clean_db(db_session):
     """Ensure clean database state for each test."""
     # Clear motivational phrases for clean tests
-    db_session.query(MotivationalPhrase).delete()
+    #db_session.query(MotivationalPhrase).delete()
     db_session.commit()
     yield db_session
 
