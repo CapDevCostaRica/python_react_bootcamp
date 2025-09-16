@@ -1,9 +1,6 @@
 # conftest.py - Testing Workshop Student Template
 # 🎯 TASK: Build this file step-by-step following the STUDENT_WORKSHOP_GUIDE.md
-import os
-import sys
 import pytest
-import sys
 from flask import request, jsonify
 
 # Add framework to Python path for workshop
@@ -68,7 +65,6 @@ def app():
                 })
         except Exception:
             return jsonify({"error": "Invalid JSON"}), 400
-        pass
 
     @app.route('/monster', methods=['POST'])
     def monster_get():
