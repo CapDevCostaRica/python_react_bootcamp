@@ -2,13 +2,25 @@
 # 🎯 TASK: Build this file step-by-step following the STUDENT_WORKSHOP_GUIDE.md
 
 import pytest
-import sys
+import os, sys
+from unittest.mock import Mock
 
+CURR_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.abspath(os.path.join(CURR_DIR, '..', '..', '..'))
+FRAMEWORK_DIR = os.path.join(ROOT_DIR, 'framework')
+
+for p in (CURR_DIR, ROOT_DIR, FRAMEWORK_DIR):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+    
 # Add framework to Python path for workshop
 sys.path.append('/app/framework')
 
 # Import actual framework components
-from models import MotivationalPhrase
+try:
+    from models import MotivationalPhrase
+except Exception:
+    MotivationalPhrase = None
 
 # TODO Step 6: Add Monster model imports here
 sys.path.append('/app/examples')
@@ -18,7 +30,6 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from unittest.mock import Mock
 
 _shared_session = None
 
