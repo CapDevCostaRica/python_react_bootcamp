@@ -5,11 +5,12 @@ with SQLAlchemy, including database setup, test client, sample data, and API moc
 """
 import pytest
 import sys
+import os
 import time
 import warnings
 
 # Step 6: Add Monster model imports here
-sys.path.append('/app/examples')
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'examples'))
 from test_examples import Monster, Base
 
 # Import our test utilities
@@ -25,9 +26,9 @@ def get_db_session():
     return _shared_session
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def app():
-    """Create and configure a Flask app instance for testing. Session-scoped for performance."""
+    """Create and configure a Flask app instance for testing."""
     from flask import Flask, request, jsonify
 
     app = Flask(__name__)

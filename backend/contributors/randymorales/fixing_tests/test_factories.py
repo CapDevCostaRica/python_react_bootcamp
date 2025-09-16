@@ -21,7 +21,7 @@ class TestDataFactory:
             "description": f"A {size.lower()} monster named {name}",
             "power_level": 1000,
             "element": "Fire",
-            "index": f"monster-{str(uuid.uuid4())[:8]}",
+            "index": f"monster-{str(uuid.uuid4())}",
             "challenge_rating": 5,
             "type": "beast",
             "hit_points": 50,
