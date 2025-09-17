@@ -7,8 +7,8 @@ import sys
 # Add framework to Python path for workshop
 sys.path.append('/app/framework')
 
-# Import actual framework components
-from models import MotivationalPhrase
+sys.path.append('/app/examples')
+from test_examples import Monster, Base
 
 # TODO Step 6: Add Monster model imports here
 # sys.path.append('/app/examples')
