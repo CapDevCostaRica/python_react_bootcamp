@@ -35,37 +35,35 @@ class Monster(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __init__(self, index=None, name=None, data=None):
-        # TODO: Add validation for required fields
-        # HINT: Check if index and name are provided, raise ValueError if missing
+        if index is None: raise ValueError("index is required")
+        if name is None: raise ValueError("name is required")
         self.index = index
         self.name = name
         self.data = data or {}
 
     def __str__(self):
-        # TODO: Implement string representation
-        # HINT: Should return "Name (index)" format
-        return "Monster object"  # This needs to be fixed!
+        return f"{self.name} ({self.index})"
 
 
 # Mock Schema classes for demonstration
 class MonsterListRequestSchema:
-    """Mock schema for monster list requests."""
     def load(self, data):
-        # TODO: Add validation for monster list requests
-        # HINT: Check for "resource" field and validate it equals "monsters"
-        # HINT: Raise ValidationError for missing or invalid resource
-        return data  # This needs validation!
+        if "resource" not in data:
+            return ValidationError("The key 'resource' is required.")
+        if data.get('resource') != 'monsters':
+            raise ValidationError("Must be one of: monsters")
+
+        return data
 
 
 class MonsterGetRequestSchema:
-    """Mock schema for monster get requests."""
+    """Mock schema for monster list requests."""
     def load(self, data):
-        # TODO: Add validation for monster get requests
-        # HINT: Check for "monster_index" field
-        # HINT: Validate monster_index is not empty and not too long
-        # HINT: Raise ValidationError with proper field-specific messages
-        return data  # This needs validation!
-
+        if not data.get("resource"):
+            raise ValidationError("resource field must be provided")
+        elif data.get("resource") != "monsters":
+            raise ValidationError("Must be one of: monsters")
+        return data
 
 class TestMonsterModel:
     """Unit tests for Monster model."""
