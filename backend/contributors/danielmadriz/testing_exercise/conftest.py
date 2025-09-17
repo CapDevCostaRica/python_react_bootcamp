@@ -257,21 +257,27 @@ def mock_external_api_404(monkeypatch):
 
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_response)
 
-# TODO Step 18: Add performance monitoring
-# @pytest.fixture
-# def performance_monitor():
-#     """Monitor test performance and log slow tests."""
-#     # Track test execution time
-#     # Warn about slow tests (>1 second)
-#     pass
+@pytest.fixture
+def performance_monitor():
+    """Monitor test performance and log slow tests."""
+    import time
+    import warnings
 
-# TODO Step 19: Add automatic test environment setup
-# @pytest.fixture(autouse=True)
-# def setup_test_environment(monkeypatch):
-#     """Automatically setup test environment for all tests."""
-#     # Set environment variables for testing
-#     # Configure timeouts and cache settings
-#     pass
+    start_time = time.time()
+    yield
+    end_time = time.time()
+
+    duration = end_time - start_time
+    if duration > 1.0:  # Warn if test takes more than 1 second
+        warnings.warn(f"Slow test detected: {duration:.2f} seconds")
+
+@pytest.fixture(autouse=True)
+def setup_test_environment(monkeypatch):
+    """Automatically setup test environment for all tests."""
+    # Set test environment variables
+    monkeypatch.setenv("FLASK_ENV", "testing")
+    monkeypatch.setenv("EXTERNAL_API_TIMEOUT", "1")  # Fast timeouts for tests
+    monkeypatch.setenv("CACHE_TTL", "300")  # 5 minutes cache for tests
 
 # 🎯 LEARNING GOALS:
 # By the end of this workshop, you'll understand:
