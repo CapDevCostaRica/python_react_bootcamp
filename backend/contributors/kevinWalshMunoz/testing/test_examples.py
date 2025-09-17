@@ -46,7 +46,6 @@ class Monster(Base):
 
     def __str__(self):
         # TODO: Implement string representation
-        # HINT: Should return "Name (index)" format
         return f"{self.name} ({self.index})"  # This needs to be fixed!
 
 
@@ -55,29 +54,27 @@ class MonsterListRequestSchema:
     """Mock schema for monster list requests."""
     def load(self, data):
         # TODO: Add validation for monster list requests
-        # HINT: Check for "resource" field and validate it equals "monsters"
-        # HINT: Raise ValidationError for missing or invalid resource
         if "resource" not in data:
             raise ValidationError("The Key 'resource' is required")
         if data.get("resource") != "monsters":
             raise ValidationError("Must be one of: monsters")
-        return data  # This needs validation!
+        return data
 
 
 class MonsterGetRequestSchema:
     """Mock schema for monster get requests."""
     def load(self, data):
-        # TODO: Add validation for monster get requests
-        # HINT: Check for "monster_index" field
-        # HINT: Validate monster_index is not empty and not too long
-        # HINT: Raise ValidationError with proper field-specific messages
-        if "monster_index" not in data:
+        monster_index = data.get("monster_index")
+        if monster_index is None:
             raise ValidationError({"monster_index": "The key 'monster_index' is required"})
-        if data.get("monster_index").strip() == "":
-            raise ValidationError("'monster_index' cannot be empty")
-        if len(data.get("monster_index")) > 100:
-            raise ValidationError("'monster_index' is too long")
-        return data  # This needs validation!
+        if isinstance(monster_index, str):
+            if monster_index.strip() == "":
+                raise ValidationError({"monster_index": "'monster_index' cannot be empty"})
+            if len(monster_index) > 100:
+                raise ValidationError({"monster_index": "'monster_index' is too long"})
+        else:
+            raise ValidationError({"monster_index": "'monster_index' must be a string"})
+        return data
 
 
 class TestMonsterModel:
