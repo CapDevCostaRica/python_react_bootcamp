@@ -1,4 +1,5 @@
 import pytest
+import requests
 import contributors.Luch1f3rchoCR.ex04_testing.app.services as services
 
 @pytest.mark.parametrize("monster_index,expected", [
@@ -15,3 +16,9 @@ def test_monster_endpoint_success(client, monkeypatch, monster_index, expected):
 def test_monster_endpoint_validation_error(client):
     res = client.post("/monster", json={"monster_index": ""})
     assert res.status_code == 400
+
+def test_monster_endpoint_external_error_returns_500(client, monkeypatch):
+    def _raise(_): raise requests.ConnectionError("down")
+    monkeypatch.setattr(services, "fetch_monster", _raise)
+    res = client.post("/monster", json={"monster_index": "orc"})
+    assert res.status_code == 500

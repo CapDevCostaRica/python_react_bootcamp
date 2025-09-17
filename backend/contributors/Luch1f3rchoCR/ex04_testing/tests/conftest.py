@@ -9,3 +9,7 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
+
+@pytest.fixture(autouse=True)
+def setup_test_environment(monkeypatch):
+    monkeypatch.setenv("FLASK_ENV", "testing")

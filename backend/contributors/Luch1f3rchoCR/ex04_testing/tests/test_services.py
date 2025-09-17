@@ -20,3 +20,11 @@ def test_fetch_monster_uses_requests(monkeypatch):
     monkeypatch.setattr(requests, "get", fake_get)
     data = fetch_monster("dragon")
     assert data == {"name": "Ancient Red Dragon", "type": "dragon"}
+
+def test_fetch_monster_http_error(monkeypatch):
+    class _Resp:
+        def raise_for_status(self): raise requests.HTTPError("boom")
+        def json(self): return {}
+    monkeypatch.setattr(requests, "get", lambda *a, **k: _Resp())
+    with pytest.raises(requests.HTTPError):
+        fetch_monster("dragon")
