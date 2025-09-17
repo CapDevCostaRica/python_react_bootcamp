@@ -59,10 +59,10 @@ class MonsterListRequestSchema:
 class MonsterGetRequestSchema:
     """Mock schema for monster list requests."""
     def load(self, data):
-        if not data.get("resource"):
-            raise ValidationError("resource field must be provided")
-        elif data.get("resource") != "monsters":
-            raise ValidationError("Must be one of: monsters")
+        if "monster_index" not in data or len(data.get("monster_index").strip()) == 0:
+            raise ValidationError({"monster_index": "field is required"})
+        elif len(data.get("monster_index").strip()) > 100:
+            raise ValidationError("monster_index field must be at most 100 characters")
         return data
 
 class TestMonsterModel:
