@@ -60,16 +60,28 @@ def client(app):
 @pytest.fixture
 def db_session():
     """Create a database session for tests using SQLAlchemy."""
-    # TODO Step 7-8: Replace this basic session with SQLAlchemy setup
-    # 1. Import SQLAlchemy components
-    # 2. Create in-memory SQLite engine
-    # 3. Create all tables using Base.metadata.create_all()
-    # 4. Create and return session
-    # 5. Set global _shared_session for Flask routes
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
 
-    from database import get_session
-    session = get_session()
-    yield session
+    # Create in-memory SQLite database for testing
+    engine = create_engine(
+        'sqlite:///:memory:',
+        echo=False,  # Set to True to see SQL queries
+        poolclass=StaticPool,
+        connect_args={'check_same_thread': False}
+    )
+
+    # Create all tables (including Monster table)
+    Base.metadata.create_all(engine)
+
+    # Create session to interact with database
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    yield session  # This gives the session to your test
+
+    # Cleanup after test
     session.rollback()
     session.close()
 
