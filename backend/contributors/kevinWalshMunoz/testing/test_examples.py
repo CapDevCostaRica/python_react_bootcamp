@@ -13,7 +13,7 @@ import time
 import threading
 from unittest.mock import Mock, patch
 from sqlalchemy.exc import IntegrityError
-from marshmallow import ValidationError
+from marshmallow import ValidationError, validate
 import requests
 
 # Mock Monster model for demonstration purposes
@@ -36,7 +36,10 @@ class Monster(Base):
 
     def __init__(self, index=None, name=None, data=None):
         # TODO: Add validation for required fields
-        # HINT: Check if index and name are provided, raise ValueError if missing
+        if index is None:
+            raise ValueError("index is required")
+        if name is None:
+            raise ValueError("name is required")
         self.index = index
         self.name = name
         self.data = data or {}
@@ -44,7 +47,7 @@ class Monster(Base):
     def __str__(self):
         # TODO: Implement string representation
         # HINT: Should return "Name (index)" format
-        return "Monster object"  # This needs to be fixed!
+        return f"{self.name} ({self.index})"  # This needs to be fixed!
 
 
 # Mock Schema classes for demonstration
@@ -54,6 +57,10 @@ class MonsterListRequestSchema:
         # TODO: Add validation for monster list requests
         # HINT: Check for "resource" field and validate it equals "monsters"
         # HINT: Raise ValidationError for missing or invalid resource
+        if "resource" not in data:
+            raise ValidationError("The Key 'resource' is required")
+        if data.get("resource") != "monsters":
+            raise ValidationError("Must be one of: monsters")
         return data  # This needs validation!
 
 
@@ -64,6 +71,12 @@ class MonsterGetRequestSchema:
         # HINT: Check for "monster_index" field
         # HINT: Validate monster_index is not empty and not too long
         # HINT: Raise ValidationError with proper field-specific messages
+        if "monster_index" not in data:
+            raise ValidationError({"monster_index": "The key 'monster_index' is required"})
+        if data.get("monster_index").strip() == "":
+            raise ValidationError("'monster_index' cannot be empty")
+        if len(data.get("monster_index")) > 100:
+            raise ValidationError("'monster_index' is too long")
         return data  # This needs validation!
 
 
