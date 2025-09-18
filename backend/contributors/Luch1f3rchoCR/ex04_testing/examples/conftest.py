@@ -4,7 +4,7 @@ import warnings
 import pytest
 from unittest.mock import Mock
 
-sys.path.append('/app/examples')
+sys.path.append('/app/contributors/Luch1f3rchoCR/ex04_testing/examples')
 from test_examples import Monster, Base
 
 _shared_session = None

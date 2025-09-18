@@ -13,14 +13,17 @@ def create_app(testing: bool = False) -> Flask:
 
     @app.post("/monster")
     def monster():
+        payload = request.get_json(silent=True) or {}
+        idx = payload.get("monster_index", "")
         try:
-            payload = request.get_json(silent=True) or {}
-            idx = payload.get("monster_index", "")
             services.validate_monster_index(idx)
-            data = services.fetch_monster(idx)
-            return jsonify(data), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 400
+        try:
+            data = services.fetch_monster(idx)
+        except Exception:
+            return jsonify({"error": "upstream error"}), 502
+        return jsonify(data), 200
 
     return app
 
