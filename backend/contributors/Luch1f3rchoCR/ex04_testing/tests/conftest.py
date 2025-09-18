@@ -1,21 +1,37 @@
-import sys
-import time
-import warnings
-import pytest
-from unittest.mock import Mock
+# conftest.py - Testing Workshop Student Template
+# 🎯 TASK: Build this file step-by-step following the STUDENT_WORKSHOP_GUIDE.md
 
-sys.path.append('/app/contributors/Luch1f3rchoCR/ex04_testing/examples')
+import pytest
+import sys
+
+# Add framework to Python path for workshop
+sys.path.append('/app/framework')
+
+# Import actual framework components
+# Step 6: Add Monster model imports here
+sys.path.append('/app/examples')
 from test_examples import Monster, Base
 
+# Step 10: Add shared database session variable here
 _shared_session = None
 
+
+# Add this after your imports, before the fixtures
 def get_db_session():
+    """Get the shared database session for Flask routes."""
     global _shared_session
     return _shared_session
 
+
 @pytest.fixture
 def app():
+    """Create and configure a Flask app instance for testing."""
     from flask import Flask, request, jsonify
+    import requests
+    import importlib
+
+    services = importlib.import_module("contributors.Luch1f3rchoCR.ex04_testing.app.services")
+
     app = Flask(__name__)
     app.config.update({
         'TESTING': True,
@@ -23,14 +39,23 @@ def app():
         'SECRET_KEY': 'test-secret-key'
     })
 
+    @app.get('/health')
+    def health():
+        return jsonify({"status": "ok"}), 200
+
     @app.route('/monsters', methods=['POST'])
     def monsters_list():
+        """Mock monsters list endpoint - handles POST requests for monster lists."""
         try:
             data = request.get_json()
+
+            # Validate required fields
             if not data or "resource" not in data:
                 return jsonify({"error": "Missing resource field"}), 400
             if data["resource"] != "monsters":
                 return jsonify({"error": "Invalid resource"}), 400
+
+            # Query database for monsters using shared session
             session = get_db_session()
             if session:
                 monsters = session.query(Monster).all()
@@ -41,75 +66,111 @@ def app():
                         for m in monsters
                     ]
                 })
-            return jsonify({
-                "count": 2,
-                "results": [
-                    {"index": "dragon", "name": "Dragon", "url": "/api/monsters/dragon"},
-                    {"index": "orc", "name": "Orc", "url": "/api/monsters/orc"}
-                ]
-            })
+            else:
+                # Fallback mock response when no database session
+                return jsonify({
+                    "count": 2,
+                    "results": [
+                        {"index": "dragon", "name": "Dragon", "url": "/api/monsters/dragon"},
+                        {"index": "orc", "name": "Orc", "url": "/api/monsters/orc"}
+                    ]
+                })
         except Exception:
             return jsonify({"error": "Invalid JSON"}), 400
 
     @app.route('/monster', methods=['POST'])
     def monster_get():
+        """Mock monster get endpoint - handles POST requests for single monsters."""
         try:
             data = request.get_json()
             if not data or "monster_index" not in data:
                 return jsonify({"error": "Missing monster_index field"}), 400
+
             monster_index = data["monster_index"]
+            if not isinstance(monster_index, str) or not monster_index.strip():
+                return jsonify({"error": "Invalid monster index"}), 400
+            monster_index = monster_index.strip()
+
+            # Try to find monster in database first
             session = get_db_session()
             if session:
                 monster = session.query(Monster).filter_by(index=monster_index).first()
                 if monster:
-                    result = {"index": monster.index, "name": monster.name, **(monster.data or {})}
+                    result = {
+                        "index": monster.index,
+                        "name": monster.name,
+                        **(monster.data or {})
+                    }
                     return jsonify(result)
-            return jsonify({
-                "index": monster_index,
-                "name": f"Test {monster_index.title()}",
-                "type": "humanoid",
-                "challenge_rating": 1,
-                "hit_points": 15,
-                "armor_class": 13
-            })
+
+            # Return mock data if not found in database
+            try:
+                result = services.fetch_monster(monster_index)
+                return jsonify(result), 200
+            except requests.RequestException:
+                return jsonify({"error": "External service error"}), 500
         except Exception:
             return jsonify({"error": "Invalid JSON"}), 400
 
     with app.app_context():
         yield app
 
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 @pytest.fixture
+def client(app):
+    """A test client for the app."""
+    return app.test_client()
+
+
+# Step 7-8: Replace this basic session with SQLAlchemy setup
+@pytest.fixture
 def db_session():
+    """Create a database session for tests using SQLAlchemy."""
     global _shared_session
+
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.pool import StaticPool
+
+    # Create in-memory SQLite database for testing
     engine = create_engine(
         'sqlite:///:memory:',
-        echo=False,
+        echo=False,  # Set to True to see SQL queries
         poolclass=StaticPool,
         connect_args={'check_same_thread': False}
     )
+
+    # Create all tables (including Monster table)
     Base.metadata.create_all(engine)
+
+    # Create session to interact with database
     Session = sessionmaker(bind=engine)
     session = Session()
+
+    # Share session with Flask app
     _shared_session = session
-    yield session
+
+    yield session  # This gives the session to your test
+
+    # Cleanup after test
     session.rollback()
     session.close()
     _shared_session = None
 
+
 @pytest.fixture
 def clean_db(db_session):
+    """Ensure clean database state for each test."""
+    # Clear motivational phrases for clean tests
+    # db_session.query(MotivationalPhrase).delete()
     db_session.commit()
     yield db_session
 
+
+# Step 15: Add sample test data fixtures
 @pytest.fixture
 def sample_monster_data():
+    """Sample monster data for testing."""
     return {
         "index": "ancient-red-dragon",
         "name": "Ancient Red Dragon",
@@ -123,12 +184,18 @@ def sample_monster_data():
         "url": "/api/monsters/ancient-red-dragon"
     }
 
+
+# Step 15: Add monster factory fixture
 @pytest.fixture
 def monster_factory():
+    """Factory for creating test monster data."""
+
     def _create_monster(index=None, name=None, **kwargs):
         import uuid
+
         default_index = index or f"test-monster-{uuid.uuid4().hex[:8]}"
         default_name = name or f"Test Monster {default_index}"
+
         defaults = {
             "index": default_index,
             "name": default_name,
@@ -142,10 +209,13 @@ def monster_factory():
         }
         defaults.update(kwargs)
         return defaults
+
     return _create_monster
+
 
 @pytest.fixture
 def external_api_monster_response():
+    """Mock response from external D&D API for a single monster."""
     return {
         "index": "orc",
         "name": "Orc",
@@ -159,48 +229,79 @@ def external_api_monster_response():
         "url": "/api/monsters/orc"
     }
 
+
+# Step 16: Add external API mocking fixtures
 @pytest.fixture
 def mock_external_api_success(monkeypatch, external_api_monster_response):
+    """Mock successful external API response."""
+    from unittest.mock import Mock
+
     mock_response = Mock()
     mock_response.json.return_value = external_api_monster_response
     mock_response.raise_for_status.return_value = None
     mock_response.status_code = 200
+
+    # Replace the real requests.get with our mock
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_response)
     return mock_response
 
+
 @pytest.fixture
 def mock_external_api_failure(monkeypatch):
+    """Mock external API failure."""
     import requests
+
     def mock_request_failure(*args, **kwargs):
         raise requests.ConnectionError("External API is down")
+
     monkeypatch.setattr("requests.get", mock_request_failure)
+
 
 @pytest.fixture
 def mock_external_api_timeout(monkeypatch):
+    """Mock external API timeout."""
     import requests
+
     def mock_request_timeout(*args, **kwargs):
         raise requests.Timeout("Request timed out")
+
     monkeypatch.setattr("requests.get", mock_request_timeout)
+
 
 @pytest.fixture
 def mock_external_api_404(monkeypatch):
+    """Mock external API 404 response."""
     import requests
+    from unittest.mock import Mock
+
     mock_response = Mock()
     mock_response.status_code = 404
-    def _raise():
-        raise requests.HTTPError("404 Not Found")
-    mock_response.raise_for_status.side_effect = _raise
+    mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
+
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_response)
 
+
+# Step 18: Add performance monitoring
 @pytest.fixture
 def performance_monitor():
-    start = time.time()
-    yield
-    if time.time() - start > 1.0:
-        warnings.warn("Slow test detected")
+    """Monitor test performance and log slow tests."""
+    import time
+    import warnings
 
+    start_time = time.time()
+    yield
+    end_time = time.time()
+
+    duration = end_time - start_time
+    if duration > 1.0:  # Warn if test takes more than 1 second
+        warnings.warn(f"Slow test detected: {duration:.2f} seconds")
+
+
+# Step 19: Add automatic test environment setup
 @pytest.fixture(autouse=True)
 def setup_test_environment(monkeypatch):
+    """Automatically setup test environment for all tests."""
+    # Set test environment variables
     monkeypatch.setenv("FLASK_ENV", "testing")
-    monkeypatch.setenv("EXTERNAL_API_TIMEOUT", "1")
-    monkeypatch.setenv("CACHE_TTL", "300")
+    monkeypatch.setenv("EXTERNAL_API_TIMEOUT", "1")  # Fast timeouts for tests
+    monkeypatch.setenv("CACHE_TTL", "300")  # 5 minutes cache for tests

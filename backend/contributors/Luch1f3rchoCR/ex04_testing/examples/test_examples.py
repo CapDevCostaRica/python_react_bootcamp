@@ -37,6 +37,10 @@ class Monster(Base):
     def __init__(self, index=None, name=None, data=None):
         # TODO: Add validation for required fields
         # HINT: Check if index and name are provided, raise ValueError if missing
+        if index is None:
+            raise ValueError("index is required")
+        if name is None:
+            raise ValueError("name is required")
         self.index = index
         self.name = name
         self.data = data or {}
@@ -44,7 +48,7 @@ class Monster(Base):
     def __str__(self):
         # TODO: Implement string representation
         # HINT: Should return "Name (index)" format
-        return "Monster object"  # This needs to be fixed!
+        return f"{self.name} ({self.index})"  # This needs to be fixed!
 
 
 # Mock Schema classes for demonstration
@@ -54,6 +58,10 @@ class MonsterListRequestSchema:
         # TODO: Add validation for monster list requests
         # HINT: Check for "resource" field and validate it equals "monsters"
         # HINT: Raise ValidationError for missing or invalid resource
+        if "resource" not in data:
+            raise ValidationError({"resource": ["Missing data for required field."]})
+        if data["resource"] != "monsters":
+            raise ValidationError({"resource": ["Must be one of: monsters"]})
         return data  # This needs validation!
 
 
@@ -64,6 +72,11 @@ class MonsterGetRequestSchema:
         # HINT: Check for "monster_index" field
         # HINT: Validate monster_index is not empty and not too long
         # HINT: Raise ValidationError with proper field-specific messages
+        if "monster_index" not in data:
+            raise ValidationError({"monster_index": ["Missing data for required field."]})
+        idx = data["monster_index"]
+        if not isinstance(idx, str) or not idx.strip() or len(idx) > 100:
+            raise ValidationError({"monster_index": ["Invalid value."]})
         return data  # This needs validation!
 
 
@@ -113,7 +126,7 @@ class TestMonsterModel:
     def test_monster_unique_constraint(self, db_session):
         """
         🎯 TASK: Make this test pass by ensuring Monster.index is unique
-
+å
         WHAT THIS TEST DOES:
         - Creates two monsters with same index
         - Expects database to reject the duplicate
