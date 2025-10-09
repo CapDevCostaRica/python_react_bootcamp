@@ -1,9 +1,0 @@
-Flask
-pytest
-pytest-mock
-marshmallow
-SQLAlchemy
-psycopg
-alembic
-requests
-psycopg2-binary

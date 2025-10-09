@@ -1,5 +1,0 @@
-Flask
-SQLAlchemy
-psycopg2-binary
-alembic
-marshmallow

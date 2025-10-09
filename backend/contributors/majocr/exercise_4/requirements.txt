@@ -1,5 +1,0 @@
-Flask
-pytest
-marshmallow
-SQLAlchemy
-requests

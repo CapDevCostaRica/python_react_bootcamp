@@ -1,1 +1,0 @@
-from app.common.python.common.schema.schema import *

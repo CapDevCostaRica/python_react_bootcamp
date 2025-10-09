@@ -1,3 +1,0 @@
-Flask
-marshmallow_sqlalchemy
-pandas

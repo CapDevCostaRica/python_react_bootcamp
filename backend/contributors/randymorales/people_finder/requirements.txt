@@ -1,5 +1,0 @@
-Flask
-SQLAlchemy
-psycopg
-alembic
-requests
