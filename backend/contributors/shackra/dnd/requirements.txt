@@ -2,4 +2,4 @@ Flask==3.1.2
 alembic==1.17.0
 SQLAlchemy==2.0.44
 Flask-SQLAlchemy==3.1.1
-psycopg2==2.9.11
+psycopg2-binary
