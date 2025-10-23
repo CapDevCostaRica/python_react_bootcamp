@@ -29,6 +29,10 @@ python backend/framework/scripts/reset_db.py
 
 ## Doing exercises 
 
+You can now use backend/capdevcr/boilerplate folder and copy it to your sub folder to quickly have everything you need, just rename it to whatever you're working on. 
+
+Or
+
 Please create a folder under contributors with your username. In there, you can make a new folder to create a new module, and inside that folder, create two files.
 
 ```
